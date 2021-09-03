@@ -15,8 +15,10 @@ class CreateEntitlementsTable extends Migration
     {
         Schema::create('entitlements', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('system_id')->index();
             $table->string('name');
             $table->timestamps();
+            $table->foreign('system_id')->references('id')->on('systems');
         });
     }
 

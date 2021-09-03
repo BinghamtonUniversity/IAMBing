@@ -14,6 +14,7 @@ ajax.get('/api/entitlements',function(data) {
     count:20,
     schema:[
         {type:"hidden", name:"id"},
+        {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{label:"{{name}}", value:"{{id}}"}},
         {type:"text", name:"name", label:"Name",required:true},
     ], data: data
     }).on("model:edited",function(grid_event) {

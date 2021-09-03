@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class EntitlementController extends Controller
 {
     public function get_all_entitlements(){
-        return Entitlement::all();
+        return Entitlement::with('system')->get();
     }
     public function get_entitlement(Entitlement $entitlement){
         return $entitlement;

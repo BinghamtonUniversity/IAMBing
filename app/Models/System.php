@@ -12,8 +12,8 @@ class System extends Model
         return $this->hasMany(Accounts::class,'system_id');
     }
 
-    public function system(){
-        return $this->belongsTo(System::class);
+    public function entitlements(){
+        return $this->hasMany(Accounts::class,'system_id');
     }
 
 }
