@@ -12,33 +12,30 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var string[]
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['unique_id','first_name', 'last_name','email'];
+    protected $hidden = ['password', 'remember_token','created_at','updated_at'];
+    protected $appends = ['permissions'];
+    protected $with = ['user_permissions'];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    public function group_memberships(){
+        return $this->hasMany(GroupMember::class,'user_id');
+    }
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    public function pivot_groups() {
+        return $this->belongsToMany(Group::class,'group_members');
+    }
+
+    public function user_permissions(){
+        return $this->hasMany(Permission::class,'user_id');
+    }
+
+    // Converts User Permissions to Array
+    public function getPermissionsAttribute() {
+        $permissions = $this->user_permissions()->get();
+        $permissions_arr = [];
+        foreach($permissions as $permission) {
+            $permissions_arr[] = $permission->permission;
+        }
+        return $permissions_arr;
+    }
 }

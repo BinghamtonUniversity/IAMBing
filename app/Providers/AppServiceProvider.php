@@ -23,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        \Str::macro('snakeToTitle', function($value) {
+            return \Str::title(str_replace('_', ' ', $value));
+        });
     }
 }

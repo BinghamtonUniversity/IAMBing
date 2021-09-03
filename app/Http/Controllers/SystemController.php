@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\System;
+use App\Models\User;
+use Illuminate\Http\Request;
+
+class SystemController extends Controller
+{
+    public function get_all_systems(){
+        return System::all();
+    }
+    public function get_system(System $system){
+        return $system;
+    }
+
+    public function add_system(Request $request){
+        $system = new System($request->all());
+        $system->save();
+        return $system;
+    }
+    public function update_system(Request $request, System $system){
+        $system->update($request->all());
+        return $system;
+    }
+
+    public function delete_system(System $system,User $user)
+    {
+        return System::where('id','=',$system->id)->delete();
+    }
+}
