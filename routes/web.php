@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\EntitlementController;
+use App\Http\Controllers\EndpointController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/systems', [AdminController::class, 'systems']);
         Route::get('/entitlements', [AdminController::class, 'entitlements']);
         Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups']);
+        Route::get('/endpoints', [AdminController::class, 'endpoints']);
     });
 
     Route::group(['prefix' => 'api'], function () {
@@ -91,6 +93,12 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::post('/entitlements/{entitlement}/groups',[EntitlementController::class,'add_group'])->middleware('can:manage_entitlements,App\Models\Entitlement');
         Route::delete('/entitlements/{entitlement}/groups/{user}',[EntitlementController::class,'delete_group'])->middleware('can:manage_entitlements,App\Models\Entitlement');
 
+        /* Systems Methods */
+        Route::get('/endpoints',[EndpointController::class,'get_all_endpoints'])->middleware('can:view_in_admin,App\Models\Endpoint');
+        Route::get('/endpoints/{endpoint}',[EndpointController::class,'get_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
+        Route::post('/endpoints',[EndpointController::class,'add_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
+        Route::put('/endpoints/{endpoint}',[EndpointController::class,'update_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
+        Route::delete('/endpoints/{endpoint}',[EndpointController::class,'delete_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
 
     });
 

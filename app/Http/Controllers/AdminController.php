@@ -83,4 +83,11 @@ class AdminController extends Controller
             'Use this page to manage groups for the current entitlement.'
         ]);
     }
+
+    public function endpoints(Request $request) {
+        return view('default.admin',['page'=>'endpoints','ids'=>[],'title'=>'Manage API Endpoints','help'=>
+            'Use this page to manage API endpoints.'
+        ]);
+    }
+
 }
