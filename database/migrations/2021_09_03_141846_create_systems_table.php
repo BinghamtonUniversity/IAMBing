@@ -16,6 +16,7 @@ class CreateSystemsTable extends Migration
         Schema::create('systems', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->json('config');
             $table->timestamps();
         });
     }
