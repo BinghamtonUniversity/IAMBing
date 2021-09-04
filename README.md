@@ -4,7 +4,7 @@ BYou is Binghamton University's Identity & Access Management (IAM) Application E
 # Developer Installation Instructions
 
 1. Clone the repo locally: `git clone https://github.com/BinghamtonUniversity/BYou.git`
-2. Run Composer: `php composer install`
+2. Install Composer Dependencies: `php composer install`
 3. Copy the `.env.enample` file to `.env`
 4. Setup MySQL Databases:
 ```bash
@@ -22,6 +22,7 @@ DB_PASSWORD=byou
 ```
 5. Generate App Key: `php artisan key:generate`
 6. Run Migrations: `php artisan migrate:refresh --seed`
+7. Serve the application `php artisan serve`
 
 # License
 BYou is open-source software licensed under the [MIT license](http://opensource.org/licenses/MIT).
