@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0" />
-    <link rel="icon"  type="image/png" href="/assets/icons/fontawesome/gray/32/address-book.png">
+    <link rel="icon"  type="image/png" href="/assets/icons/fontawesome/gray/32/user-circle.png">
     <title>Admin | BYou</title>
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
@@ -38,7 +38,7 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/admin" style="background: #004333;padding: 12px 0px 0px 18px;">
-            <h3 style="color:#fff;margin:0px;"><i class="fa fa-address-book fa-fw"></i> BYou</h3>
+            <h3 style="color:#fff;margin:0px;"><i class="fa fa-user-circle fa-fw"></i> BYou</h3>
           </a>
             <ul class="nav navbar-nav  hidden-xs">
                 <li><a href="#"><h4 style="margin:0">{{$title}}</h4></a></li>
@@ -91,10 +91,10 @@
                 <li class="@if($page=="groups") active @endif"><a href="/admin/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
             @endcan
             @can('view_in_admin',App\Models\System::class)
-                <li class="@if($page=="modules") active @endif"><a href="/admin/systems"><i class="fa fa-notes-medical fa-fw"></i>&nbsp; Systems</a></li>
+                <li class="@if($page=="systems") active @endif"><a href="/admin/systems"><i class="fa fa-notes-medical fa-fw"></i>&nbsp; Systems</a></li>
             @endcan
             @can('view_in_admin',App\Models\Entitlement::class)
-                <li class="@if($page=="reports") active @endif"><a href="/admin/entitlements"><i class="fa fa-notes-medical fa-fw"></i>&nbsp; Entitlements</a></li>
+                <li class="@if($page=="entitlements") active @endif"><a href="/admin/entitlements"><i class="fa fa-notes-medical fa-fw"></i>&nbsp; Entitlements</a></li>
             @endcan
             <li><a href="https://github.com/BinghamtonUniversity/BYou/wiki" target="_blank"><i class="fa fa-fw fa-info"></i>&nbsp; View Documentation</a></li>
         </ul>
@@ -154,8 +154,6 @@
     <script src='/assets/js/vendor/jquery.min.js'></script>
     <script src="/assets/js/vendor/bootstrap.min.js"></script>
     <script src="/assets/js/vendor/lodash.min.js"></script>
-{{--    <script src="/assets/js/vendor/ace/ace.js" charset="utf-8"></script>--}}
-{{--    <script src='/assets/js/vendor/summernote.min.js'></script>--}}
     <script>_.findWhere = _.find; _.where = _.filter;_.pluck = _.map;_.contains = _.includes;</script>
     <script src='/assets/js/vendor/hogan.min.js'></script>
     <script src='/assets/js/vendor/toastr.min.js'></script> 

@@ -31,4 +31,9 @@ class UserPolicy
         return true;
     }
 
+    public function impersonate_users(User $user) {
+        return true;
+    }
+
+
 }

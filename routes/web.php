@@ -46,14 +46,15 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::post('/users',[UserController::class,'add_user'])->middleware('can:manage_users,App\Models\User');
         Route::put('/users/{user}',[UserController::class,'update_user'])->middleware('can:manage_users,App\Models\User');
         Route::delete('/users/{user}','UserController@delete_user')->middleware('can:manage_users,App\Models\User');
-        Route::put('/users/{source_user}/merge_into/{target_user}','UserController@merge_user')->middleware('can:manage_users,App\Models\User');
         Route::put('/users/{user}/permissions',[UserController::class,'set_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
         Route::get('/users/{user}/permissions',[UserController::class,'get_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
-        Route::post('/users/assignments/{module}','UserController@self_assignment');
-        Route::get('/users/{user}/assignments','UserController@get_assignments')->middleware('can:manage_users,App\Models\User');
-        Route::post('/users/{user}/assignments/{module}','UserController@set_assignment')->middleware('can:assign_module,App\Models\User,module');
-        Route::delete('/users/{user}/assignments/{module_assignment}','UserController@delete_assignment')->middleware('can:delete_assignment,App\Models\User,module_assignment');
-        Route::post('/login/{user}','UserController@login_user')->middleware('can:impersonate_users,App\Models\User');
+        Route::put('/users/{source_user}/merge_into/{target_user}','UserController@merge_user')->middleware('can:manage_users,App\Models\User');
+        Route::post('/login/{user}',[UserController::class,'login_user'])->middleware('can:impersonate_users,App\Models\User');
+        Route::get('/users/{user}/accounts',[UserController::class,'get_accounts']);
+        Route::get('/users/{user}/accounts/{account}',[UserController::class,'get_account']);
+        Route::post('/users/{user}/accounts',[UserController::class,'add_account'])->middleware('can:manage_users,App\Models\User');
+        // Route::put('/users/{user}/accounts/{account}',[UserController::class,'update_account'])->middleware('can:manage_users,App\Models\User');
+        Route::delete('/users/{user}/accounts/{account}',[UserController::class,'delete_account'])->middleware('can:manage_users,App\Models\User');
 
         /* Group Methods */
         Route::get('/groups',[GroupController::class,'get_all_groups'])->middleware('can:view_in_admin,App\Models\Group');

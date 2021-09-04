@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Permission;
+use App\Models\Account;
 
 class UserController extends Controller
 {
@@ -17,7 +18,7 @@ class UserController extends Controller
     }
 
     public function get_user(Request $request, User $user) {
-        return User::where('id',$user->id)->with('pivot_groups')->first();
+        return User::where('id',$user->id)->with('pivot_groups')->with('accounts')->with('systems')->first();
     }
 
     public function add_user(Request $request) {
@@ -94,6 +95,31 @@ class UserController extends Controller
     }
     public function get_permissions(Request $request, User $user) {
         return $user->user_permissions;
+    }
+
+    public function get_accounts() {
+        return Account::all();
+    }
+
+    public function get_account(Account $account) {
+        return $account;
+    }
+
+    public function add_account(User $user, Request $request) {
+        $account = new Account($request->all());
+        $account->user_id = $user->id;
+        $account->save();
+        return $account;
+    }
+
+    public function update_account(Request $request, User $user, Account $account) {
+        $account->update($request->all());
+        return $account;
+    }
+
+    public function delete_account(User $user, Account $account) {
+        $account->delete();
+        return "1";
     }
 
 }

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Entitlement;
+use App\Models\User;
 
 class AdminController extends Controller
 {

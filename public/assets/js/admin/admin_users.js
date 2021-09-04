@@ -30,6 +30,10 @@ $('#adminDataGrid').html(`
     </div>
     <div class="col-sm-6">
         <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">Accounts</h3></div>
+            <div class="panel-body user-accounts"></div>
+        </div>
+        <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">Groups</h3></div>
             <div class="panel-body user-groups"></div>
         </div>
@@ -52,6 +56,19 @@ user_groups_template = `
     <div class="alert alert-warning">No Group Memberships</div>
 {{/pivot_groups}}
 `;
+
+user_accounts_template = `
+<ul>
+    {{#systems}}
+        <li>{{pivot.username}} ({{name}})</li>
+    {{/systems}}
+</ul>
+{{^systems}}
+    <div class="alert alert-warning">No Accounts</div>
+{{/systems}}
+<a class="btn btn-primary" href="/admin/users/{{id}}/accounts">Manage Accounts</a>
+`;
+
 
 // Create New User
 $('.user-new').on('click',function() {
@@ -97,6 +114,7 @@ new gform(
             $('.user-view').show();
             // Show Groups
             $('.user-groups').html(gform.m(user_groups_template,data));
+            $('.user-accounts').html(gform.m(user_accounts_template,data));
             // Edit User
             new gform(
                 {"fields":user_form_attributes,

@@ -29,6 +29,14 @@ class User extends Authenticatable
         return $this->hasMany(Permission::class,'user_id');
     }
 
+    public function accounts(){
+        return $this->hasMany(Account::class,'user_id');
+    }
+
+    public function systems() {
+        return $this->belongsToMany(System::class,'accounts')->withPivot('username');
+    }
+
     // Converts User Permissions to Array
     public function getPermissionsAttribute() {
         $permissions = $this->user_permissions()->get();
