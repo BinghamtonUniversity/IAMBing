@@ -68,10 +68,10 @@
                   <li class="visible-xs-block @if($page=="groups") active @endif"><a href="/admin/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
               @endcan
               @can('view_in_admin',App\Models\System::class)
-                  <li class="visible-xs-block @if($page=="modules") active @endif"><a href="/admin/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
+                  <li class="visible-xs-block @if($page=="systems") active @endif"><a href="/admin/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
               @endcan
               @can('view_in_admin',App\Models\Entitlement::class)
-                  <li class="visible-xs-block @if($page=="entitlements") active @endif"><a href="/admin/entitlements"><i class="fa fa-certiicate fa-fw"></i>&nbsp; Entitlements</a></li>
+                  <li class="visible-xs-block @if($page=="entitlements") active @endif"><a href="/admin/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
               @endcan
               @can('view_in_admin',App\Models\Endpoint::class)
                   <li class="visible-xs-block @if($page=="endpoints") active @endif"><a href="/admin/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>

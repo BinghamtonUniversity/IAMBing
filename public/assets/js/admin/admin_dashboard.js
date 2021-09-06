@@ -3,7 +3,7 @@ dashboard_template = `
 <div class="row">
     <div class="col-sm-6">
         <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">My Accounts</h3></div>
+            <div class="panel-heading"><h3 class="panel-title">My Groups</h3></div>
             <div class="panel-body">
                 <ul>
                     {{#pivot_groups}}
@@ -16,7 +16,7 @@ dashboard_template = `
             </div>
         </div>
         <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">My Groups</h3></div>
+            <div class="panel-heading"><h3 class="panel-title">My Accounts</h3></div>
             <div class="panel-body">
                 <ul>
                     {{#systems}}
