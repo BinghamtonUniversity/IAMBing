@@ -125,14 +125,12 @@ class UserController extends Controller
         return $account;
     }
 
-    public function update_account(Request $request, User $user, Account $account) {
-        $account->update($request->all());
-        return $account;
-    }
-
     public function delete_account(User $user, Account $account) {
         $account->delete();
         return "1";
     }
 
+    public function get_groups(User $user) {
+        return GroupMember::where('user_id',$user->id)->get();
+    }
 }

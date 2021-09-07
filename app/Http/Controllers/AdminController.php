@@ -47,6 +47,12 @@ class AdminController extends Controller
         ]);
     }
 
+    public function user_groups(Request $request, User $user) {
+        return view('default.admin',['page'=>'users_groups','ids'=>[$user->id],'title'=>$user->first_name.' '.$user->last_name.' Groups','help'=>
+            'Manage groups for this user.'
+        ]);
+    }
+
     public function groups(Request $request) {
         return view('default.admin',['page'=>'groups','ids'=>[],'title'=>'Manage Groups','help'=>
             'Use this page to manage groups.  You may add/remove exsting groups, 

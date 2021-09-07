@@ -70,6 +70,7 @@ user_groups_template = `
 {{^pivot_groups}}
     <div class="alert alert-warning">No Group Memberships</div>
 {{/pivot_groups}}
+<a class="btn btn-primary" href="/admin/users/{{id}}/groups">Manage Groups</a>
 `;
 
 user_entitlements_template = `
