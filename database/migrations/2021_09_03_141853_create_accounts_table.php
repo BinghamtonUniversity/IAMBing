@@ -17,9 +17,10 @@ class CreateAccountsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('system_id')->index();
-            $table->string('username');
+            $table->string('username')->index();
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('system_id')->references('id')->on('systems');
+            $table->unique(['user_id','system_id','username']);
             $table->timestamps();
         });
     }

@@ -10,6 +10,9 @@ use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Permission;
 use App\Models\Account;
+use App\Models\Configuration;
+use App\Models\System;
+
 
 class UserController extends Controller
 {
@@ -48,19 +51,19 @@ class UserController extends Controller
         $search = []; $users = [];
         if (count($search_elements_parsed) === 1 && $search_elements_parsed[0]!='') {
             $search[0] = $search_elements_parsed[0];
-            $users = User::select('id','unique_id','first_name','last_name','email')
+            $users = User::select('id','unique_id','first_name','last_name','default_username')
                 ->where(function ($query) use ($search) {
                     $query->where('unique_id',$search[0])
                         ->orWhere('id',$search[0])
                         ->orWhere('first_name','like',$search[0].'%')
                         ->orWhere('last_name','like',$search[0].'%')
-                        ->orWhere('email','like',$search[0].'%');
+                        ->orWhere('default_username','like',$search[0].'%');
                 })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
                     ->limit(25)->get()->toArray();
         } else if (count($search_elements_parsed) > 1) {
             $search[0] = $search_elements_parsed[0];
             $search[1] = $search_elements_parsed[count($search_elements_parsed)-1];
-            $users = User::select('id','unique_id','first_name','last_name','email')
+            $users = User::select('id','unique_id','first_name','last_name','default_username')
                 ->where(function ($query) use ($search) {
                     $query->where(function ($query) use ($search) {
                         $query->where('first_name','like',$search[0].'%')
@@ -73,7 +76,7 @@ class UserController extends Controller
                     ->limit(25)->get()->toArray();
         }
         foreach($users as $index => $user) {
-            $users[$index] = array_intersect_key($user, array_flip(['id','unique_id','first_name','last_name','email']));
+            $users[$index] = array_intersect_key($user, array_flip(['id','unique_id','first_name','last_name','default_username']));
         }
 
         return $users;
@@ -97,8 +100,8 @@ class UserController extends Controller
         return $user->user_permissions;
     }
 
-    public function get_accounts() {
-        return Account::all();
+    public function get_accounts(User $user) {
+        return Account::where('user_id',$user->id)->get();
     }
 
     public function get_account(Account $account) {
@@ -106,8 +109,14 @@ class UserController extends Controller
     }
 
     public function add_account(User $user, Request $request) {
-        $account = new Account($request->all());
-        $account->user_id = $user->id;
+        $account = new Account(['user_id'=>$user->id,'system_id'=>$request->system_id]);
+        if ($request->has('username')) {
+            $account->username = $request->username;
+        } else {
+            $system = System::where('id',$request->system_id)->first();
+            $template = $system->config->default_username_template;
+            $account->username = $user->username_generate($template);
+        }
         $account->save();
         return $account;
     }

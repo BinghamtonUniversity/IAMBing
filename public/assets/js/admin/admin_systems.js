@@ -18,7 +18,9 @@ ajax.get('/api/systems',function(data) {
             "type": "fieldset",
             "label":"Configuration",
             "name": "config",
+            showColumn:false,
             "fields": [
+                {type:"text", name:"default_username_template", label:"Default Username Template", edit:true, value:'{{default_username}}'},
                 {
                     "type": "fieldset",
                     "label": "Create Account",

@@ -109,7 +109,7 @@ gform.types['user']= _.extend({}, gform.types['smallcombo'], {
                     value:function(item){
                         return item.id;
                     },
-                    display:'{{first_name}} {{last_name}}<div style="color:#aaa">{{email}}</div>'
+                    display:'{{first_name}} {{last_name}}<div style="color:#aaa">{{default_username}}</div><div style="color:#aaa">{{unique_id}}</div>'
                 }
         }
 

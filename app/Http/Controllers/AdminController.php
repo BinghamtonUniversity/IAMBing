@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Entitlement;
 use App\Models\User;
+use App\Models\Account;
 
 class AdminController extends Controller
 {
@@ -15,6 +16,12 @@ class AdminController extends Controller
 
     public function admin(Request $request) {
         return view('default.admin',['page'=>'dashboard','ids'=>[Auth::user()->id],'title'=>'Admin']);
+    }
+
+    public function configuration(Request $request) {
+        return view('default.admin',['page'=>'configuration','ids'=>[],'title'=>'Manage Configuration','help'=>
+            'System Wide Configurations'
+        ]);
     }
 
     public function users(Request $request) {

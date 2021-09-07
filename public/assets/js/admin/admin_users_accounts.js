@@ -14,7 +14,8 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
     schema:[
         {type:"hidden", name:"id"},
         {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{label:"{{name}}", value:"{{id}}"}},
-        {type:"text", name:"username", label:"Username",required:true},
+        {type:"checkbox",label: "Use Default Username",name: "use_default_username",value: true,options: [{value: false},{value: true}],showColumn:false},
+        {type:"text", name:"username", label:"Username", show:[{type:'matches',name:'use_default_username',value:false}], required:'show'},    
     ], data: data
     }).on("model:created",function(grid_event) {
         ajax.post('/api/users/'+id+'/accounts',grid_event.model.attributes,function(data) {

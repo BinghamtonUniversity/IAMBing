@@ -1,11 +1,22 @@
 gform.options = {autoFocus:false};
-user_form_attributes = [
+user_form_update_attributes = [
     {type:"hidden", name:"id"},
     {type:"checkbox", name:"active", label:"Active", value:true},
-    {type:"text", name:"unique_id", label:"Unique ID", required:true},
-    {type:"text", name:"first_name", label:"First Name"},
-    {type:"text", name:"last_name", label:"Last Name"},
-    {type:"email", name:"email", label:"Email", required:true}
+    {type:"text", name:"unique_id", label:"Unique ID", required:false},
+    {type:"text", name:"first_name", label:"First Name", required:true},
+    {type:"text", name:"last_name", label:"Last Name", required:true},
+    {type:"checkbox",label: "Modify Default Username",name: "modify_username",value: false,options: [{value: false},{value: true}]},
+    {type:"text", name:"default_username", label:"Default Username", required:true, edit:[{type:'matches',name:'modify_username',value:true}]},
+];
+
+user_form_create_attributes = [
+    {type:"hidden", name:"id"},
+    {type:"checkbox", name:"active", label:"Active", value:true},
+    {type:"text", name:"unique_id", label:"Unique ID", required:false},
+    {type:"text", name:"first_name", label:"First Name", required:true},
+    {type:"text", name:"last_name", label:"Last Name", required:true},
+    {type:"checkbox",label: "Automatically Generate Default Username",name: "specify_username",value: true,options: [{value: false},{value: true}]},
+    {type:"text", name:"default_username", label:"Default Username", show:[{type:'matches',name:'specify_username',value:false}], required:'show'},
 ];
 
 $('#adminDataGrid').html(`
@@ -73,7 +84,7 @@ user_accounts_template = `
 // Create New User
 $('.user-new').on('click',function() {
     new gform(
-        {"fields":user_form_attributes,
+        {"fields":user_form_create_attributes,
         "title":"Create New User",
         "actions":[
             {"type":"save"}
@@ -82,42 +93,23 @@ $('.user-new').on('click',function() {
         if(form_event.form.validate())
         {
             ajax.post('/api/users', form_event.form.get(), function (data) {
+                manage_user(data.id);
                 form_event.form.trigger('close');
             });
         }
     });
 })
 
-new gform(
-    {"fields":[
-        {
-            "type": "user",
-            "label": "Search Existing Users",
-            "name": "user",
-        }    
-    ],
-    "el":".user-search",
-    "actions":[
-        {"type":"save","label":"Submit","modifiers":"btn btn-primary"}
-    ]
-}
-).on('change',function(form_event) {
-    form_data = form_event.form.get();
-    if (form_data.user == null || form_data.user == '') {
-        $('.user-view').hide();
-    }
-}).on('save',function(form_event) {
-    form_data = form_event.form.get();
-    if (form_data.user != null && form_data.user != '') {
-        user_id = form_data.user;
-        ajax.get('/api/users/'+form_data.user,function(data) {
+var manage_user = function(user_id) {
+    if (user_id != null && user_id != '') {
+        ajax.get('/api/users/'+user_id,function(data) {
             $('.user-view').show();
             // Show Groups
             $('.user-groups').html(gform.m(user_groups_template,data));
             $('.user-accounts').html(gform.m(user_accounts_template,data));
             // Edit User
             new gform(
-                {"fields":user_form_attributes,
+                {"fields":user_form_update_attributes,
                 "el":".user-edit",
                 "data":data,
                 "actions":[
@@ -214,4 +206,26 @@ new gform(
     } else {
         $('.user-view').hide();
     }
+}
+
+new gform(
+    {"fields":[
+        {
+            "type": "user",
+            "label": "Search Existing Users",
+            "name": "user",
+        }    
+    ],
+    "el":".user-search",
+    "actions":[
+        {"type":"save","label":"Submit","modifiers":"btn btn-primary"}
+    ]
+}
+).on('change',function(form_event) {
+    form_data = form_event.form.get();
+    if (form_data.user == null || form_data.user == '') {
+        $('.user-view').hide();
+    }
+}).on('save',function(form_event) {
+    manage_user(form_event.form.get().user);
 });

@@ -7,6 +7,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\EntitlementController;
 use App\Http\Controllers\EndpointController;
+use App\Http\Controllers\ConfigurationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/', function () {
         return view('welcome');
     });
+    Route::get('/test',[AdminController::class, 'test']);
 
     /* Admin Pages */
     Route::group(['prefix' => 'admin'], function () {
@@ -38,6 +40,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/entitlements', [AdminController::class, 'entitlements']);
         Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups']);
         Route::get('/endpoints', [AdminController::class, 'endpoints']);
+        Route::get('/configuration', [AdminController::class, 'configuration']);
     });
 
     Route::group(['prefix' => 'api'], function () {
@@ -47,7 +50,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/users/{user}',[UserController::class,'get_user']);
         Route::post('/users',[UserController::class,'add_user'])->middleware('can:manage_users,App\Models\User');
         Route::put('/users/{user}',[UserController::class,'update_user'])->middleware('can:manage_users,App\Models\User');
-        Route::delete('/users/{user}','UserController@delete_user')->middleware('can:manage_users,App\Models\User');
+        Route::delete('/users/{user}',[UserController::class,'delete_user'])->middleware('can:manage_users,App\Models\User');
         Route::put('/users/{user}/permissions',[UserController::class,'set_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
         Route::get('/users/{user}/permissions',[UserController::class,'get_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
         Route::put('/users/{source_user}/merge_into/{target_user}','UserController@merge_user')->middleware('can:manage_users,App\Models\User');
@@ -100,6 +103,9 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/endpoints/{endpoint}',[EndpointController::class,'update_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
         Route::delete('/endpoints/{endpoint}',[EndpointController::class,'delete_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
 
+        /* Configuration Methods */
+        Route::get('/configuration',[ConfigurationController::class,'get_configurations'])->middleware('can:manage_configuration,App\Models\Configuration');
+        Route::put('/configuration/{config_name}',[ConfigurationController::class,'update_configuration'])->middleware('can:manage_configuration,App\Models\Configuration');
     });
 
 });
