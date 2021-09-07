@@ -20,7 +20,7 @@ class AdminController extends Controller
 
     public function configuration(Request $request) {
         return view('default.admin',['page'=>'configuration','ids'=>[],'title'=>'Manage Configuration','help'=>
-            'System Wide Configurations'
+            'System Wide Configuration Options'
         ]);
     }
 
@@ -37,8 +37,7 @@ class AdminController extends Controller
                 ["name"=>"delete","label"=>"Delete User"]
             ],
             'help'=>
-                'Use this page to manage users within the BYou Application.  You may add/remove existing users, 
-                modify user administrative permissions, and do other stuff.'
+                'Use this page to create, search for, view, delete, and modify existing users.'
         ]);
     }
 
@@ -50,7 +49,7 @@ class AdminController extends Controller
 
     public function groups(Request $request) {
         return view('default.admin',['page'=>'groups','ids'=>[],'title'=>'Manage Groups','help'=>
-            'Use this page to manage groups within the BYou Application.  You may add/remove exsting groups, 
+            'Use this page to manage groups.  You may add/remove exsting groups, 
             rename groups, and manage group memeberships.'
         ]);
     }
@@ -69,31 +68,31 @@ class AdminController extends Controller
 
     public function group_entitlements(Request $request, Group $group) {
         return view('default.admin',['page'=>'groups_entitlements','ids'=>[$group->id],'title'=>$group->name.' Entitlements','help'=>
-            'Use this page to manage entitlements for the current group.'
+            'Use this page to manage entitlements for the current group.  (Users who are members of this group will automatically be granted any entitlements which are listed here)'
         ]);
     }
 
     public function systems(Request $request) {
         return view('default.admin',['page'=>'systems','ids'=>[],'title'=>'Manage Systems','help'=>
-            'Use this page to manage systems.'
+            'Use this page to manage systems.  (Systems are external entities in which accounts can be provisioned.  Examples: AD Domains, Google Workspace, etc)'
         ]);
     }
 
     public function entitlements(Request $request) {
         return view('default.admin',['page'=>'entitlements','ids'=>[],'title'=>'Manage Entitlements','help'=>
-            'Use this page to manage entitlements.'
+            'Use this page to manage entitlements.  (Entitlements are "things" a user can or cannot do within an external system.  Examples: Access Wifi, Utilize VPN)'
         ]);
     }
 
     public function entitlement_groups(Request $request, Entitlement $entitlement) {
         return view('default.admin',['page'=>'entitlements_groups','ids'=>[$entitlement->id],'title'=>$entitlement->name.' Groups','help'=>
-            'Use this page to manage groups for the current entitlement.'
+            'Use this page to manage groups for the current entitlement.  (Users who are members of any groups listed here will automatically be granted this entitlement)'
         ]);
     }
 
     public function endpoints(Request $request) {
         return view('default.admin',['page'=>'endpoints','ids'=>[],'title'=>'Manage API Endpoints','help'=>
-            'Use this page to manage API endpoints.'
+            'Use this page to manage API endpoints.  (API Endpoints are 3rd party APIs which can be used to provision accounts, add/remove endpooints, etc)'
         ]);
     }
 

@@ -69,6 +69,17 @@ class User extends Authenticatable
         return true;
     }
 
+    public function add_account($system, $username = null) {
+        $account = new Account(['user_id'=>$this->id,'system_id'=>$system->id]);
+        if (!is_null($username)) {
+            $account->username = $username;
+        } else {
+            $template = $system->config->default_username_template;
+            $account->username = $this->username_generate($template);
+        }
+        $account->save();
+    }
+
     protected static function booted()
     {
         static::created(function ($user) {

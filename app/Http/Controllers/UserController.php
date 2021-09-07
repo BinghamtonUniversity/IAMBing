@@ -109,15 +109,12 @@ class UserController extends Controller
     }
 
     public function add_account(User $user, Request $request) {
-        $account = new Account(['user_id'=>$user->id,'system_id'=>$request->system_id]);
+        $system = System::where('id',$request->system_id)->first();
         if ($request->has('username')) {
-            $account->username = $request->username;
+            $account = $user->add_account($system, $username);
         } else {
-            $system = System::where('id',$request->system_id)->first();
-            $template = $system->config->default_username_template;
-            $account->username = $user->username_generate($template);
-        }
-        $account->save();
+            $account = $user->add_account($system);
+        }        
         return $account;
     }
 

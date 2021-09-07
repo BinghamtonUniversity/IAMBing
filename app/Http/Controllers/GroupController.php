@@ -6,7 +6,10 @@ use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\GroupAdmin;
 use App\Models\GroupEntitlement;
+use App\Models\Entitlement;
+use App\Models\Account;
 use App\Models\User;
+use App\Models\System;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller
@@ -44,12 +47,39 @@ class GroupController extends Controller
            'type'=>'internal',
         ]);
         $group_membership->save();
+
+        // TJC -- All of this should be moved to an observer!
+        // This code adds new accounts for any new systems
+        $user = User::where('id',$request->user_id)->first();
+        $group_ids = GroupMember::select('group_id')->where('user_id',$request->user_id)->get()->pluck('group_id');
+        $entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
+        $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$entitlement_ids)->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->where('user_id',$request->user_id)->get()->pluck('system_id')->unique();
+        $diff = $system_ids_needed->diff($system_ids_has);
+        foreach($diff as $system_id) {
+            $system = System::where('id',$system_id)->first();
+            $user->add_account($system);
+        }
+        // END
+
         return GroupMember::where('id',$group_membership->id)->with('user')->first();
     }
 
     public function delete_member(Group $group,User $user)
     {
-        return GroupMember::where('group_id','=',$group->id)->where('user_id','=',$user->id)->delete();
+        $result = GroupMember::where('group_id','=',$group->id)->where('user_id','=',$user->id)->delete();
+
+        // TJC -- All of this should be moved to an observer!
+        // This code deletes any accounts for any systems
+        $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
+        $entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
+        $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$entitlement_ids)->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->where('user_id',$user->id)->get()->pluck('system_id')->unique();
+        $diff = $system_ids_has->diff($system_ids_needed);
+        Account::where('user_id',$user->id)->whereIn('system_id',$diff)->delete();
+        // END
+        
+        return $result;
     }
 
     public function get_admins(Request $request, Group $group){
