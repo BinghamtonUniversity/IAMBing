@@ -12,7 +12,8 @@ use App\Models\Permission;
 use App\Models\Account;
 use App\Models\Configuration;
 use App\Models\System;
-
+use App\Models\GroupEntitlement;
+use App\Models\Entitlement;
 
 class UserController extends Controller
 {
@@ -21,7 +22,13 @@ class UserController extends Controller
     }
 
     public function get_user(Request $request, User $user) {
-        return User::where('id',$user->id)->with('pivot_groups')->with('accounts')->with('systems')->first();
+        $user = User::where('id',$user->id)->with('pivot_groups')->with('accounts')->with('systems')->first();
+
+        // TJC -- Clean THIS UP!
+        $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
+        $entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
+        $user->entitlements = Entitlement::whereIn('id',$entitlement_ids)->get();
+        return $user;
     }
 
     public function add_user(Request $request) {

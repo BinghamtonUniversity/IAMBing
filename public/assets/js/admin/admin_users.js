@@ -49,6 +49,10 @@ $('#adminDataGrid').html(`
             <div class="panel-body user-groups"></div>
         </div>
         <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">Entitlements</h3></div>
+            <div class="panel-body user-entitlements"></div>
+        </div>
+        <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">Permissions</h3></div>
             <div class="panel-body user-site-permissions"></div>
         </div>
@@ -67,6 +71,18 @@ user_groups_template = `
     <div class="alert alert-warning">No Group Memberships</div>
 {{/pivot_groups}}
 `;
+
+user_entitlements_template = `
+<ul>
+    {{#entitlements}}
+        <li>{{name}}</li>
+    {{/entitlements}}
+</ul>
+{{^entitlements}}
+    <div class="alert alert-warning">No Entitlements</div>
+{{/entitlements}}
+`;
+
 
 user_accounts_template = `
 <ul>
@@ -107,6 +123,7 @@ var manage_user = function(user_id) {
             // Show Groups
             $('.user-groups').html(gform.m(user_groups_template,data));
             $('.user-accounts').html(gform.m(user_accounts_template,data));
+            $('.user-entitlements').html(gform.m(user_entitlements_template,data));
             // Edit User
             new gform(
                 {"fields":user_form_update_attributes,
