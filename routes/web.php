@@ -109,4 +109,6 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/configuration/{config_name}',[ConfigurationController::class,'update_configuration'])->middleware('can:manage_configuration,App\Models\Configuration');
     });
 
+    Route::get('/db/refresh','AdminController@refresh_db');
+
 });

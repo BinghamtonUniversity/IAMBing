@@ -8,6 +8,7 @@ use App\Models\Group;
 use App\Models\Entitlement;
 use App\Models\User;
 use App\Models\Account;
+use Illuminate\Support\Facades\Artisan;
 
 class AdminController extends Controller
 {
@@ -100,6 +101,16 @@ class AdminController extends Controller
         return view('default.admin',['page'=>'endpoints','ids'=>[],'title'=>'Manage API Endpoints','help'=>
             'Use this page to manage API endpoints.  (API Endpoints are 3rd party APIs which can be used to provision accounts, add/remove endpooints, etc)'
         ]);
+    }
+
+    // Don't do this! Hella Bad and loses all data!
+    public function refresh_db(Request $request) {
+        if (config('app.env')==='development' || config('app.env')==='dev') {
+            $response = Artisan::call('migrate:refresh',['--seed'=>null]);
+            return ['msg'=>'Running php artisan migrate:refresh --seed','ret'=>$response];
+        } else {
+            return ['msg'=>'App In Production, Not Allowed','ret'=>false];
+        }
     }
 
 }
