@@ -8,12 +8,12 @@
     <meta name="author" content="">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0" />
     <link rel="icon"  type="image/png" href="/assets/icons/fontawesome/gray/32/user-circle.png">
-    <title>Admin | BYou</title>
+    <title>Admin | IAMBing</title>
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">-->
     <!-- Custom styles for this template -->
-    <link href="/assets/css/BYou.css" rel="stylesheet">
+    <link href="/assets/css/IAMBing.css" rel="stylesheet">
     <link href="/assets/css/toastr.min.css" rel="stylesheet">
     <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
 
@@ -38,7 +38,7 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/admin" style="background: #004333;padding: 12px 0px 0px 18px;">
-            <h3 style="color:#fff;margin:0px;"><i class="fa fa-user-circle fa-fw"></i> BYou</h3>
+            <h3 style="color:#fff;margin:0px;"><i class="fa fa-user-circle fa-fw"></i> IAMBing</h3>
           </a>
             <ul class="nav navbar-nav  hidden-xs">
                 <li><a href="#"><h4 style="margin:0">Welcome</h4></a></li>

@@ -1,9 +1,9 @@
 # Overview
-BYou is Binghamton University's Identity & Access Management (IAM) Application Engine.  This application is 'alpha' stage of development and should not be considered for a production deployment.
+IAMBing is Binghamton University's Identity & Access Management (IAM) Application Engine.  This application is 'alpha' stage of development and should not be considered for a production deployment.
 
 # Developer Installation Instructions
 
-1. Clone the repo locally: `git clone https://github.com/BinghamtonUniversity/BYou.git`
+1. Clone the repo locally: `git clone https://github.com/BinghamtonUniversity/IAMBing.git`
 2. Install Composer Dependencies: `composer install`
 3. Copy the `.env.enample` file to `.env`
 4. Setup MySQL Databases:
@@ -25,4 +25,4 @@ DB_PASSWORD=byou
 7. Serve the application `php artisan serve`
 
 # License
-BYou is open-source software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+IAMBing is open-source software licensed under the [MIT license](http://opensource.org/licenses/MIT).

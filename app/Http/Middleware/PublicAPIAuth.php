@@ -1,28 +1,22 @@
-<?php 
+<?php
 
 namespace App\Http\Middleware;
 
-use Closure;
-use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Auth;
-use App\User;
+use Illuminate\Support\Facades\DB;
+use Closure;
 
-class CustomAuthentication
+class PublicAPIAuth
 {
-
-    protected $auth;
-    protected $cas;
-
-    public function __construct(Guard $auth) {
-        $this->auth = $auth;
-    }
-
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @return mixed
+     */
     public function handle($request, Closure $next)
     {
-        // if (!Auth::check()) {
-        //     Auth::loginUsingId(1,$remember = true);
-        // }
-        // return $next($request);
         $logged_in = false;
         if ($request->header('PHP_AUTH_USER', null) && $request->header('PHP_AUTH_PW', null)) {
             $username = $request->header('PHP_AUTH_USER');
@@ -30,7 +24,6 @@ class CustomAuthentication
 
             if ($username == config('auth.api.user') && $password == config('auth.api.password')) {
                 $logged_in = true;
-                Auth::loginUsingId(1,$remember = true);
             }
         }
     

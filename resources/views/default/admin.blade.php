@@ -8,12 +8,12 @@
     <meta name="author" content="">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0" />
     <link rel="icon"  type="image/png" href="/assets/icons/fontawesome/gray/32/user-circle.png">
-    <title>Admin | BYou</title>
+    <title>Admin | IAMBing</title>
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">-->
     <!-- Custom styles for this template -->
-    <link href="/assets/css/BYou.css" rel="stylesheet">
+    <link href="/assets/css/IAMBing.css" rel="stylesheet">
     <link href="/assets/css/toastr.min.css" rel="stylesheet">
     <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
 
@@ -38,7 +38,7 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="/admin" style="background: #004333;padding: 12px 0px 0px 18px;">
-            <h3 style="color:#fff;margin:0px;"><i class="fa fa-user-circle fa-fw"></i> BYou</h3>
+            <h3 style="color:#fff;margin:0px;"><i class="fa fa-user-circle fa-fw"></i> IAMBing</h3>
           </a>
             <ul class="nav navbar-nav  hidden-xs">
                 <li><a href="#"><h4 style="margin:0">{{$title}}</h4></a></li>
@@ -50,7 +50,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-          <li><a href="/"><h4 style="margin:0;">BYou Admin</h4></a>
+          <li><a href="/"><h4 style="margin:0;">IAMBing Admin</h4></a>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle user-info" data-toggle="dropdown" role="button">
                 <img class="gravatar" src="https://www.gravatar.com/avatar/{{ md5(Auth::user()->email) }}?d=mm" /> 
@@ -79,7 +79,7 @@
               @can('view_in_admin',App\Models\Configuration::class)
                   <li class="visible-xs-block @if($page=="configuration") active @endif"><a href="/admin/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
               @endcan
-              <li class="visible-xs-block"><a href="https://github.com/BinghamtonUniversity/BYou/wiki" target="_blank"><i class="fa fa-info fa-fw"></i>&nbsp; View Documentation</a></li>
+              <li class="visible-xs-block"><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-info fa-fw"></i>&nbsp; View Documentation</a></li>
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right visible-xs-block">
@@ -108,7 +108,7 @@
             @can('view_in_admin',App\Models\Configuration::class)
                 <li class="@if($page=="configuration") active @endif"><a href="/admin/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
             @endcan
-            <li><a href="https://github.com/BinghamtonUniversity/BYou/wiki" target="_blank"><i class="fa fa-fw fa-info"></i>&nbsp; View Documentation</a></li>
+            <li><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-fw fa-info"></i>&nbsp; View Documentation</a></li>
         </ul>
     </div>
     <div class="container-fluid" id="main-container">
