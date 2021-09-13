@@ -8,6 +8,7 @@ use App\Http\Controllers\SystemController;
 use App\Http\Controllers\EntitlementController;
 use App\Http\Controllers\EndpointController;
 use App\Http\Controllers\ConfigurationController;
+use App\Http\Controllers\CASController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,10 @@ use App\Http\Controllers\ConfigurationController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::any('/login', [CASController::class, 'login']);
+Route::get('/logout',[CASController::class, 'logout']);
+
 Route::group(['middleware'=>['custom.auth']], function () {
     
     Route::get('/', function () {

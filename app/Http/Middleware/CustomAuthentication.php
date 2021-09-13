@@ -19,26 +19,9 @@ class CustomAuthentication
 
     public function handle($request, Closure $next)
     {
-        // if (!Auth::check()) {
-        //     Auth::loginUsingId(1,$remember = true);
-        // }
-        // return $next($request);
-        $logged_in = false;
-        if ($request->header('PHP_AUTH_USER', null) && $request->header('PHP_AUTH_PW', null)) {
-            $username = $request->header('PHP_AUTH_USER');
-            $password = $request->header('PHP_AUTH_PW');
-
-            if ($username == config('auth.api.user') && $password == config('auth.api.password')) {
-                $logged_in = true;
-                Auth::loginUsingId(1,$remember = true);
-            }
+        if (!Auth::check()) {
+            return redirect('/login?redirect='.url()->current());
         }
-    
-        if ($logged_in === false) {
-            $headers = ['WWW-Authenticate' => 'Basic'];
-            return response()->make('Invalid credentials.', 401, $headers);
-        } else {
-            return $next($request);
-        }    
+        return $next($request);
     }
 }
