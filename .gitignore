@@ -13,3 +13,8 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
