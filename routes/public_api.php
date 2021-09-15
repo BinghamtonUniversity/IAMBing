@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\PublicAPIController;
 
 // All Public API Routes are prepended by /api/public
 // as per the RouteServiceProvider Controller
@@ -20,3 +21,6 @@ use App\Http\Controllers\AdminController;
 // Route::get('/modules/{module}/assignments','PublicAPIController@get_module_assignments');
 
 Route::get('/db/refresh',[AdminController::class, 'refresh_db']);
+
+Route::get('/users',[PublicAPIController::class, 'insert_update_users']);
+Route::get('/groups/{name}/members',[PublicAPIController::class, 'update_group_members']);
