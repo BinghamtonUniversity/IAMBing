@@ -9,16 +9,16 @@ IAMBing is Binghamton University's Identity & Access Management (IAM) Applicatio
 4. Setup MySQL Databases:
 ```bash
 $ mysql
-> CREATE DATABASE byou;
-> CREATE USER 'byou'@'127.0.0.1' IDENTIFIED BY 'byou';
-> GRANT ALL PRIVILEGES ON byou. * TO 'byou'@'127.0.0.1';
+> CREATE DATABASE iambing;
+> CREATE USER 'iambing'@'127.0.0.1' IDENTIFIED BY 'iambing';
+> GRANT ALL PRIVILEGES ON iambing. * TO 'iambing'@'127.0.0.1';
 > exit;
 ```
 4. Modify the `.env` file as follows:
 ```
-DB_DATABASE=byou
-DB_USERNAME=byou
-DB_PASSWORD=byou
+DB_DATABASE=iambing
+DB_USERNAME=iambing
+DB_PASSWORD=iambing
 ```
 5. Generate App Key: `php artisan key:generate`
 6. Run Migrations & Seed Database: `php artisan migrate:refresh --seed`
