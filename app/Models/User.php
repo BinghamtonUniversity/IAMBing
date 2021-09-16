@@ -12,10 +12,10 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['unique_id','first_name', 'last_name', 'default_username'];
-    protected $hidden = ['password', 'remember_token','created_at','updated_at'];
-    protected $appends = ['permissions'];
-    protected $with = ['user_permissions'];
+    protected $fillable = ['default_username', 'ids', 'attributes'];
+    protected $hidden = ['user_unique_ids','user_attributes', 'user_permissiins', 'password', 'remember_token','created_at','updated_at'];
+    protected $appends = ['ids','permissions','attributes'];
+    protected $with = ['user_unique_ids','user_attributes','user_permissions'];
 
     public function group_memberships(){
         return $this->hasMany(GroupMember::class,'user_id');
@@ -35,6 +35,48 @@ class User extends Authenticatable
 
     public function systems() {
         return $this->belongsToMany(System::class,'accounts')->withPivot('username');
+    }
+
+    public function user_unique_ids() {
+        return $this->hasMany(UserUniqueID::class,'user_id');
+    }
+
+    public function getIdsAttribute() {
+        $ids = [];
+        foreach($this->user_unique_ids as $id) {
+            $ids[$id['name']] = $id['value'];
+        }
+        return $ids;
+    }
+
+    public function setIdsAttribute($ids) {
+        foreach($ids as $name => $value) {
+            UserUniqueID::updateOrCreate(
+                ['user_id'=>$this->id, 'name'=>$name],
+                ['value' => $value]
+            );
+        }
+    }
+
+    public function user_attributes() {
+        return $this->hasMany(UserAttribute::class,'user_id');
+    }
+
+    public function getAttributesAttribute() {
+        $attributes = [];
+        foreach($this->user_attributes as $attribute) {
+            $attributes[$attribute['name']] = $attribute['value'];
+        }
+        return $attributes;
+    }
+
+    public function setAttributesAttribute($ids) {
+        foreach($ids as $name => $value) {
+            UserAttribute::updateOrCreate(
+                ['user_id'=>$this->id, 'name'=>$name],
+                ['value' => $value]
+            );
+        }
     }
 
     // Converts User Permissions to Array

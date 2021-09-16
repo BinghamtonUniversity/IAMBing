@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateGroupsTable extends Migration
+class CreateUserUniqueIdsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,14 @@ class CreateGroupsTable extends Migration
      */
     public function up()
     {
-        Schema::create('groups', function (Blueprint $table) {
+        Schema::create('user_unique_ids', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id')->index();
             $table->string('name');
-            $table->text('description'); 
-            $table->string('affiliation');
-            $table->unsignedInteger('order')->default(4294967295);
-            $table->unsignedBigInteger('user_id')->index(); // Owner
+            $table->string('value')->nullable()->default(null);
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->unique('name', 'value');
+            $table->index(['user_id', 'name']);
         });
     }
 
@@ -32,6 +31,6 @@ class CreateGroupsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('groups');
+        Schema::dropIfExists('user_unique_ids');
     }
 }

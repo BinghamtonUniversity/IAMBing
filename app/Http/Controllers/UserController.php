@@ -58,9 +58,9 @@ class UserController extends Controller
         $search = []; $users = [];
         if (count($search_elements_parsed) === 1 && $search_elements_parsed[0]!='') {
             $search[0] = $search_elements_parsed[0];
-            $users = User::select('id','unique_id','first_name','last_name','default_username')
+            $users = User::select('id','first_name','last_name','default_username')
                 ->where(function ($query) use ($search) {
-                    $query->where('unique_id',$search[0])
+                    $query//->where('unique_id',$search[0])
                         ->orWhere('id',$search[0])
                         ->orWhere('first_name','like',$search[0].'%')
                         ->orWhere('last_name','like',$search[0].'%')
@@ -70,7 +70,7 @@ class UserController extends Controller
         } else if (count($search_elements_parsed) > 1) {
             $search[0] = $search_elements_parsed[0];
             $search[1] = $search_elements_parsed[count($search_elements_parsed)-1];
-            $users = User::select('id','unique_id','first_name','last_name','default_username')
+            $users = User::select('id','first_name','last_name','default_username')
                 ->where(function ($query) use ($search) {
                     $query->where(function ($query) use ($search) {
                         $query->where('first_name','like',$search[0].'%')
@@ -83,7 +83,7 @@ class UserController extends Controller
                     ->limit(25)->get()->toArray();
         }
         foreach($users as $index => $user) {
-            $users[$index] = array_intersect_key($user, array_flip(['id','unique_id','first_name','last_name','default_username']));
+            $users[$index] = array_intersect_key($user, array_flip(['id','first_name','last_name','default_username']));
         }
 
         return $users;

@@ -1,23 +1,11 @@
 gform.options = {autoFocus:false};
-user_form_update_attributes = [
+user_form_attributes = [
     {type:"hidden", name:"id"},
     {type:"checkbox", name:"active", label:"Active", value:true},
-    {type:"text", name:"unique_id", label:"Unique ID", required:false},
-    {type:"text", name:"first_name", label:"First Name", required:true},
-    {type:"text", name:"last_name", label:"Last Name", required:true},
-    {type:"checkbox",label: "Modify Default Username",name: "modify_username",value: false,options: [{value: false},{value: true}]},
-    {type:"text", name:"default_username", label:"Default Username", required:true, edit:[{type:'matches',name:'modify_username',value:true}]},
-];
-
-user_form_create_attributes = [
-    {type:"hidden", name:"id"},
-    {type:"checkbox", name:"active", label:"Active", value:true},
-    {type:"text", name:"unique_id", label:"Unique ID", required:false},
-    {type:"text", name:"first_name", label:"First Name", required:true},
-    {type:"text", name:"last_name", label:"Last Name", required:true},
     {type:"checkbox",label: "Automatically Generate Default Username",name: "specify_username",value: true,options: [{value: false},{value: true}]},
     {type:"text", name:"default_username", label:"Default Username", show:[{type:'matches',name:'specify_username',value:false}], required:'show'},
 ];
+
 
 $('#adminDataGrid').html(`
 <div class="row">
@@ -101,7 +89,7 @@ user_accounts_template = `
 // Create New User
 $('.user-new').on('click',function() {
     new gform(
-        {"fields":user_form_create_attributes,
+        {"fields":user_form_attributes,
         "title":"Create New User",
         "actions":[
             {"type":"save"}
@@ -127,7 +115,7 @@ var manage_user = function(user_id) {
             $('.user-entitlements').html(gform.m(user_entitlements_template,data));
             // Edit User
             new gform(
-                {"fields":user_form_update_attributes,
+                {"fields":user_form_attributes,
                 "el":".user-edit",
                 "data":data,
                 "actions":[
@@ -226,24 +214,32 @@ var manage_user = function(user_id) {
     }
 }
 
-new gform(
-    {"fields":[
-        {
-            "type": "user",
-            "label": "Search Existing Users",
-            "name": "user",
-        }    
-    ],
-    "el":".user-search",
-    "actions":[
-        {"type":"save","label":"Submit","modifiers":"btn btn-primary"}
-    ]
-}
-).on('change',function(form_event) {
-    form_data = form_event.form.get();
-    if (form_data.user == null || form_data.user == '') {
-        $('.user-view').hide();
+ajax.get('/api/configuration/',function(data) {
+    var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(data,{name:'user_unique_ids'}).config};
+    user_form_attributes.push(unique_ids_fields);
+    var user_attributes_fields = {type: "fieldset",label:'Attributes',name: "attributes",fields:_.find(data,{name:'user_attributes'}).config};
+    user_form_attributes.push(user_attributes_fields);
+    console.log(user_form_attributes);
+    new gform(
+        {"fields":[
+            {
+                "type": "user",
+                "label": "Search Existing Users",
+                "name": "user",
+            }    
+        ],
+        "el":".user-search",
+        "actions":[
+            {"type":"save","label":"Submit","modifiers":"btn btn-primary"}
+        ]
     }
-}).on('save',function(form_event) {
-    manage_user(form_event.form.get().user);
+    ).on('change',function(form_event) {
+        form_data = form_event.form.get();
+        if (form_data.user == null || form_data.user == '') {
+            $('.user-view').hide();
+        }
+    }).on('save',function(form_event) {
+        manage_user(form_event.form.get().user);
+    });
 });
+

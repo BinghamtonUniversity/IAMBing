@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\UserUniqueIDs;
 
 class CASController extends Controller {
     public function login(Request $request) {
@@ -14,15 +15,21 @@ class CASController extends Controller {
             }
             cas()->authenticate();
         }
-        $user_attributes = cas()->getAttributes();  
-        $user = User::where('unique_id',$user_attributes['UDC_IDENTIFIER'])->first();
+        $user_attributes = cas()->getAttributes();
+        $user = User::whereHas('user_unique_ids', function($q) use ($user_attributes){
+            $q->where('name','bnumber')->where('value',$user_attributes['UDC_IDENTIFIER']);
+         })->first();
         if (is_null($user)) {
             $user = new User();
+            $user->save();
+            // dd($user_attributes);
+            $user->update([
+                ['ids'=>['bnumber'=>$user_attributes['UDC_IDENTIFIER']]],
+                ['attributes'=>['first_name'=>$user_attributes['firstname'],'last_name'=>$user_attributes['lastname'],'email'=>$user_attributes['mail']]]
+            ]);
         }
-        $user->unique_id = $user_attributes['UDC_IDENTIFIER'];
-        $user->first_name = $user_attributes['firstname'];
-        $user->last_name = $user_attributes['lastname'];
-        $user->save();
+
+
         Auth::login($user,true);
         if ($request->has('redirect')) {
             return redirect($request->redirect);
