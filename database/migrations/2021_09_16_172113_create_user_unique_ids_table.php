@@ -19,7 +19,7 @@ class CreateUserUniqueIdsTable extends Migration
             $table->string('name');
             $table->string('value')->nullable()->default(null);
             $table->timestamps();
-            $table->unique('name', 'value');
+            $table->unique(['name', 'value']);
             $table->index(['user_id', 'name']);
         });
     }

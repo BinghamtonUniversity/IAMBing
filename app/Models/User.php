@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['default_username', 'ids', 'attributes'];
+    protected $fillable = ['default_username', 'ids', 'attributes', 'first_name', 'last_name'];
     protected $hidden = ['user_unique_ids','user_attributes', 'user_permissiins', 'password', 'remember_token','created_at','updated_at'];
     protected $appends = ['ids','permissions','attributes'];
     protected $with = ['user_unique_ids','user_attributes','user_permissions'];
@@ -50,6 +50,7 @@ class User extends Authenticatable
     }
 
     public function setIdsAttribute($ids) {
+        $this->save();
         foreach($ids as $name => $value) {
             UserUniqueID::updateOrCreate(
                 ['user_id'=>$this->id, 'name'=>$name],
@@ -71,6 +72,7 @@ class User extends Authenticatable
     }
 
     public function setAttributesAttribute($ids) {
+        $this->save();
         foreach($ids as $name => $value) {
             UserAttribute::updateOrCreate(
                 ['user_id'=>$this->id, 'name'=>$name],
@@ -89,7 +91,7 @@ class User extends Authenticatable
         return $permissions_arr;
     }
 
-    public function username_generate($template, $iterator = 1) {
+    public function username_generate($template, $iterator = 0) {
         // Derive Username
         $obj = [
             'first_name' => str_split(strtolower($this->first_name), 1),
@@ -128,7 +130,7 @@ class User extends Authenticatable
             // Create and Set New Upsername
             if (!isset($user->default_username) || $user->default_username === '' || $user->default_username === null) {
                 $is_taken = false;
-                $iterator = 1;
+                $iterator = 0;
                 $configuration = Configuration::where('name','default_username_template')->first();
                 if (!is_null($configuration)) {
                     $template = $configuration->config;

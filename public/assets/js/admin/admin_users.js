@@ -2,7 +2,9 @@ gform.options = {autoFocus:false};
 user_form_attributes = [
     {type:"hidden", name:"id"},
     {type:"checkbox", name:"active", label:"Active", value:true},
-    {type:"checkbox",label: "Automatically Generate Default Username",name: "specify_username",value: true,options: [{value: false},{value: true}]},
+    {type:"text", name:"first_name", label:"First Name", required:true},
+    {type:"text", name:"last_name", label:"Last Name", required:true},
+    // {type:"checkbox",label: "Automatically Generate Default Username",name: "specify_username",value: true,options: [{value: false},{value: true}]},
     {type:"text", name:"default_username", label:"Default Username", show:[{type:'matches',name:'specify_username',value:false}], required:'show'},
 ];
 
@@ -37,6 +39,10 @@ $('#adminDataGrid').html(`
             <div class="panel-body user-groups"></div>
         </div>
         <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">Affiliations</h3></div>
+            <div class="panel-body user-affiliations"></div>
+        </div>
+        <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">Entitlements</h3></div>
             <div class="panel-body user-entitlements"></div>
         </div>
@@ -59,6 +65,18 @@ user_groups_template = `
     <div class="alert alert-warning">No Group Memberships</div>
 {{/pivot_groups}}
 <a class="btn btn-primary" href="/admin/users/{{id}}/groups">Manage Groups</a>
+`;
+
+user_affiliations_template = `
+<div>Primary Affiliation: {{primary_affiliation}}</div>
+<ul style="margin-top:10px;">
+    {{#affiliations}}
+        <li>{{.}}</li>
+    {{/affiliations}}
+</ul>
+{{^affiliations}}
+    <div class="alert alert-warning">No Affiliations</div>
+{{/affiliations}}
 `;
 
 user_entitlements_template = `
@@ -111,6 +129,7 @@ var manage_user = function(user_id) {
             $('.user-view').show();
             // Show Groups
             $('.user-groups').html(gform.m(user_groups_template,data));
+            $('.user-affiliations').html(gform.m(user_affiliations_template,data));
             $('.user-accounts').html(gform.m(user_accounts_template,data));
             $('.user-entitlements').html(gform.m(user_entitlements_template,data));
             // Edit User
@@ -219,7 +238,7 @@ ajax.get('/api/configuration/',function(data) {
     user_form_attributes.push(unique_ids_fields);
     var user_attributes_fields = {type: "fieldset",label:'Attributes',name: "attributes",fields:_.find(data,{name:'user_attributes'}).config};
     user_form_attributes.push(user_attributes_fields);
-    console.log(user_form_attributes);
+    // console.log(user_form_attributes);
     new gform(
         {"fields":[
             {

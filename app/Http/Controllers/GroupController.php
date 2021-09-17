@@ -30,6 +30,14 @@ class GroupController extends Controller
         $group->update($request->all());
         return $group;
     }
+
+    public function update_groups_order(Request $request){
+        foreach($request->order as $order) {
+            Group::where('id',$order['id'])->update(['order'=>$order['order']]);
+        }
+        return true;
+    }
+
     public function delete_group(Request $request, Group $group){
         GroupMember::where('group_id',$group->id)->delete();
         $group->delete();

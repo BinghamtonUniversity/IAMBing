@@ -28,6 +28,8 @@ class UserController extends Controller
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
         $entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
         $user->entitlements = Entitlement::whereIn('id',$entitlement_ids)->get();
+        $user->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->distinct()->get()->pluck('affiliation');
+        $user->primary_affiliation = isset($user->affiliations[0])?$user->affiliations[0]:null;
         return $user;
     }
 

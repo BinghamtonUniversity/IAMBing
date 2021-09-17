@@ -15,6 +15,12 @@ $('#adminDataGrid').html(`
         These are the unique user IDs which can be populated in IAMBing
     </div>
     <div class="user_unique_ids"></div>
+
+    <div class="alert alert-info">
+        These are the various affiliations a person may have.  <a href="https://infrastructure.tamu.edu/directory/attribute/attribute_eduPersonAffiliation.html">More Info</a>
+    </div>
+    <div class="affiliations"></div>
+
 `);
 
 var gforms = {};
@@ -39,7 +45,7 @@ gforms.user_attributes = new gform(
     {"fields":[
         {type:"hidden", name:"id"},
         {type:"hidden", name:"name", value:'user_attributes'},
-        {type: "fieldset",label:'Attribute',columns:4,name: "config",array:{max:100},fields: 
+        {type: "fieldset",label:'Attribute',columns:3,name: "config",array:{max:100},fields: 
             [{label: "Label",name: "label",},{label: "Name",name: "name"}]
     }],
     "el":".user_attributes",
@@ -58,7 +64,7 @@ gforms.user_unique_ids = new gform(
     {"fields":[
         {type:"hidden", name:"id"},
         {type:"hidden", name:"name", value:'user_unique_ids'},
-        {type: "fieldset",label:'Unique ID',columns:4,name: "config",array:{max:100},fields: 
+        {type: "fieldset",label:'Unique ID',columns:3,name: "config",array:{max:100},fields: 
             [{label: "Label",name: "label",},{label: "Name",name: "name"}]
 	    }],
     "el":".user_unique_ids",
@@ -72,6 +78,25 @@ gforms.user_unique_ids = new gform(
         toastr.success('Configuration Updated');
     });
 });
+
+gforms.affiliations = new gform(
+    {"fields":[
+        {type:"hidden", name:"id"},
+        {type:"hidden", name:"name", value:'affiliations'},
+        {label: "Affiliation",name: "config", array:{max:100},columns:3}
+	],
+    "el":".affiliations",
+    "actions":[
+        {"type":"save","label":"Save","modifiers":"btn btn-primary"}
+    ]
+}
+).on('save',function(e) {
+    var form_data = e.form.get();
+    ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
+        toastr.success('Configuration Updated');
+    });
+});
+
 
 ajax.get('/api/configuration/',function(data) {
     _.each(data,function(item) {

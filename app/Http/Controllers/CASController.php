@@ -20,16 +20,14 @@ class CASController extends Controller {
             $q->where('name','bnumber')->where('value',$user_attributes['UDC_IDENTIFIER']);
          })->first();
         if (is_null($user)) {
-            $user = new User();
-            $user->save();
-            // dd($user_attributes);
-            $user->update([
-                ['ids'=>['bnumber'=>$user_attributes['UDC_IDENTIFIER']]],
-                ['attributes'=>['first_name'=>$user_attributes['firstname'],'last_name'=>$user_attributes['lastname'],'email'=>$user_attributes['mail']]]
+            $user = new User([
+                'first_name'=>$user_attributes['firstname'],
+                'last_name'=>$user_attributes['lastname'],
+                'attributes'=>['email'=>$user_attributes['mail']],
+                'ids'=>['bnumber'=>$user_attributes['UDC_IDENTIFIER']],
             ]);
+            $user->save();    
         }
-
-
         Auth::login($user,true);
         if ($request->has('redirect')) {
             return redirect($request->redirect);

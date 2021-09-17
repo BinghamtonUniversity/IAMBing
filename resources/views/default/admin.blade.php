@@ -173,6 +173,7 @@
     <script src='/assets/js/vendor/GrapheneDataGrid.min.js'></script> 
     <script src='/assets/js/vendor/moment.js'></script> 
     <script src='/assets/js/vendor/bootstrap-datetimepicker.min.js'></script> 
+    <script src='/assets/js/vendor/sortable.js'></script> 
     <script src="/assets/js/admin/admin.js"></script>
     <script>
         @if(isset($ids)) window.ids={!!json_encode($ids)!!}; @endif 

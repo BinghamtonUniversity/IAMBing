@@ -17,7 +17,7 @@ class CreateGroupsTable extends Migration
             $table->id();
             $table->string('name');
             $table->text('description'); 
-            $table->string('affiliation');
+            $table->string('affiliation')->nullable()->default(null);
             $table->unsignedInteger('order')->default(4294967295);
             $table->unsignedBigInteger('user_id')->index(); // Owner
             $table->timestamps();
