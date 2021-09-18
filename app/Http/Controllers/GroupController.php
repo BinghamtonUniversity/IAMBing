@@ -24,11 +24,11 @@ class GroupController extends Controller
     public function add_group(Request $request){
         $group = new Group($request->all());
         $group->save();
-        return $group;
+        return Group::where('id',$group->id)->with('owner')->first();
     }
     public function update_group(Request $request, Group $group){
         $group->update($request->all());
-        return $group;
+        return Group::where('id',$group->id)->with('owner')->first();
     }
 
     public function update_groups_order(Request $request){

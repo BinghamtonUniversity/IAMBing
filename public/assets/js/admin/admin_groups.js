@@ -3,8 +3,8 @@ ajax.get('/api/configuration/',function(app_config) {
     var group_form_fields = [
         {type:"hidden", name:"id"},
         {type:"text", name:"name", label:"Name",required:true},
-        {type:"textarea", name:"description", label:"Description",required:true},
-        {type:"user", name:"user_id",required:true, label:"Group Owner", template:"{{#attributes.owner}}{{attributes.owner.first_name}} {{attributes.owner.last_name}}{{/attributes.owner}}"},
+        {type:"textarea", name:"description", label:"Description",required:false},
+        {type:"user", name:"user_id",required:true, label:"Group Owner", template:"{{#attributes.owner}}{{first_name}} {{last_name}}{{/attributes.owner}}"},
         {type:"select",label: "Affiliation",name:"affiliation",options:affiliate_options}
     ];
 

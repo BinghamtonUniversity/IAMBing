@@ -22,13 +22,13 @@ class UserController extends Controller
     }
 
     public function get_user(Request $request, User $user) {
-        $user = User::where('id',$user->id)->with('pivot_groups')->with('accounts')->with('systems')->first();
+        $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->first();
 
         // TJC -- Clean THIS UP!
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
         $entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
         $user->entitlements = Entitlement::whereIn('id',$entitlement_ids)->get();
-        $user->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->distinct()->get()->pluck('affiliation');
+        $user->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique();
         $user->primary_affiliation = isset($user->affiliations[0])?$user->affiliations[0]:null;
         return $user;
     }
@@ -120,7 +120,7 @@ class UserController extends Controller
     public function add_account(User $user, Request $request) {
         $system = System::where('id',$request->system_id)->first();
         if ($request->has('username')) {
-            $account = $user->add_account($system, $username);
+            $account = $user->add_account($system, $request->username);
         } else {
             $account = $user->add_account($system);
         }        

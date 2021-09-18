@@ -6,13 +6,13 @@ dashboard_template = `
             <div class="panel-heading"><h3 class="panel-title">My Groups</h3></div>
             <div class="panel-body">
                 <ul>
-                    {{#pivot_groups}}
+                    {{#groups}}
                         <li><a href="/admin/groups/{{id}}/members">{{name}}</a></li>
-                    {{/pivot_groups}}
+                    {{/groups}}
                 </ul>
-                {{^pivot_groups}}
+                {{^groups}}
                     <div class="alert alert-warning">No Group Memberships</div>
-                {{/pivot_groups}}
+                {{/groups}}
             </div>
         </div>
         <div class="panel panel-default">

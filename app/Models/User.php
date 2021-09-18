@@ -21,8 +21,8 @@ class User extends Authenticatable
         return $this->hasMany(GroupMember::class,'user_id');
     }
 
-    public function pivot_groups() {
-        return $this->belongsToMany(Group::class,'group_members');
+    public function groups() {
+        return $this->belongsToMany(Group::class,'group_members')->orderBy('order');
     }
 
     public function user_permissions(){
@@ -34,7 +34,7 @@ class User extends Authenticatable
     }
 
     public function systems() {
-        return $this->belongsToMany(System::class,'accounts')->withPivot('username');
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('username');
     }
 
     public function user_unique_ids() {
@@ -122,6 +122,7 @@ class User extends Authenticatable
             $account->username = $this->username_generate($template);
         }
         $account->save();
+        return $account;
     }
 
     protected static function booted()

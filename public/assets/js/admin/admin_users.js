@@ -57,13 +57,13 @@ $('#adminDataGrid').html(`
 
 user_groups_template = `
 <ul>
-    {{#pivot_groups}}
+    {{#groups}}
         <li><a href="/admin/groups/{{id}}/members">{{name}}</a></li>
-    {{/pivot_groups}}
+    {{/groups}}
 </ul>
-{{^pivot_groups}}
+{{^groups}}
     <div class="alert alert-warning">No Group Memberships</div>
-{{/pivot_groups}}
+{{/groups}}
 <a class="btn btn-primary" href="/admin/users/{{id}}/groups">Manage Groups</a>
 `;
 
