@@ -62,11 +62,13 @@ class UserController extends Controller
             $search[0] = $search_elements_parsed[0];
             $users = User::select('id','first_name','last_name','default_username')
                 ->where(function ($query) use ($search) {
-                    $query//->where('unique_id',$search[0])
-                        ->orWhere('id',$search[0])
+                    $query->where('id',$search[0])
                         ->orWhere('first_name','like',$search[0].'%')
                         ->orWhere('last_name','like',$search[0].'%')
-                        ->orWhere('default_username','like',$search[0].'%');
+                        ->orWhere('default_username','like',$search[0].'%')
+                        ->orWhereHas('user_unique_ids', function($q) use ($search){
+                            $q->where('value','like',$search[0].'%');
+                        });
                 })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
                     ->limit(25)->get()->toArray();
         } else if (count($search_elements_parsed) > 1) {
