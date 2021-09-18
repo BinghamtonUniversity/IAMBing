@@ -1,11 +1,10 @@
 gform.options = {autoFocus:false};
 user_form_attributes = [
-    {type:"hidden", name:"id"},
     {type:"checkbox", name:"active", label:"Active", value:true},
+    {type:"text", name:"id", label: 'IAMBing ID', edit:false},
     {type:"text", name:"first_name", label:"First Name", required:true},
     {type:"text", name:"last_name", label:"Last Name", required:true},
-    // {type:"checkbox",label: "Automatically Generate Default Username",name: "specify_username",value: true,options: [{value: false},{value: true}]},
-    {type:"text", name:"default_username", label:"Default Username", show:[{type:'matches',name:'specify_username',value:false}], required:'show'},
+    {type:"text", name:"default_username", label:"Default Username", required:false, help:'Leave blank to define automatically'},
 ];
 
 
