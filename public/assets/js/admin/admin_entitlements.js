@@ -31,7 +31,7 @@ ajax.get('/api/entitlements',function(data) {
             grid_event.model.undo();
         });
     }).on("model:manage_groups",function(grid_event) {
-        window.location = '/admin/entitlements/'+grid_event.model.attributes.id+'/groups';
+        window.location = '/entitlements/'+grid_event.model.attributes.id+'/groups';
     }).on("model:deleted",function(grid_event) {
         ajax.delete('/api/entitlements/'+grid_event.model.attributes.id,{},function(data) {},function(data) {
             grid_event.model.undo();

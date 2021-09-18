@@ -37,7 +37,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/admin" style="background: #004333;padding: 12px 0px 0px 18px;">
+          <a class="navbar-brand" href="/" style="background: #004333;padding: 12px 0px 0px 18px;">
             <h3 style="color:#fff;margin:0px;"><i class="fa fa-user-circle fa-fw"></i> IAMBing</h3>
           </a>
             <ul class="nav navbar-nav  hidden-xs">
@@ -62,22 +62,22 @@
                 <li><a href="{{ url('/logout') }}"><i class="fa fa-times-circle"></i> Logout</a></li>
               </ul>
               @can('view_in_admin',App\Models\User::class)
-                  <li class=" visible-xs-block @if($page=="users") active @endif"><a href="/admin/users"><i class="fa fa-user fa-fw"></i>&nbsp; Users</a></li>
+                  <li class=" visible-xs-block @if($page=="users") active @endif"><a href="/users"><i class="fa fa-user fa-fw"></i>&nbsp; Users</a></li>
               @endcan
               @can('view_in_admin',App\Models\Group::class)
-                  <li class="visible-xs-block @if($page=="groups") active @endif"><a href="/admin/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
+                  <li class="visible-xs-block @if($page=="groups") active @endif"><a href="/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
               @endcan
               @can('view_in_admin',App\Models\System::class)
-                  <li class="visible-xs-block @if($page=="systems") active @endif"><a href="/admin/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
+                  <li class="visible-xs-block @if($page=="systems") active @endif"><a href="/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
               @endcan
               @can('view_in_admin',App\Models\Entitlement::class)
-                  <li class="visible-xs-block @if($page=="entitlements") active @endif"><a href="/admin/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
+                  <li class="visible-xs-block @if($page=="entitlements") active @endif"><a href="/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
               @endcan
               @can('view_in_admin',App\Models\Endpoint::class)
-                  <li class="visible-xs-block @if($page=="endpoints") active @endif"><a href="/admin/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>
+                  <li class="visible-xs-block @if($page=="endpoints") active @endif"><a href="/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>
               @endcan
               @can('view_in_admin',App\Models\Configuration::class)
-                  <li class="visible-xs-block @if($page=="configuration") active @endif"><a href="/admin/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
+                  <li class="visible-xs-block @if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
               @endcan
               <li class="visible-xs-block"><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-info fa-fw"></i>&nbsp; View Documentation</a></li>
             </li>
@@ -91,22 +91,22 @@
     <div class="col-sm-3 col-md-2 sidebar">
         <ul class="nav nav-sidebar">
             @can('view_in_admin',App\Models\User::class)
-                <li class="@if($page=="users") active @endif"><a href="/admin/users"><i class="fa fa-user fa-fw"></i>&nbsp; Users</a></li>
+                <li class="@if($page=="users") active @endif"><a href="/users"><i class="fa fa-user fa-fw"></i>&nbsp; Users</a></li>
             @endcan
             @can('view_in_admin',App\Models\Group::class)
-                <li class="@if($page=="groups") active @endif"><a href="/admin/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
+                <li class="@if($page=="groups") active @endif"><a href="/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
             @endcan
             @can('view_in_admin',App\Models\System::class)
-                <li class="@if($page=="systems") active @endif"><a href="/admin/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
+                <li class="@if($page=="systems") active @endif"><a href="/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
             @endcan
             @can('view_in_admin',App\Models\Entitlement::class)
-                <li class="@if($page=="entitlements") active @endif"><a href="/admin/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
+                <li class="@if($page=="entitlements") active @endif"><a href="/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
             @endcan
             @can('view_in_admin',App\Models\Endpoint::class)
-                <li class="@if($page=="endpoints") active @endif"><a href="/admin/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>
+                <li class="@if($page=="endpoints") active @endif"><a href="/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>
             @endcan
             @can('view_in_admin',App\Models\Configuration::class)
-                <li class="@if($page=="configuration") active @endif"><a href="/admin/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
+                <li class="@if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
             @endcan
             <li><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-fw fa-info"></i>&nbsp; View Documentation</a></li>
         </ul>
@@ -121,7 +121,7 @@
                     <ol class="breadcrumb">
                         @if (isset($ids))
                             @foreach($crumbs as $index => $crumb)
-                                <li class="breadcrumb-item"><a href="/admin<?php
+                                <li class="breadcrumb-item"><a href="/<?php
                                     for($i=0;$i<=$index;$i++) {
                                         echo (isset($ids[$i-1])?('/'.$ids[$i-1]):'').'/'.$crumbs[$i];
                                     }

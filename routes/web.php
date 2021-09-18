@@ -26,28 +26,21 @@ Route::get('/logout',[CASController::class, 'logout']);
 
 Route::group(['middleware'=>['custom.auth']], function () {
     
-    Route::get('/', function () {
-        return view('welcome');
-    });
-    Route::get('/test',[AdminController::class, 'test']);
-
     /* Admin Pages */
-    Route::group(['prefix' => 'admin'], function () {
-        Route::get('/', [AdminController::class, 'admin']);
-        Route::get('/users', [AdminController::class, 'users']);
-        Route::get('/users/{user}/accounts', [AdminController::class, 'user_accounts']);
-        Route::get('/users/{user}/groups', [AdminController::class, 'user_groups']);
-        Route::get('/users/{user}/permissions', [AdminController::class, 'user_permissions']);
-        Route::get('/groups', [AdminController::class, 'groups']);
-        Route::get('/groups/{group}/members', [AdminController::class, 'group_members']);
-        Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins']);
-        Route::get('/groups/{group}/entitlements', [AdminController::class, 'group_entitlements']);
-        Route::get('/systems', [AdminController::class, 'systems']);
-        Route::get('/entitlements', [AdminController::class, 'entitlements']);
-        Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups']);
-        Route::get('/endpoints', [AdminController::class, 'endpoints']);
-        Route::get('/configuration', [AdminController::class, 'configuration']);
-    });
+    Route::get('/', [AdminController::class, 'admin']);
+    Route::get('/users', [AdminController::class, 'users']);
+    Route::get('/users/{user}/accounts', [AdminController::class, 'user_accounts']);
+    Route::get('/users/{user}/groups', [AdminController::class, 'user_groups']);
+    Route::get('/users/{user}/permissions', [AdminController::class, 'user_permissions']);
+    Route::get('/groups', [AdminController::class, 'groups']);
+    Route::get('/groups/{group}/members', [AdminController::class, 'group_members']);
+    Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins']);
+    Route::get('/groups/{group}/entitlements', [AdminController::class, 'group_entitlements']);
+    Route::get('/systems', [AdminController::class, 'systems']);
+    Route::get('/entitlements', [AdminController::class, 'entitlements']);
+    Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups']);
+    Route::get('/endpoints', [AdminController::class, 'endpoints']);
+    Route::get('/configuration', [AdminController::class, 'configuration']);
 
     Route::group(['prefix' => 'api'], function () {
         /* User Methods */

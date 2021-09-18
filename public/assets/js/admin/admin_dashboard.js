@@ -7,7 +7,7 @@ dashboard_template = `
             <div class="panel-body">
                 <ul>
                     {{#groups}}
-                        <li><a href="/admin/groups/{{id}}/members">{{name}}</a></li>
+                        <li><a href="/groups/{{id}}/members">{{name}}</a></li>
                     {{/groups}}
                 </ul>
                 {{^groups}}

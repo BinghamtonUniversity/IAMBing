@@ -58,13 +58,13 @@ $('#adminDataGrid').html(`
 user_groups_template = `
 <ul>
     {{#groups}}
-        <li><a href="/admin/groups/{{id}}/members">{{name}}</a></li>
+        <li><a href="/groups/{{id}}/members">{{name}}</a></li>
     {{/groups}}
 </ul>
 {{^groups}}
     <div class="alert alert-warning">No Group Memberships</div>
 {{/groups}}
-<a class="btn btn-primary" href="/admin/users/{{id}}/groups">Manage Groups</a>
+<a class="btn btn-primary" href="/users/{{id}}/groups">Manage Groups</a>
 `;
 
 user_affiliations_template = `
@@ -100,7 +100,7 @@ user_accounts_template = `
 {{^systems}}
     <div class="alert alert-warning">No Accounts</div>
 {{/systems}}
-<a class="btn btn-primary" href="/admin/users/{{id}}/accounts">Manage Accounts</a>
+<a class="btn btn-primary" href="/users/{{id}}/accounts">Manage Accounts</a>
 `;
 
 

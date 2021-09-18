@@ -45,11 +45,11 @@ ajax.get('/api/configuration/',function(app_config) {
                 grid_event.model.undo();
             });
         }).on("model:manage_members",function(grid_event) {
-            window.location = '/admin/groups/'+grid_event.model.attributes.id+'/members';
+            window.location = '/groups/'+grid_event.model.attributes.id+'/members';
         }).on("model:manage_entitlements",function(grid_event) {
-            window.location = '/admin/groups/'+grid_event.model.attributes.id+'/entitlements';
+            window.location = '/groups/'+grid_event.model.attributes.id+'/entitlements';
         }).on("model:manage_admins",function(grid_event) {
-            window.location = '/admin/groups/'+grid_event.model.attributes.id+'/admins';
+            window.location = '/groups/'+grid_event.model.attributes.id+'/admins';
         }).on('model:bulk_add',function(grid_event){
 
             new gform({
