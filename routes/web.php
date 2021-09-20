@@ -32,6 +32,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/users/{user}/accounts', [AdminController::class, 'user_accounts']);
     Route::get('/users/{user}/groups', [AdminController::class, 'user_groups']);
     Route::get('/users/{user}/permissions', [AdminController::class, 'user_permissions']);
+    Route::get('/users/{user}/entitlements', [AdminController::class, 'user_entitlements']);
     Route::get('/groups', [AdminController::class, 'groups']);
     Route::get('/groups/{group}/members', [AdminController::class, 'group_members']);
     Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins']);
@@ -59,6 +60,10 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::post('/users/{user}/accounts',[UserController::class,'add_account'])->middleware('can:manage_users,App\Models\User');
         Route::delete('/users/{user}/accounts/{account}',[UserController::class,'delete_account'])->middleware('can:manage_users,App\Models\User');
         Route::get('/users/{user}/groups',[UserController::class,'get_groups']);
+        Route::get('/users/{user}/entitlements',[UserController::class,'get_entitlements']);
+        Route::post('/users/{user}/entitlements',[UserController::class,'add_entitlement']);
+        Route::put('/users/{user}/entitlements/{user_entitlement}',[UserController::class,'update_entitlement']);
+        Route::get('/users/{user}/recalculate',[UserController::class,'recalculate']);
 
         /* Group Methods */
         Route::get('/groups',[GroupController::class,'get_all_groups'])->middleware('can:view_in_admin,App\Models\Group');

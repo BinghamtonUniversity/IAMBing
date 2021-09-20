@@ -79,14 +79,39 @@ user_affiliations_template = `
 `;
 
 user_entitlements_template = `
+<div class="col-sm-6">
+<h5>Calculated Entitlements</h5>
+<ul>
+    {{#calculated_entitlements}}
+        <li>{{name}}</li>
+    {{/calculated_entitlements}}
+</ul>
+{{^calculated_entitlements}}
+    <div class="alert alert-warning">No Calculated Entitlements</div>
+{{/calculated_entitlements}}
+</div>
+<div class="col-sm-6">
+<h5>Enforced Entitlements</h5>
 <ul>
     {{#entitlements}}
-        <li>{{name}}</li>
+        {{#pivot.override}}
+            {{#pivot.type === 'remove'}}<li style="text-decoration:line-through;color:red;">{{name}} (Override)</li>{{/}}
+            {{#pivot.type === 'add'}}<li style="color:green;">{{name}} (Override)</li>{{/}}
+        {{/}}
+        {{^pivot.override}}
+            <li>{{name}}</li>
+        {{/}}
     {{/entitlements}}
 </ul>
 {{^entitlements}}
     <div class="alert alert-warning">No Entitlements</div>
 {{/entitlements}}
+</div>
+<div class="row">
+<div class="col-sm-12">
+<a class="btn btn-primary" href="/users/{{id}}/entitlements">Manage Entitlements</a>
+</div>
+</div>
 `;
 
 
@@ -130,7 +155,11 @@ var manage_user = function(user_id) {
             $('.user-groups').html(gform.m(user_groups_template,data));
             $('.user-affiliations').html(gform.m(user_affiliations_template,data));
             $('.user-accounts').html(gform.m(user_accounts_template,data));
-            $('.user-entitlements').html(gform.m(user_entitlements_template,data));
+            // $('.user-entitlements').html(gform.m(user_entitlements_template,data));
+
+            var local_ractive = Ractive({template: user_entitlements_template,data:data});
+            $('.user-entitlements').html(local_ractive.toHTML());
+
             // Edit User
             new gform(
                 {"fields":user_form_attributes,
@@ -140,7 +169,8 @@ var manage_user = function(user_id) {
                     {"type":"save","label":"Update User","modifiers":"btn btn-primary"},
                     {"type":"button","label":"Delete User","action":"delete","modifiers":"btn btn-danger"},
                     {"type":"button","label":"Merge Into","action":"merge_user","modifiers":"btn btn-danger"},
-                    {"type":"button","label":"Login","action":"login","modifiers":"btn btn-warning"}
+                    {"type":"button","label":"Login","action":"login","modifiers":"btn btn-warning"},
+                    {"type":"button","label":"Recalculate","action":"recalculate","modifiers":"btn btn-warning"}
                 ]}
             ).on('delete',function(form_event) {
                 form_data = form_event.form.get();
@@ -196,6 +226,11 @@ var manage_user = function(user_id) {
                 form_data = form_event.form.get();
                 ajax.post('/api/login/'+form_data.id,{},function(data) {
                     window.location = '/';
+                });
+            }).on('recalculate',function(form_event) {
+                form_data = form_event.form.get();
+                ajax.get('/api/users/'+form_data.id+'/recalculate',function(data) {
+                    manage_user(data.id);
                 });
             });
             // end

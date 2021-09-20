@@ -14,6 +14,7 @@ use App\Models\Configuration;
 use App\Models\System;
 use App\Models\GroupEntitlement;
 use App\Models\Entitlement;
+use App\Models\UserEntitlement;
 
 class UserController extends Controller
 {
@@ -22,12 +23,13 @@ class UserController extends Controller
     }
 
     public function get_user(Request $request, User $user) {
-        $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->first();
+        $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->with('entitlements')->first();
 
         // TJC -- Clean THIS UP!
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
-        $entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
-        $user->entitlements = Entitlement::whereIn('id',$entitlement_ids)->get();
+        $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
+        $user->calculated_entitlements = Entitlement::whereIn('id',$calculated_entitlement_ids)->get();
+        // $user->entitlements = Entitlement::whereIn('id',$enforced_entitlement_ids)->get();
         $user->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique();
         $user->primary_affiliation = isset($user->affiliations[0])?$user->affiliations[0]:null;
         return $user;
@@ -53,6 +55,11 @@ class UserController extends Controller
     public function login_user(Request $request, User $user) {
         Auth::login($user,true);
         return "1";
+    }
+
+    public function recalculate(Request $request, User $user) {
+        $user->recalculate_entitlements();
+        return $user;
     }
 
     public function search($search_string='') {
@@ -137,4 +144,27 @@ class UserController extends Controller
     public function get_groups(User $user) {
         return GroupMember::where('user_id',$user->id)->get();
     }
+
+    public function get_entitlements(User $user) {
+        return UserEntitlement::where('user_id',$user->id)->get();
+    }
+
+    public function add_entitlement(User $user, Request $request) {
+        $user_entitlement = new UserEntitlement($request->all());
+        $user_entitlement->override_user_id = Auth::user()->id;
+        $user_entitlement->user_id = $user->id;
+        $user_entitlement->save();
+        $user->recalculate_entitlements();
+        return UserEntitlement::where('id',$user_entitlement->id)->first();
+    }
+
+    public function update_entitlement(User $user, UserEntitlement $user_entitlement, Request $request) {
+        $user_entitlement->update($request->all());
+        $user_entitlement->override_user_id = Auth::user()->id;
+        $user_entitlement->user_id = $user->id;
+        $user_entitlement->save();
+        $user->recalculate_entitlements();
+        return UserEntitlement::where('id',$user_entitlement->id)->first();
+    }
+
 }

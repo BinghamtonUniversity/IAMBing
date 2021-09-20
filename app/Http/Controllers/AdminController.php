@@ -54,6 +54,12 @@ class AdminController extends Controller
         ]);
     }
 
+    public function user_entitlements(Request $request, User $user) {
+        return view('default.admin',['page'=>'users_entitlements','ids'=>[$user->id],'title'=>$user->first_name.' '.$user->last_name.'\'s Entitlements','help'=>
+            'Manage entitlements for this user.'
+        ]);
+    }
+
     public function groups(Request $request) {
         return view('default.admin',['page'=>'groups','ids'=>[],'title'=>'Manage Groups','help'=>
             'Use this page to manage groups.  You may add/remove exsting groups, 

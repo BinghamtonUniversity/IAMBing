@@ -25,12 +25,20 @@ class User extends Authenticatable
         return $this->belongsToMany(Group::class,'group_members')->orderBy('order');
     }
 
+    public function entitlements() {
+        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override');
+    }
+
     public function user_permissions(){
         return $this->hasMany(Permission::class,'user_id');
     }
 
     public function accounts(){
         return $this->hasMany(Account::class,'user_id');
+    }
+
+    public function user_entitlements(){
+        return $this->hasMany(Entitlement::class,'user_id');
     }
 
     public function systems() {
@@ -123,6 +131,44 @@ class User extends Authenticatable
         }
         $account->save();
         return $account;
+    }
+
+    public function recalculate_entitlements() {
+        // TJC -- All of this should be moved to an observer!
+        // This code adds new accounts for any new systems
+        $user = $this;
+        $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
+        $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
+        
+        // Check to see if calculated entitlements match enforced entitlements
+        $existing_user_entitlements = UserEntitlement::where('user_id',$user->id)->get();
+        foreach($existing_user_entitlements as $user_entitlement) {
+            if ((!$user_entitlement->override || $user_entitlement->override_expiration->isPast()) && !$calculated_entitlement_ids->contains($user_entitlement->entitlement_id)) {
+                $user_entitlement->delete();
+            }
+        }
+        foreach($calculated_entitlement_ids as $calculated_entitlement_id) {
+            $entitlement = $existing_user_entitlements->firstWhere('entitlement_id',$calculated_entitlement_id);
+            if (is_null($entitlement)) {
+                $new_user_entitlement = new UserEntitlement(['user_id'=>$user->id,'entitlement_id'=>$calculated_entitlement_id]);
+                $new_user_entitlement->save();
+            } else if ((!$user_entitlement->override || $user_entitlement->override_expiration->isPast()) && $entitlement->type === 'remove') {
+                $entitlement->update(['type'=>'add','override'=>false,'override_expiration'=>null,'override_description'=>null,'override_user_id'=>null]);
+            }
+        }
+        // Provision System Accounts for Unmet Entitlements
+        $existing_user_entitlements = UserEntitlement::select('entitlement_id')->where('user_id',$user->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
+        $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_user_entitlements)->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->where('user_id',$user->id)->get()->pluck('system_id')->unique();
+        $diff = $system_ids_needed->diff($system_ids_has);
+        foreach($diff as $system_id) {
+            $system = System::where('id',$system_id)->first();
+            $user->add_account($system);
+        }
+        // This code deletes any accounts for any systems
+        $diff = $system_ids_has->diff($system_ids_needed);
+        Account::where('user_id',$user->id)->whereIn('system_id',$diff)->delete();
+        // END
     }
 
     protected static function booted()
