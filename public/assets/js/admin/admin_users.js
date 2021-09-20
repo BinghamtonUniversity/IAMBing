@@ -95,8 +95,8 @@ user_entitlements_template = `
 <ul>
     {{#entitlements}}
         {{#pivot.override}}
-            {{#pivot.type === 'remove'}}<li style="text-decoration:line-through;color:red;">{{name}} (Override)</li>{{/}}
-            {{#pivot.type === 'add'}}<li style="color:green;">{{name}} (Override)</li>{{/}}
+            {{#pivot.type === 'remove'}}<li><span style="text-decoration:line-through;color:red;">{{name}}</span> <div class="label label-danger">Remove</div></li>{{/}}
+            {{#pivot.type === 'add'}}<li><span style="color:green;">{{name}}</span> <div class="label label-success">Add</div></li>{{/}}
         {{/}}
         {{^pivot.override}}
             <li>{{name}}</li>
