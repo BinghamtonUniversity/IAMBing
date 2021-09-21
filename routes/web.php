@@ -28,7 +28,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     
     /* Admin Pages */
     Route::get('/', [AdminController::class, 'admin']);
-    Route::get('/users', [AdminController::class, 'users']);
+    Route::get('/users/{user?}', [AdminController::class, 'users']);
     Route::get('/users/{user}/accounts', [AdminController::class, 'user_accounts']);
     Route::get('/users/{user}/groups', [AdminController::class, 'user_groups']);
     Route::get('/users/{user}/permissions', [AdminController::class, 'user_permissions']);

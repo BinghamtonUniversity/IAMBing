@@ -25,9 +25,14 @@ class AdminController extends Controller
         ]);
     }
 
-    public function users(Request $request) {
+    public function users(Request $request, User $user=null) {
+        if (is_null($user)) {
+            $ids = [];
+        } else {
+            $ids = [$user->id];
+        }
         $user = Auth::user();
-        return view('default.admin',['page'=>'users','ids'=>[],'title'=>'Manage Users',
+        return view('default.admin',['page'=>'users','ids'=>$ids,'title'=>'Manage Users',
             'actions' => [
                 ["name"=>"create","label"=>"Add User"],
                 '',

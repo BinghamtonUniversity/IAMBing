@@ -17,7 +17,6 @@ ajax.get('/api/entitlements',function(data) {
         {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{label:"{{name}}", value:"{{id}}"}},
         {type:"text", name:"name", label:"Name",required:true},
         {type:"switch", label: "Allow Manual Override: Add Entitlement",name: "override_add",value:false,options:[{value:false,label:'Disabled'},{value:true,label:'Enabled'}]},
-        {type:"switch", label: "Allow Manual Override: Remove Entitlement",name: "override_remove",value:false,options:[{value:false,label:'Disabled'},{value:true,label:'Enabled'}]}
     ], data: data
     }).on("model:edited",function(grid_event) {
         ajax.put('/api/entitlements/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {

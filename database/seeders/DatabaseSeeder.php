@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
         $group3->save();
         $group4 = new Group(['name'=>'Student','user_id'=>$example_user->id,'affiliation'=>'student','order'=>3]);
         $group4->save();
-        $group5 = new Group(['name'=>'Applicant','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>3]);
+        $group5 = new Group(['name'=>'Applicant','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
         $group5->save();
 
         $endpoint1 = new Endpoint(['name'=>'DataProxy Default','config'=>[

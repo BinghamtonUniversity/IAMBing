@@ -29,104 +29,123 @@ $('#adminDataGrid').html(`
         </div>
     </div>
     <div class="col-sm-6">
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">Accounts</h3></div>
-            <div class="panel-body user-accounts"></div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">Groups</h3></div>
-            <div class="panel-body user-groups"></div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">Affiliations</h3></div>
-            <div class="panel-body user-affiliations"></div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">Entitlements</h3></div>
-            <div class="panel-body user-entitlements"></div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">Permissions</h3></div>
-            <div class="panel-body user-site-permissions"></div>
-        </div>
+        <div class="userinfo-column"></div>
     </div>
     </div>
 </div>
+<style>
+.label {
+    display:block;
+    margin-bottom:5px;
+}
+.panel-title>a {
+    color:white;
+}
+</style>
 `);
 
+userinfo_column_template = `
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">
+    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/accounts">Manage Accounts</a>
+    Systems / Accounts
+</h3></div>
+<div class="panel-body user-accounts">{{>user_accounts_template}}</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">Affiliations</h3></div>
+<div class="panel-body user-affiliations">{{>user_affiliations_template}}</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">
+    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/entitlements">Manage Entitlements</a>
+    Entitlements
+</h3></div>
+<div class="panel-body user-entitlements">{{>user_entitlements_template}}</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">
+    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/groups">Manage Groups</a> 
+    Groups
+</h3></div>
+<div class="panel-body user-groups">{{>user_groups_template}}</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">Permissions</h3></div>
+<div class="panel-body user-site-permissions"></div>
+</div>
+`;
+
 user_groups_template = `
-<ul>
-    {{#groups}}
-        <li><a href="/groups/{{id}}/members">{{name}}</a></li>
-    {{/groups}}
-</ul>
+<div style="font-size:20px;">
+{{#groups}}
+    <a class="label label-default" href="/groups/{{id}}/members">{{name}}</a>
+{{/groups}}
+</div>
 {{^groups}}
     <div class="alert alert-warning">No Group Memberships</div>
 {{/groups}}
-<a class="btn btn-primary" href="/users/{{id}}/groups">Manage Groups</a>
 `;
 
 user_affiliations_template = `
-<div>Primary Affiliation: {{primary_affiliation}}</div>
-<ul style="margin-top:10px;">
-    {{#affiliations}}
-        <li>{{.}}</li>
-    {{/affiliations}}
-</ul>
+<div style="font-size:20px;">
+    {{#each affiliations: num}}
+        {{#if num === 0}}
+            <div class="label label-primary">Primary: {{.}}</div>
+        {{else}}
+            <div class="label label-default">{{.}}</div>
+        {{/if}}
+    {{/each}}
+</div>
 {{^affiliations}}
     <div class="alert alert-warning">No Affiliations</div>
 {{/affiliations}}
 `;
 
 user_entitlements_template = `
-<div class="col-sm-6">
-<h5>Calculated Entitlements</h5>
-<ul>
-    {{#calculated_entitlements}}
-        <li>{{name}}</li>
-    {{/calculated_entitlements}}
-</ul>
-{{^calculated_entitlements}}
-    <div class="alert alert-warning">No Calculated Entitlements</div>
-{{/calculated_entitlements}}
+<h5>Enforced</h5>
+<div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
+<div style="font-size:20px;">
+{{#entitlements}}
+    {{#pivot.override}}
+        {{#pivot.type === 'remove'}}
+            <div class="label label-danger">{{name}}</div>
+            <div style="text-align:center;font-size:12px;">(Manually Removed Until: {{pivot.override_expiration}})</div>
+        {{/}}
+        {{#pivot.type === 'add'}}
+            <div class="label label-success">{{name}}</div>
+            <div style="text-align:center;font-size:12px;">(Manually Added Until: {{pivot.override_expiration}})</div>
+        {{/}}
+    {{/}}
+    {{^pivot.override}}
+        <div class="label label-default">{{name}}</div>
+    {{/}}
+{{/entitlements}}
 </div>
-<div class="col-sm-6">
-<h5>Enforced Entitlements</h5>
-<ul>
-    {{#entitlements}}
-        {{#pivot.override}}
-            {{#pivot.type === 'remove'}}<li><span style="text-decoration:line-through;color:red;">{{name}}</span> <div class="label label-danger">Remove</div></li>{{/}}
-            {{#pivot.type === 'add'}}<li><span style="color:green;">{{name}}</span> <div class="label label-success">Add</div></li>{{/}}
-        {{/}}
-        {{^pivot.override}}
-            <li>{{name}}</li>
-        {{/}}
-    {{/entitlements}}
-</ul>
 {{^entitlements}}
     <div class="alert alert-warning">No Entitlements</div>
 {{/entitlements}}
-</div>
-<div class="row">
-<div class="col-sm-12">
-<a class="btn btn-primary" href="/users/{{id}}/entitlements">Manage Entitlements</a>
-</div>
+<hr>
+<h5>Calculated</h5>
+<div class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements which are automatically calculated based on group memberships</div>
+<div style="font-size:15px;">
+{{#calculated_entitlements}}
+    <div class="label label-default" style="display:inline-block;margin:0px 5px 5px 0px;">{{name}}</div>
+{{/calculated_entitlements}}
 </div>
 `;
 
 
 user_accounts_template = `
-<ul>
+<div style="font-size:20px;">
     {{#systems}}
-        <li>{{pivot.username}} ({{name}})</li>
+        <div class="label label-default">{{name}} / {{pivot.username}}</div>
     {{/systems}}
-</ul>
+</div>
 {{^systems}}
     <div class="alert alert-warning">No Accounts</div>
 {{/systems}}
-<a class="btn btn-primary" href="/users/{{id}}/accounts">Manage Accounts</a>
 `;
-
 
 // Create New User
 $('.user-new').on('click',function() {
@@ -150,15 +169,24 @@ $('.user-new').on('click',function() {
 var manage_user = function(user_id) {
     if (user_id != null && user_id != '') {
         ajax.get('/api/users/'+user_id,function(data) {
+            window.history.pushState({},'','/users/'+user_id);
             $('.user-view').show();
-            // Show Groups
-            $('.user-groups').html(gform.m(user_groups_template,data));
-            $('.user-affiliations').html(gform.m(user_affiliations_template,data));
-            $('.user-accounts').html(gform.m(user_accounts_template,data));
-            // $('.user-entitlements').html(gform.m(user_entitlements_template,data));
 
-            var local_ractive = Ractive({template: user_entitlements_template,data:data});
-            $('.user-entitlements').html(local_ractive.toHTML());
+            $('.userinfo-column').html(Ractive({
+                template:userinfo_column_template,
+                partials: {
+                    user_groups_template:user_groups_template,
+                    user_entitlements_template:user_entitlements_template,
+                    user_affiliations_template:user_affiliations_template,
+                    user_accounts_template:user_accounts_template,
+                },
+                data:data
+            }).toHTML());
+
+            // $('.user-groups').html(gform.m(user_groups_template,data));
+            // $('.user-affiliations').html(Ractive({template:user_affiliations_template,data:data}).toHTML());
+            // $('.user-accounts').html(gform.m(user_accounts_template,data));
+            // $('.user-entitlements').html(Ractive({template:user_entitlements_template,data:data}).toHTML());
 
             // Edit User
             new gform(
@@ -294,5 +322,9 @@ ajax.get('/api/configuration/',function(data) {
     }).on('save',function(form_event) {
         manage_user(form_event.form.get().user);
     });
+
+    if (typeof id !== 'undefined') {
+        manage_user(id);
+    }
 });
 

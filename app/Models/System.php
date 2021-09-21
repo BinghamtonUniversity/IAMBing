@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class System extends Model
 {
     protected $fillable = ['name','config'];
-    protected $casts = ['config'=>'object'];
+    protected $casts = ['config'=>'object','entitlement_id'=>'string'];
+
 
     public function accounts(){
         return $this->hasMany(Accounts::class,'system_id');

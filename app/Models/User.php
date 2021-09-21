@@ -26,7 +26,7 @@ class User extends Authenticatable
     }
 
     public function entitlements() {
-        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override');
+        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override','override_description','override_expiration');
     }
 
     public function user_permissions(){
@@ -106,6 +106,8 @@ class User extends Authenticatable
             'last_name' => str_split(strtolower($this->last_name), 1),
             'iterator' => $iterator,
             'default_username' => $this->default_username,
+            'ids'=>$this->ids,
+            'attributes' => $this->attributes,
         ];
         $m = new \Mustache_Engine;
         return $m->render($template, $obj);
@@ -143,8 +145,11 @@ class User extends Authenticatable
         // Check to see if calculated entitlements match enforced entitlements
         $existing_user_entitlements = UserEntitlement::where('user_id',$user->id)->get();
         foreach($existing_user_entitlements as $user_entitlement) {
-            if ((!$user_entitlement->override || $user_entitlement->override_expiration->isPast()) && !$calculated_entitlement_ids->contains($user_entitlement->entitlement_id)) {
-                $user_entitlement->delete();
+            if (!$user_entitlement->override || $user_entitlement->override_expiration->isPast()) {
+                $user_entitlement->update(['override'=>false,'override_expiration'=>null,'override_description'=>null,'override_user_id'=>null]);
+                if (!$calculated_entitlement_ids->contains($user_entitlement->entitlement_id)) {
+                    $user_entitlement->delete();
+                }
             }
         }
         foreach($calculated_entitlement_ids as $calculated_entitlement_id) {
@@ -152,7 +157,7 @@ class User extends Authenticatable
             if (is_null($entitlement)) {
                 $new_user_entitlement = new UserEntitlement(['user_id'=>$user->id,'entitlement_id'=>$calculated_entitlement_id]);
                 $new_user_entitlement->save();
-            } else if ((!$user_entitlement->override || $user_entitlement->override_expiration->isPast()) && $entitlement->type === 'remove') {
+            } else if ((!$entitlement->override || $entitlement->override_expiration->isPast()) && $entitlement->type === 'remove') {
                 $entitlement->update(['type'=>'add','override'=>false,'override_expiration'=>null,'override_description'=>null,'override_user_id'=>null]);
             }
         }

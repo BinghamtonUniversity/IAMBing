@@ -30,7 +30,7 @@ class UserController extends Controller
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
         $user->calculated_entitlements = Entitlement::whereIn('id',$calculated_entitlement_ids)->get();
         // $user->entitlements = Entitlement::whereIn('id',$enforced_entitlement_ids)->get();
-        $user->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique();
+        $user->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values();
         $user->primary_affiliation = isset($user->affiliations[0])?$user->affiliations[0]:null;
         return $user;
     }
@@ -146,10 +146,14 @@ class UserController extends Controller
     }
 
     public function get_entitlements(User $user) {
-        return UserEntitlement::where('user_id',$user->id)->get();
+        $user_entitlements = UserEntitlement::where('user_id',$user->id);
+        return $user_entitlements->get();
     }
 
     public function add_entitlement(User $user, Request $request) {
+        if ($request->type === 'add' && is_null(Entitlement::where('id',$request->entitlement_id)->where('override_add',true)->first())) {
+            return response(json_encode(['error'=>'You cannot "add" override entitlements of this type!']),403)->header('Content-Type', 'application/json');
+        }
         $user_entitlement = new UserEntitlement($request->all());
         $user_entitlement->override_user_id = Auth::user()->id;
         $user_entitlement->user_id = $user->id;
@@ -159,6 +163,9 @@ class UserController extends Controller
     }
 
     public function update_entitlement(User $user, UserEntitlement $user_entitlement, Request $request) {
+        if ($request->type === 'add' && is_null(Entitlement::where('id',$request->entitlement_id)->where('override_add',true)->first())) {
+            return response(json_encode(['error'=>'You cannot "add" override entitlements of this type!']),403)->header('Content-Type', 'application/json');
+        }
         $user_entitlement->update($request->all());
         $user_entitlement->override_user_id = Auth::user()->id;
         $user_entitlement->user_id = $user->id;
