@@ -99,9 +99,10 @@ class GroupController extends Controller
         return GroupEntitlement::where('id',$group_entitlement->id)->with('entitlement')->first();
     }
 
-    public function delete_entitlement(Group $group, Entitlement $entitlement)
-    {
-        return GroupEntitlement::where('group_id','=',$group->id)->where('entitlement_id','=',$entitlement->id)->delete();
+    public function delete_entitlement(Group $group, Entitlement $entitlement) {
+        $group_entitlement = GroupEntitlement::where('group_id',$group->id)->where('entitlement_id',$entitlement->id)->first();
+        $group_entitlement->delete();
+        return 1;
     }
 
 

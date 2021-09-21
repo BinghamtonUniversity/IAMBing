@@ -80,7 +80,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::delete('/groups/{group}/admins/{user}',[GroupController::class,'delete_admin'])->middleware('can:manage_groups,App\Models\Group');
         Route::get('/groups/{group}/entitlements',[GroupController::class,'get_entitlements'])->middleware('can:manage_groups,App\Models\Group');
         Route::post('/groups/{group}/entitlements',[GroupController::class,'add_entitlement'])->middleware('can:manage_groups,App\Models\Group');
-        Route::delete('/groups/{group}/entitlements/{user}',[GroupController::class,'delete_entitlement'])->middleware('can:manage_groups,App\Models\Group');
+        Route::delete('/groups/{group}/entitlements/{entitlement}',[GroupController::class,'delete_entitlement'])->middleware('can:manage_groups,App\Models\Group');
         // Route::post('/groups/{group}/users/{user}','GroupController@add_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
         // Route::delete('/groups/{group}/users/{user}','GroupController@delete_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
 
@@ -99,7 +99,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::delete('/entitlements/{entitlement}',[EntitlementController::class,'delete_entitlement'])->middleware('can:manage_entitlements,App\Models\Entitlement');
         Route::get('/entitlements/{entitlement}/groups',[EntitlementController::class,'get_groups'])->middleware('can:manage_entitlements,App\Models\Entitlement');
         Route::post('/entitlements/{entitlement}/groups',[EntitlementController::class,'add_group'])->middleware('can:manage_entitlements,App\Models\Entitlement');
-        Route::delete('/entitlements/{entitlement}/groups/{user}',[EntitlementController::class,'delete_group'])->middleware('can:manage_entitlements,App\Models\Entitlement');
+        Route::delete('/entitlements/{entitlement}/groups/{group}',[EntitlementController::class,'delete_group'])->middleware('can:manage_entitlements,App\Models\Entitlement');
 
         /* Systems Methods */
         Route::get('/endpoints',[EndpointController::class,'get_all_endpoints'])->middleware('can:view_in_admin,App\Models\Endpoint');

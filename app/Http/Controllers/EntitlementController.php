@@ -50,7 +50,9 @@ class EntitlementController extends Controller
     }
 
     public function delete_group(Entitlement $entitlement, Group $group) {
-        return GroupEntitlement::where('entitlement_id','=',$entitlement->id)->where('group_id','=',$group->id)->delete();
+        $group_entitlement = GroupEntitlement::where('entitlement_id','=',$entitlement->id)->where('group_id','=',$group->id)->first();
+        $group_entitlement->delete();
+        return 1;
     }
 
 }
