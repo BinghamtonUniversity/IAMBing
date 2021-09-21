@@ -180,7 +180,8 @@ class User extends Authenticatable
     {
         static::created(function ($user) {
             // Create and Set New Upsername
-            if (!isset($user->default_username) || $user->default_username === '' || $user->default_username === null) {
+            if (($user->first_name !== '' && $user->last_name !== '' && $user->first_name !== null && $user->last_name !== null) &&
+                (!isset($user->default_username) || $user->default_username === '' || $user->default_username === null)) {
                 $is_taken = false;
                 $iterator = 0;
                 $configuration = Configuration::where('name','default_username_template')->first();

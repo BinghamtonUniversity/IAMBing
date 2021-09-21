@@ -22,5 +22,5 @@ use App\Http\Controllers\PublicAPIController;
 
 Route::get('/db/refresh',[AdminController::class, 'refresh_db']);
 
-Route::get('/users',[PublicAPIController::class, 'insert_update_users']);
-Route::get('/groups/{name}/members',[PublicAPIController::class, 'update_group_members']);
+Route::post('/users',[PublicAPIController::class, 'insert_update_users']);
+Route::post('/groups/{name}/members',[PublicAPIController::class, 'update_group_members']);
