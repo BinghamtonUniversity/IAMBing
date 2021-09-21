@@ -107,7 +107,7 @@ body {
 
 /*Modifications*/
 body{
-  background-color: #F0F0F4;
+  /* background-color: #F0F0F4; */ /* TJC JUST NOW */
 }
 
 .gr-main {
@@ -610,9 +610,9 @@ thead .form-group{margin-bottom:0;}
   }
 }
 
-.table tr.filter{background:#f4feff !important}
+/* .table tr.filter{background:#f4feff !important} */ /* TJC JUST NOW */
 
-.table-well{background:#fff}
+/* .table-well{background:#fff} */ /* TJC JUST NOW */
 
 .filterable.nodisplay{display: none !important;}
 a:hover {
