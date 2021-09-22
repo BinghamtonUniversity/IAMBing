@@ -50,11 +50,11 @@ class UpdateGroupMembership implements ShouldQueue, ShouldBeUnique
             $user = new User($api_user);
             $user->save();
         }
-        $group_membership = GroupMember::updateOrCreate(
-            ['group_id'=>$group_id,'user_id'=>$user->id],
-            ['type'=>'external']
-        );
-        $group_membership->save();
-        $user->recalculate_entitlements();
+        $group_member = GroupMember::where('user_id',$user->id)->where('group_id',$group_id)->first();
+        if (is_null($group_member)) {
+            $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
+            $group_member->save();
+            $user->recalculate_entitlements();
+        }
     }
 }
