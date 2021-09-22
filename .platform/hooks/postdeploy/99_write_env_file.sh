@@ -24,4 +24,5 @@ done < <(jq -r <<< $ENVIRONMENT_JSON \
 
 # Run Graphene Compilation Script and Update .env
 cd /var/app/current
-/usr/bin/php artisan queue:work
+/usr/bin/php artisan queue:restart
+nohup /usr/bin/php artisan queue:work > /tmp/queues.out 2> /tmp/queues.err < /dev/null &
