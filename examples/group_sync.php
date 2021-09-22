@@ -8,9 +8,14 @@ class IAMBingGroupSync
 {
     static private $users = [
         [
-            'ids'=>['bnumber'=>'B005058934'],
+            'ids'=>['bnumber'=>'B00505893'],
             'first_name'=>'Tim',
             'last_name'=>'Cortesi',
+        ],
+        [
+            'ids'=>['bnumber'=>'B00612268'],
+            'first_name'=>'Lauri',
+            'last_name'=>'Arnold',
         ],
         [
             'ids'=>['bnumber'=>'B00123467'],
@@ -24,15 +29,27 @@ class IAMBingGroupSync
         ],
         [
             'ids'=>['bnumber'=>'B0034346'],
-            'first_name'=>'I Am',
-            'last_name'=>'Groot',
+            'first_name'=>'Captaian',
+            'last_name'=>'America',
+            'attributes'=>['nickname'=>'Cap'],
         ],
     ];
 
     static private $groups = [
-        'STUDENTS'=>[1,2],
-        'STAFF'=>[2,3,4],
+        'Full Time Staff'=>['B00505893','B00612268'],
+        'Avengers'=>['B0034346','B00123234'],
+        'Applicants'=>['B00612268','B00123467'],
     ];
+
+    static private function get_users($bnumbers) {
+        $users = [];
+        foreach(self::$users as $user) {
+            if (in_array($user['ids']['bnumber'],$bnumbers)) {
+                $users[] = $user;
+            }
+        }
+        return $users;
+    }
 
     static private $iambing_url = 'http://iambing.local:8000';
     static private $iambing_username = 'test';
@@ -40,15 +57,20 @@ class IAMBingGroupSync
 
     static public function sync() {
         $httphelper = new HTTPHelper();
-        $graphene_response = $httphelper->http_fetch([
-            'url'  => self::$iambing_url.'/api/public/groups/Full%20Time%20Staff/members',
-            'verb' => 'POST',
-            'data' => ['users'=>self::$users,'id'=>'bnumber'],
-            'username' => self::$iambing_username,
-            'password' => self::$iambing_password,
-            'headers' => ['Accept'=>'application/json'],
-        ]);
-        var_dump($graphene_response);
+
+        foreach(self::$groups as $group_name => $bnumbers) {
+            echo "\n\nSYNCHING GROUP: ".$group_name."\n";
+            $group_name = str_replace(' ','%20',$group_name);
+            $graphene_response = $httphelper->http_fetch([
+                'url'  => self::$iambing_url.'/api/public/groups/'.$group_name.'/members',
+                'verb' => 'POST',
+                'data' => ['users'=>self::get_users($bnumbers),'id'=>'bnumber'],
+                'username' => self::$iambing_username,
+                'password' => self::$iambing_password,
+                'headers' => ['Accept'=>'application/json'],
+            ]);
+            var_dump($graphene_response['content']);    
+        }
     }
 
 }

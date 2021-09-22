@@ -123,6 +123,30 @@ class User extends Authenticatable
         return true;
     }
 
+    public function username_set() {
+        // Create and Set New Upsername
+        if (($this->first_name !== '' && $this->last_name !== '' && $this->first_name !== null && $this->last_name !== null) &&
+            (!isset($this->default_username) || $this->default_username === '' || $this->default_username === null)) {
+            $is_taken = false;
+            $iterator = 0;
+            $configuration = Configuration::where('name','default_username_template')->first();
+            if (!is_null($configuration)) {
+                $template = $configuration->config;
+            }        
+            do {
+                $username = $this->username_generate($template, $iterator);
+                if (!$this->username_check_available($username)) {
+                    $is_taken = true;
+                    $iterator++;
+                } else {
+                    break;
+                } 
+            } while ($is_taken);
+            $this->default_username = $username;
+            $this->save();
+        }
+    }
+
     public function add_account($system, $username = null) {
         $account = new Account(['user_id'=>$this->id,'system_id'=>$system->id]);
         if (!is_null($username)) {
@@ -179,27 +203,10 @@ class User extends Authenticatable
     protected static function booted()
     {
         static::created(function ($user) {
-            // Create and Set New Upsername
-            if (($user->first_name !== '' && $user->last_name !== '' && $user->first_name !== null && $user->last_name !== null) &&
-                (!isset($user->default_username) || $user->default_username === '' || $user->default_username === null)) {
-                $is_taken = false;
-                $iterator = 0;
-                $configuration = Configuration::where('name','default_username_template')->first();
-                if (!is_null($configuration)) {
-                    $template = $configuration->config;
-                }        
-                do {
-                    $username = $user->username_generate($template, $iterator);
-                    if (!$user->username_check_available($username)) {
-                        $is_taken = true;
-                        $iterator++;
-                    } else {
-                        break;
-                    } 
-                } while ($is_taken);
-                $user->default_username = $username;
-                $user->save();
-            }
+            $user->username_set();
+        });
+        static::updated(function ($user) {
+            $user->username_set();
         });
     }
 }

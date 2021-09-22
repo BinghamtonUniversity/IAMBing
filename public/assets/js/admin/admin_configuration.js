@@ -1,26 +1,31 @@
 gform.options = {autoFocus:false};
 
 $('#adminDataGrid').html(`
+    <h3>Default Username Template</h3>
     <div class="alert alert-info">
         This is the mustache template for generating default usernames
     </div>
     <div class="default_username_template"></div>
-    
+    <h3>User Attributes</h3>
     <div class="alert alert-info">
         These are the user attributes which can be populated in IAMBing
     </div>
     <div class="user_attributes"></div>
-    
+    <h3>User Unique IDs</h3>
     <div class="alert alert-info">
         These are the unique user IDs which can be populated in IAMBing
     </div>
     <div class="user_unique_ids"></div>
-
+    <h3>Affiliations</h3>
     <div class="alert alert-info">
         These are the various affiliations a person may have.  <a href="https://infrastructure.tamu.edu/directory/attribute/attribute_eduPersonAffiliation.html">More Info</a>
     </div>
     <div class="affiliations"></div>
-
+    <h3>Database Reset</h3>
+    <div class="alert alert-info">
+    Refresh the IAMBing Database! (Seriously guys, this is pretty serious)
+    </div>
+    <div class="btn btn-danger nuke_database">Reset Database</div>
 `);
 
 var gforms = {};
@@ -97,6 +102,12 @@ gforms.affiliations = new gform(
     });
 });
 
+$('.nuke_database').on('click',function() {
+    toastr.warning('Database reset in progress...');
+    ajax.get('/db/refresh',function(data) {
+        toastr.success('Database has been reset!');
+    });
+});
 
 ajax.get('/api/configuration/',function(data) {
     _.each(data,function(item) {

@@ -91,7 +91,7 @@ user_affiliations_template = `
 <div style="font-size:20px;">
     {{#each affiliations: num}}
         {{#if num === 0}}
-            <div class="label label-primary">Primary: {{.}}</div>
+            <div class="label label-primary">Primary: {{#.}}{{.}}{{/.}}{{^.}}None{{/.}}</div>
         {{else}}
             <div class="label label-default">{{.}}</div>
         {{/if}}
