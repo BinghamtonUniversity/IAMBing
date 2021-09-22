@@ -46,7 +46,6 @@ class UpdateGroupMembership implements ShouldQueue, ShouldBeUnique
             $q->where('name',$unique_id)->where('value',$api_user['ids'][$unique_id]);
         })->first();
         if (is_null($user)) {
-            $created_users[] = $api_user;
             $user = new User($api_user);
             $user->save();
         }

@@ -24,5 +24,6 @@ done < <(jq -r <<< $ENVIRONMENT_JSON \
 
 # Run Graphene Compilation Script and Update .env
 cd /var/app/current
-/usr/bin/php artisan queue:restart
-/bin/nohup /usr/bin/php artisan queue:work > /tmp/queues.out 2> /tmp/queues.err < /dev/null &
+su - ec2-user -c "/usr/bin/php artisan queue:restart"
+sleep 5
+su - ec2-user -c "nohup /usr/bin/php artisan queue:work > ~/queues.out 2> ~/queues.err < /dev/null &"
