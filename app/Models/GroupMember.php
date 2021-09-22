@@ -15,4 +15,9 @@ class GroupMember extends Model
     public function user(){
         return $this->belongsTo(User::class);
     }
+
+    public function simple_user(){
+        return $this->belongsTo(SimpleUser::class,'user_id')->select('id','first_name','last_name');
+    }
+
 }

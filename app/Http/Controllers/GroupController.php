@@ -46,7 +46,7 @@ class GroupController extends Controller
     }
 
     public function get_members(Request $request, Group $group){
-        return GroupMember::where('group_id',$group->id)->with('user')->get();
+        return GroupMember::select('id','user_id','type')->where('group_id',$group->id)->with('simple_user')->get();
     }
 
     public function add_member(Request $request, Group $group){

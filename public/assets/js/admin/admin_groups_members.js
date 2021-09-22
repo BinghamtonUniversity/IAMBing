@@ -11,7 +11,7 @@ ajax.get('/api/groups/'+id+'/members?simple=true',function(data) {
     count:20,
     schema:[
         {type:"hidden", name:"id"},
-        {type:"user", name:"user_id",required:true, label:"User", template:"{{#attributes.user}}{{first_name}} {{last_name}}{{/attributes.user}}{{#attributes.simple_user}}{{attributes.simple_user.first_name}} {{attributes.simple_user.last_name}}{{/attributes.simple_user}}"},
+        {type:"user", name:"user_id",required:true, label:"User", template:"{{#attributes.simple_user}}{{attributes.simple_user.first_name}} {{attributes.simple_user.last_name}}{{/attributes.simple_user}}"},
         {name:"type","label":"Type", show:false,type:"select",options:[
             "internal","external"
         ]},
