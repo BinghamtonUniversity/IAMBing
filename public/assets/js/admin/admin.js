@@ -80,7 +80,6 @@ gform.types['user']= _.extend({}, gform.types['smallcombo'], {
 
     toString: function(name,display){
       if(!display){
-          // console.log(this.value);
         if(typeof this.combo !== 'undefined'){
           return '<dt>'+this.label+'</dt> <dd>'+(this.combo.value||'(empty)')+'</dd><hr>'
         }else{
@@ -88,12 +87,9 @@ gform.types['user']= _.extend({}, gform.types['smallcombo'], {
           return '<dt>'+this.label+'</dt> <dd>'+(this.get()||'(empty)')+'</dd><hr>'
         }
       }else{
-          // console.log(this.value);
         if(typeof this.options !== 'undefined' && this.options.length){
-            // console.log(this.value);
           return _.find(this.options,{id:parseInt(this.value)})||this.value;
         }else{
-            // console.log(this.value);
           return this.value;
         }
       }

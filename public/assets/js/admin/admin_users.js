@@ -44,6 +44,22 @@ $('#adminDataGrid').html(`
 </style>
 `);
 
+userlist_template = `
+{{#users.length}}
+    Click a user to take action
+{{/users.length}}
+<hr style="border:solid 1px #333">
+{{^users.length}}No results{{/users.length}}
+<div class="list-group">
+    {{#users}}
+        <a href="javascript:void(0);" class="list-group-item user" data-id="{{id}}">
+            <div class="badge pull-right">{{default_username}}</div>
+            {{first_name}} {{last_name}}
+        </a>
+    {{/users}}
+</div>
+`;
+
 userinfo_column_template = `
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
@@ -300,31 +316,28 @@ ajax.get('/api/configuration/',function(data) {
     user_form_attributes.push(unique_ids_fields);
     var user_attributes_fields = {type: "fieldset",label:'Attributes',name: "attributes",fields:_.find(data,{name:'user_attributes'}).config};
     user_form_attributes.push(user_attributes_fields);
-    // console.log(user_form_attributes);
     new gform(
         {"fields":[
-            {
-                "type": "user",
-                "label": "Search Existing Users",
-                "name": "user",
-            }    
+			{name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, username, or unique id<hr>"},
+			{type:'output',name:'results',label:false}
         ],
         "el":".user-search",
-        "actions":[
-            {"type":"save","label":"Submit","modifiers":"btn btn-primary"}
-        ]
-    }
-    ).on('change',function(form_event) {
-        form_data = form_event.form.get();
-        if (form_data.user == null || form_data.user == '') {
-            $('.user-view').hide();
-        }
-    }).on('save',function(form_event) {
-        manage_user(form_event.form.get().user);
+        "actions":[]
+    }).on('change:query',function(){
+        $('.user-view').hide();
+    })
+    .on('change:query',_.debounce(function(e){
+        $.ajax({
+            url: '/api/users/search/'+this.toJSON().query,
+            success: function(data) {
+                var html = Ractive({template:userlist_template,data:{users:data}}).toHTML();
+                e.form.find('results').update({value:html});
+            }.bind(e)
+        })
+    },500))
+
+    $('body').on('click','.list-group-item.user', function(e){
+		manage_user(e.currentTarget.dataset.id);
     });
 
-    if (typeof id !== 'undefined') {
-        manage_user(id);
-    }
-});
-
+})
