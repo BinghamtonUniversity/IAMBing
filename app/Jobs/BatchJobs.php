@@ -18,6 +18,8 @@ class BatchJobs implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $timeout = 600;
+
     protected $job_type;
     protected $payload;
 
