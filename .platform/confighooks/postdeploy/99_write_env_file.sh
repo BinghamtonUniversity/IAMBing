@@ -23,5 +23,5 @@ done < <(jq -r <<< $ENVIRONMENT_JSON \
          'to_entries|map("\(.key)=\"\(.value)\"\u0000")[]')
 
 # Run Graphene Compilation Script and Update .env
-su - ec2-user -c "/usr/bin/php artisan queue:restart"
-su - ec2-user -c "nohup /usr/bin/php artisan queue:work > ~/queues.out 2> ~/queues.err < /dev/null &"
+su - webapp -c "cd /var/app/current; /usr/bin/php artisan queue:restart"
+su - webapp -c "cd /var/app/current; nohup /usr/bin/php artisan queue:work > ~/queues.out 2> ~/queues.err < /dev/null &"
