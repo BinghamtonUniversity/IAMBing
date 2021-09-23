@@ -13,47 +13,40 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use App\Models\User;
 use App\Models\GroupMember;
 
-class UpdateGroupMembership implements ShouldQueue, ShouldBeUnique
+class UpdateGroupMembership implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $api_user;
     protected $group_id;
-    protected $unique_id;
-    public $uniqueFor = 3600;
-
-    public function uniqueId() {
-        return $this->api_user['ids'][$this->unique_id];
-    }
+    protected $user_id;
+    protected $api_user;
 
     public function middleware() {
         return [new WithoutOverlapping($this->group_id)];
     }
 
     public function __construct($config) {
-        $this->api_user = $config['api_user'];
         $this->group_id = $config['group_id'];
-        $this->unique_id = $config['unique_id'];
+        $this->user_id = isset($config['user_id'])?$config['user_id']:null;
+        $this->api_user = isset($config['api_user'])?$config['api_user']:null;
     }
 
     public function handle()
     {
-        $api_user = $this->api_user;
-        $unique_id = $this->unique_id;
         $group_id = $this->group_id;
+        $user_id = $this->user_id;
+        $api_user = $this->api_user;
 
-        $user = User::whereHas('user_unique_ids', function($q) use ($api_user,$unique_id){
-            $q->where('name',$unique_id)->where('value',$api_user['ids'][$unique_id]);
-        })->first();
-        if (is_null($user)) {
+        // User Doesn't Exist... Create It!
+        if (!is_null($api_user)) {
             $user = new User($api_user);
             $user->save();
+            $user_id = $user->id;
+        } else {
+            $user = User::where('id',$user_id)->first();
         }
-        $group_member = GroupMember::where('user_id',$user->id)->where('group_id',$group_id)->first();
-        if (is_null($group_member)) {
-            $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
-            $group_member->save();
-            $user->recalculate_entitlements();
-        }
+        $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
+        $group_member->save();
+        $user->recalculate_entitlements();
     }
 }

@@ -15,6 +15,8 @@ use App\Models\System;
 use App\Models\GroupEntitlement;
 use App\Models\Entitlement;
 use App\Models\UserEntitlement;
+use App\Models\UserAttribute;
+use App\Models\UserUniqueID;
 
 class UserController extends Controller
 {
@@ -47,7 +49,12 @@ class UserController extends Controller
     }
 
     public function delete_user(Request $request, User $user) {
+        UserEntitlement::where('user_id',$user->id)->delete();
+        UserAttribute::where('user_id',$user->id)->delete();
+        UserUniqueID::where('user_id',$user->id)->delete();
         GroupMember::where('user_id',$user->id)->delete();
+        Permission::where('user_id',$user->id)->delete();
+        Account::where('user_id',$user->id)->delete();
         $user->delete();
         return "1";
     }
