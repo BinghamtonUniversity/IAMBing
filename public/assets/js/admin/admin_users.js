@@ -1,10 +1,12 @@
 gform.options = {autoFocus:false};
 user_form_attributes = [
-    {type:"checkbox", name:"active", label:"Active", value:true},
+    {type:"switch", name:"active", label:"Active", value:true, columns:6, options:[{label:'Inactive',value:false},{label:'Active',value:true}]},
+    {type:"switch", name:"sponsored", label:"Sponsored", value:false, columns:6, options:[{label:'Default',value:false},{label:'Sponsored',value:true}]},
     {type:"text", name:"id", label: 'IAMBing ID', edit:false},
     {type:"text", name:"first_name", label:"First Name", required:true},
     {type:"text", name:"last_name", label:"Last Name", required:true},
     {type:"text", name:"default_username", label:"Default Username", required:false, help:'Leave blank to define automatically'},
+    {type:"user", name:"sponsor_user_id",required:false, label:"Sponsor",show:[{type:'matches',name:'sponsored',value:true}]},
 ];
 
 
@@ -46,7 +48,7 @@ $('#adminDataGrid').html(`
 
 userlist_template = `
 {{#users.length}}
-    Click a user to take action
+    Select User to View
 {{/users.length}}
 <hr style="border:solid 1px #333">
 {{^users.length}}No results{{/users.length}}
@@ -86,6 +88,12 @@ userinfo_column_template = `
 </h3></div>
 <div class="panel-body user-groups">{{>user_groups_template}}</div>
 </div>
+
+<div class="panel panel-default">
+<div class="panel-heading"><h3 class="panel-title">Sponsored Users</h3></div>
+<div class="panel-body user-groups">{{>sponsored_users_template}}</div>
+</div>
+
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">Permissions</h3></div>
 <div class="panel-body user-site-permissions"></div>
@@ -102,6 +110,21 @@ user_groups_template = `
     <div class="alert alert-warning">No Group Memberships</div>
 {{/groups}}
 `;
+
+sponsored_users_template = `
+<div style="font-size:20px;">
+{{#sponsored_users}}
+    <a href="/users/{{id}}" class="label label-default">            
+        <div class="label label-primary pull-right">{{default_username}}</div>
+        {{first_name}} {{last_name}}
+    </a>
+{{/sponsored_users}}
+</div>
+{{^sponsored_users}}
+    <div class="alert alert-warning">No Sponsored Users</div>
+{{/sponsored_users}}
+`;
+
 
 user_affiliations_template = `
 <div style="font-size:20px;">
@@ -195,6 +218,7 @@ var manage_user = function(user_id) {
                     user_entitlements_template:user_entitlements_template,
                     user_affiliations_template:user_affiliations_template,
                     user_accounts_template:user_accounts_template,
+                    sponsored_users_template,
                 },
                 data:data
             }).toHTML());
@@ -339,5 +363,9 @@ ajax.get('/api/configuration/',function(data) {
     $('body').on('click','.list-group-item.user', function(e){
 		manage_user(e.currentTarget.dataset.id);
     });
+
+    if (typeof id !== 'undefined') {
+        manage_user(id);
+    }
 
 })

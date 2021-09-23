@@ -25,7 +25,7 @@ class UserController extends Controller
     }
 
     public function get_user(Request $request, User $user) {
-        $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->with('entitlements')->first();
+        $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->with('entitlements')->with('sponsored_users')->first();
 
         // TJC -- Clean THIS UP!
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
@@ -82,6 +82,8 @@ class UserController extends Controller
                         ->orWhere('default_username','like',$search[0].'%')
                         ->orWhereHas('user_unique_ids', function($q) use ($search){
                             $q->where('value','like',$search[0].'%');
+                        })->orWhere(function($q) use ($search) {
+                            $q->where('sponsored',true)->where('sponsor_user_id',$search[0]);
                         });
                 })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
                     ->limit(25)->get()->toArray();

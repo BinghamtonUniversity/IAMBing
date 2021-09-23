@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['default_username', 'ids', 'attributes', 'first_name', 'last_name'];
+    protected $fillable = ['active','sponsored','default_username', 'ids', 'attributes', 'first_name', 'last_name', 'sponsor_user_id'];
     protected $hidden = ['user_unique_ids','user_attributes', 'user_permissiins', 'password', 'remember_token','created_at','updated_at'];
     protected $appends = ['ids','permissions','attributes'];
     protected $with = ['user_unique_ids','user_attributes','user_permissions'];
@@ -39,6 +39,10 @@ class User extends Authenticatable
 
     public function user_entitlements(){
         return $this->hasMany(Entitlement::class,'user_id');
+    }
+
+    public function sponsored_users(){
+        return $this->hasMany(SimpleUser::class,'sponsor_user_id')->where('sponsored',true);
     }
 
     public function systems() {
