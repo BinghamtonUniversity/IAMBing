@@ -18,6 +18,7 @@ class UpdateGroupMembership implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 30;
+    public $tries = 1;
 
     protected $group_id;
     protected $unique_id;
@@ -54,4 +55,8 @@ class UpdateGroupMembership implements ShouldQueue
             $user->recalculate_entitlements();
         }
     }
+
+    public function failed(Throwable $exception) {
+        // Do nothing?
+    }   
 }

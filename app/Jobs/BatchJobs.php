@@ -19,6 +19,7 @@ class BatchJobs implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 10000;
+    public $tries = 1;
 
     protected $job_type;
     protected $payload;
@@ -66,5 +67,9 @@ class BatchJobs implements ShouldQueue
                 ]);
             }
         }
+    }
+    
+    public function failed(Throwable $exception) {
+        // Do nothing?
     }
 }
