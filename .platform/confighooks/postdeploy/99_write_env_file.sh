@@ -21,3 +21,7 @@ do
     echo "$line" >> $DOTENV_FILE
 done < <(jq -r <<< $ENVIRONMENT_JSON \
          'to_entries|map("\(.key)=\"\(.value)\"\u0000")[]')
+
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start laravel-worker:*
