@@ -21,7 +21,3 @@ do
     echo "$line" >> $DOTENV_FILE
 done < <(jq -r <<< $ENVIRONMENT_JSON \
          'to_entries|map("\(.key)=\"\(.value)\"\u0000")[]')
-
-# Run Graphene Compilation Script and Update .env
-su - webapp -c "cd /var/app/current; /usr/bin/php artisan queue:restart"
-su - webapp -c "cd /var/app/current; nohup /usr/bin/php artisan queue:work > ~/queues.out 2> ~/queues.err < /dev/null &"
