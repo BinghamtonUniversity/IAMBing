@@ -33,16 +33,29 @@ class DatabaseSeeder extends Seeder
         $example_user = new User(['first_name'=>'Example','last_name'=>'User','attributes'=>['nickname'=>'Dude'],'default_username'=>'euser1']);
         $example_user->save();
 
-        $group1 = new Group(['name'=>'Full Time Staff','user_id'=>$example_user->id,'affiliation'=>'staff','order'=>2]);
+        $group1 = new Group(['name'=>'Staff','user_id'=>$example_user->id,'affiliation'=>'staff','order'=>2]);
         $group1->save();
-        $group2 = new Group(['name'=>'Part Time Staff','user_id'=>$example_user->id,'affiliation'=>'staff','order'=>4]);
+        $group2 = new Group(['name'=>'Matriculated Students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>3]);
         $group2->save();
         $group3 = new Group(['name'=>'Faculty','user_id'=>$example_user->id,'affiliation'=>'faculty','order'=>1]);
         $group3->save();
-        $group4 = new Group(['name'=>'Student','user_id'=>$example_user->id,'affiliation'=>'student','order'=>3]);
+        $group4 = new Group(['name'=>'Nonatriculated Students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>4]);
         $group4->save();
         $group5 = new Group(['name'=>'Applicants','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
         $group5->save();
+        $group6 = new Group(['name'=>'Admitted Applicants','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
+        $group6->save();
+        $group7 = new Group(['name'=>'Alumni','user_id'=>$example_user->id,'affiliation'=>'alum','order'=>6]);
+        $group7->save();
+        $group8 = new Group(['name'=>'Recent Alumni','user_id'=>$example_user->id,'affiliation'=>'alum','order'=>6]);
+        $group8->save();
+        $group9 = new Group(['name'=>'Retirees','user_id'=>$example_user->id,'affiliation'=>null,'order'=>6]);
+        $group9->save();
+        $group10 = new Group(['name'=>'RF Staff','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
+        $group10->save();
+        $group11 = new Group(['name'=>'Volunteers','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
+        $group11->save();
+
 
         $endpoint1 = new Endpoint(['name'=>'DataProxy Default','config'=>[
             'content_type' => 'application/x-www-form-urlencoded',
@@ -60,7 +73,7 @@ class DatabaseSeeder extends Seeder
 
         $entitlement1 = new Entitlement(['name'=>'Wifi','system_id'=>$system1->id]);
         $entitlement1->save();
-        $entitlement2 = new Entitlement(['name'=>'VPN','system_id'=>$system1->id]);
+        $entitlement2 = new Entitlement(['name'=>'Staff VPN','system_id'=>$system1->id]);
         $entitlement2->save();
         $entitlement3 = new Entitlement(['name'=>'Email','system_id'=>$system2->id]);
         $entitlement3->save();
@@ -68,6 +81,8 @@ class DatabaseSeeder extends Seeder
         $entitlement4->save();
         $entitlement5 = new Entitlement(['name'=>'Undergrad Slate','system_id'=>$system1->id]);
         $entitlement5->save();
+        $entitlement6 = new Entitlement(['name'=>'Alumni Email','system_id'=>$system2->id]);
+        $entitlement6->save();
 
         // Provision Wifi
         $group_entitlement1 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement1->id]);
@@ -88,7 +103,16 @@ class DatabaseSeeder extends Seeder
         $group_entitlement7->save();
         $group_entitlement8 = new GroupEntitlement(['group_id'=>$group4->id,'entitlement_id'=>$entitlement3->id]);
         $group_entitlement8->save();
+        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group10->id,'entitlement_id'=>$entitlement3->id]);
+        $group_entitlement8->save();
 
+        // Alumni Email
+        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group7->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement8->save();
+        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group8->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement8->save();
+
+        // Staff VPN
         $group_entitlement9 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement2->id]);
         $group_entitlement9->save();
         $group_entitlement10 = new GroupEntitlement(['group_id'=>$group3->id,'entitlement_id'=>$entitlement2->id]);
@@ -97,6 +121,8 @@ class DatabaseSeeder extends Seeder
         // Applicants in Slate
         $group_entitlement10 = new GroupEntitlement(['group_id'=>$group5->id,'entitlement_id'=>$entitlement5->id]);
         $group_entitlement10->save();
+        $group_entitlement11 = new GroupEntitlement(['group_id'=>$group6->id,'entitlement_id'=>$entitlement5->id]);
+        $group_entitlement11->save();
 
     }
 }
