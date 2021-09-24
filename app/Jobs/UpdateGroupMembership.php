@@ -40,19 +40,23 @@ class UpdateGroupMembership implements ShouldQueue
             $q->where('name',$unique_id)->where('value',$api_user['ids'][$unique_id]);
         })->first();
 
-        // User Doesn't Exist... Create It!
-        if (is_null($user)) {
-            $user = new User($api_user);
-            $user->save();
-            $user_id = $user->id;
-        } 
+        try {
+            // User Doesn't Exist... Create It!
+            if (is_null($user)) {
+                $user = new User($api_user);
+                $user->save();
+                $user_id = $user->id;
+            } 
 
-        // Add Member to Group
-        $group_member = GroupMember::where('group_id',$group_id)->where('user_id',$user->id)->first();
-        if (is_null($group_member)) {
-            $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
-            $group_member->save();
-            $user->recalculate_entitlements();
+            // Add Member to Group
+            $group_member = GroupMember::where('group_id',$group_id)->where('user_id',$user->id)->first();
+            if (is_null($group_member)) {
+                $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
+                $group_member->save();
+                $user->recalculate_entitlements();
+            }
+        } catch (Throwable $exception) {
+            // Do Nothing... wait until the sync process runs again!
         }
     }
 
