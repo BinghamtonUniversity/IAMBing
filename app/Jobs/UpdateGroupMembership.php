@@ -17,13 +17,11 @@ class UpdateGroupMembership implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $timeout = 30;
+
     protected $group_id;
     protected $unique_id;
     protected $api_user;
-
-    public function middleware() {
-        return [new WithoutOverlapping($this->group_id)];
-    }
 
     public function __construct($config) {
         $this->group_id = $config['group_id'];
