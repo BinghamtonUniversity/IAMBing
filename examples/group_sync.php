@@ -36,7 +36,7 @@ class IAMBingGroupSync
     ];
 
     static private $groups = [
-        'Full Time Staff'=>['B00505893','B00612268'],
+        'Staff'=>['B00505893','B00612268'],
         'Avengers'=>['B0034346','B00123234','B00505893'],
         'Applicants'=>['B00612268','B00123467'],
     ];

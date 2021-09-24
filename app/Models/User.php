@@ -17,6 +17,9 @@ class User extends Authenticatable
     protected $appends = ['ids','permissions','attributes'];
     protected $with = ['user_unique_ids','user_attributes','user_permissions'];
 
+    private $set_ids = null;
+    private $set_attributes = null;
+
     public function group_memberships(){
         return $this->hasMany(GroupMember::class,'user_id');
     }
@@ -62,13 +65,7 @@ class User extends Authenticatable
     }
 
     public function setIdsAttribute($ids) {
-        $this->save();
-        foreach($ids as $name => $value) {
-            UserUniqueID::updateOrCreate(
-                ['user_id'=>$this->id, 'name'=>$name],
-                ['value' => $value]
-            );
-        }
+        $this->set_ids = $ids;
     }
 
     public function user_attributes() {
@@ -83,14 +80,8 @@ class User extends Authenticatable
         return $attributes;
     }
 
-    public function setAttributesAttribute($ids) {
-        $this->save();
-        foreach($ids as $name => $value) {
-            UserAttribute::updateOrCreate(
-                ['user_id'=>$this->id, 'name'=>$name],
-                ['value' => $value]
-            );
-        }
+    public function setAttributesAttribute($attributes) {
+        $this->set_attributes = $attributes;
     }
 
     // Converts User Permissions to Array
@@ -127,7 +118,26 @@ class User extends Authenticatable
         return true;
     }
 
-    public function username_set() {
+    public function save_actions() {
+        // Set IDS and Attributes
+        if (!is_null($this->set_ids)) {
+            foreach($this->set_ids as $name => $value) {
+                UserUniqueID::updateOrCreate(
+                    ['user_id'=>$this->id, 'name'=>$name],
+                    ['value' => $value]
+                );
+            }    
+            $this->load('user_unique_ids');    
+        }
+        if (!is_null($this->set_attributes)) {
+            foreach($this->set_attributes as $name => $value) {
+                UserAttribute::updateOrCreate(
+                    ['user_id'=>$this->id, 'name'=>$name],
+                    ['value' => $value]
+                );
+            }   
+            $this->load('user_attributes');    
+        }
         // Create and Set New Upsername
         if (($this->first_name !== '' && $this->last_name !== '' && $this->first_name !== null && $this->last_name !== null) &&
             (!isset($this->default_username) || $this->default_username === '' || $this->default_username === null)) {
@@ -207,10 +217,10 @@ class User extends Authenticatable
     protected static function booted()
     {
         static::created(function ($user) {
-            $user->username_set();
+            $user->save_actions();
         });
         static::updated(function ($user) {
-            $user->username_set();
+            $user->save_actions();
         });
     }
 }

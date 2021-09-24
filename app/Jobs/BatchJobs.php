@@ -18,7 +18,7 @@ class BatchJobs implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 600;
+    public $timeout = 10000;
 
     protected $job_type;
     protected $payload;
@@ -53,14 +53,16 @@ class BatchJobs implements ShouldQueue
                     UpdateGroupMembership::dispatch([
                         'group_id' => $group_id,
                         'api_user' => $api_user,
+                        'unique_id' => $unique_id
                     ]);
                 }
             }
             foreach($user_ids_which_arent_group_members as $user_id) {
                 // User exists, but isn't a member... add them!
                 UpdateGroupMembership::dispatch([
-                    'user_id' => $user_id,
                     'group_id' => $group_id,
+                    'api_user' => $api_user,
+                    'unique_id' => $unique_id
                 ]);
             }
         }
