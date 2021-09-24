@@ -22,6 +22,8 @@ do
 done < <(jq -r <<< $ENVIRONMENT_JSON \
          'to_entries|map("\(.key)=\"\(.value)\"\u0000")[]')
 
+# Supervisor Init Functions
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl start laravel-worker:*
+sudo supervisorctl restart laravel-worker:*
