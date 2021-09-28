@@ -18,15 +18,20 @@ class BatchJobs implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $timeout = 10000;
+    public $timeout = 20000;
     public $tries = 1;
 
     protected $job_type;
     protected $payload;
 
     public function __construct($config) {
+        $this->onQueue('batch_jobs');
         $this->job_type = $config['job_type'];
         $this->payload = $config['payload'];
+    }
+
+    public function middleware() {
+        return [(new WithoutOverlapping($this->payload['group_id']))->releaseAfter(5)];
     }
 
     public function handle()
@@ -51,20 +56,20 @@ class BatchJobs implements ShouldQueue
             foreach($api_users as $api_user) {
                 if ($unique_ids_which_dont_exist->contains($api_user['ids'][$unique_id])) {
                     // User Doesn't exist.. add them!
-                    UpdateGroupMembership::dispatch([
+                    UpdateGroupMembership::dispatchSync([
                         'group_id' => $group_id,
                         'api_user' => $api_user,
                         'unique_id' => $unique_id
-                    ]);
+                    ])->afterCommit();
                 }
             }
             foreach($user_ids_which_arent_group_members as $user_id) {
                 // User exists, but isn't a member... add them!
-                UpdateGroupMembership::dispatch([
+                UpdateGroupMembership::dispatchSync([
                     'group_id' => $group_id,
                     'api_user' => $api_user,
                     'unique_id' => $unique_id
-                ]);
+                ])->afterCommit();
             }
         }
     }

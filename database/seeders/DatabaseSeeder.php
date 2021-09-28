@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
         $group2->save();
         $group3 = new Group(['name'=>'Faculty','user_id'=>$example_user->id,'affiliation'=>'faculty','order'=>1]);
         $group3->save();
-        $group4 = new Group(['name'=>'Nonatriculated Students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>4]);
+        $group4 = new Group(['name'=>'Nonmatriculated Students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>4]);
         $group4->save();
         $group5 = new Group(['name'=>'Applicants','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
         $group5->save();
