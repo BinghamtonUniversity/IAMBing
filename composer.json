@@ -12,6 +12,7 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "mustache/mustache": "^2.13",
+        "predis/predis": "^1.1",
         "subfission/cas": "^4.1"
     },
     "require-dev": {
