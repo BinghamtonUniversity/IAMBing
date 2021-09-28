@@ -31,15 +31,14 @@ class BatchJobs implements ShouldQueue
         $this->payload = $config['payload'];
     }
 
-    public function middleware() {
-        return [(new WithoutOverlapping($this->payload['group_id']))->releaseAfter(5)];
-    }
+    // public function middleware() {
+        // return [(new WithoutOverlapping($this->payload['group_id']))->releaseAfter(5)];
+    // }
 
     public function handle()
     {
         $job_type = $this->job_type;
         $payload = $this->payload;
-
         if ($job_type === 'update_group_memberships') {
             $api_users = $payload['api_users'];
             $unique_id = $payload['unique_id'];
@@ -55,22 +54,24 @@ class BatchJobs implements ShouldQueue
             $user_ids_which_arent_group_members = $user_ids->pluck('user_id')->diff($group_member_user_ids);
 
             foreach($api_users as $api_user) {
+                $userinfo = $user_ids->firstWhere('unique_id',$api_user['ids'][$unique_id]);
                 if ($unique_ids_which_dont_exist->contains($api_user['ids'][$unique_id])) {
-                    // User Doesn't exist.. add them!
+                    // User Doesn't exist.. create them!
+                    echo "Creating: ".$api_user['first_name']."\n";
+                    UpdateGroupMembership::dispatch([
+                        'group_id' => $group_id,
+                        'api_user' => $api_user,
+                        'unique_id' => $unique_id
+                    ]);
+                } else if (!is_null($userinfo) && $user_ids_which_arent_group_members->contains($userinfo->user_id)) {
+                    // User Exists, but isnt a member... add them to the group!
+                    echo "Adding: ".$api_user['first_name']."\n";
                     UpdateGroupMembership::dispatch([
                         'group_id' => $group_id,
                         'api_user' => $api_user,
                         'unique_id' => $unique_id
                     ]);
                 }
-            }
-            foreach($user_ids_which_arent_group_members as $user_id) {
-                // User exists, but isn't a member... add them!
-                UpdateGroupMembership::dispatch([
-                    'group_id' => $group_id,
-                    'api_user' => $api_user,
-                    'unique_id' => $unique_id
-                ]);
             }
         }
     }

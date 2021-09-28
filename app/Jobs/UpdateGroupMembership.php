@@ -32,9 +32,9 @@ class UpdateGroupMembership implements ShouldQueue
         $this->api_user = $config['api_user'];
     }
 
-    public function middleware() {
-        return [(new WithoutOverlapping($this->api_user['ids'][$this->unique_id]))->releaseAfter(5)];
-    }
+    // public function middleware() {
+    //     return [(new WithoutOverlapping($this->api_user['ids'][$this->unique_id]))->releaseAfter(5)];
+    // }
 
     public function handle()
     {
@@ -68,5 +68,6 @@ class UpdateGroupMembership implements ShouldQueue
 
     public function failed(Throwable $exception) {
         // Do nothing?
+        Log::debug($exception->getMessage());
     }   
 }
