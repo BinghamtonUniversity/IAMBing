@@ -25,7 +25,7 @@ class BatchJobs implements ShouldQueue
     protected $payload;
 
     public function __construct($config) {
-        $this->onQueue('batch_jobs');
+        // $this->onQueue('batch_jobs');
         $this->job_type = $config['job_type'];
         $this->payload = $config['payload'];
     }
@@ -60,7 +60,7 @@ class BatchJobs implements ShouldQueue
                         'group_id' => $group_id,
                         'api_user' => $api_user,
                         'unique_id' => $unique_id
-                    ])->afterCommit();
+                    ]);
                 }
             }
             foreach($user_ids_which_arent_group_members as $user_id) {
@@ -69,7 +69,7 @@ class BatchJobs implements ShouldQueue
                     'group_id' => $group_id,
                     'api_user' => $api_user,
                     'unique_id' => $unique_id
-                ])->afterCommit();
+                ]);
             }
         }
     }

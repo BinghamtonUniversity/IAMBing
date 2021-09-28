@@ -25,7 +25,7 @@ class UpdateGroupMembership implements ShouldQueue
     protected $api_user;
 
     public function __construct($config) {
-        $this->onQueue('update_group_memberships');
+        // $this->onQueue('update_group_memberships');
         $this->group_id = $config['group_id'];
         $this->unique_id = $config['unique_id'];
         $this->api_user = $config['api_user'];
