@@ -12,6 +12,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 
 use App\Models\User;
 use App\Models\GroupMember;
+use Throwable;
 
 class UpdateGroupMembership implements ShouldQueue
 {
@@ -45,7 +46,7 @@ class UpdateGroupMembership implements ShouldQueue
             $q->where('name',$unique_id)->where('value',$api_user['ids'][$unique_id]);
         })->first();
 
-        try {
+        // try {
             // User Doesn't Exist... Create It!
             if (is_null($user)) {
                 $user = new User($api_user);
@@ -60,9 +61,9 @@ class UpdateGroupMembership implements ShouldQueue
                 $group_member->save();
                 $user->recalculate_entitlements();
             }
-        } catch (Throwable $exception) {
+        // } catch (Throwable $exception) {
             // Do Nothing... wait until the sync process runs again!
-        }
+        // }
     }
 
     public function failed(Throwable $exception) {

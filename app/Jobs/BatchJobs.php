@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\User;
 use App\Models\GroupMember;
+use Throwable;
 
 class BatchJobs implements ShouldQueue
 {
