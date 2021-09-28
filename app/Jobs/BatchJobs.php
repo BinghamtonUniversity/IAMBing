@@ -56,7 +56,7 @@ class BatchJobs implements ShouldQueue
             foreach($api_users as $api_user) {
                 if ($unique_ids_which_dont_exist->contains($api_user['ids'][$unique_id])) {
                     // User Doesn't exist.. add them!
-                    UpdateGroupMembership::dispatchSync([
+                    UpdateGroupMembership::dispatch([
                         'group_id' => $group_id,
                         'api_user' => $api_user,
                         'unique_id' => $unique_id
@@ -65,7 +65,7 @@ class BatchJobs implements ShouldQueue
             }
             foreach($user_ids_which_arent_group_members as $user_id) {
                 // User exists, but isn't a member... add them!
-                UpdateGroupMembership::dispatchSync([
+                UpdateGroupMembership::dispatch([
                     'group_id' => $group_id,
                     'api_user' => $api_user,
                     'unique_id' => $unique_id
