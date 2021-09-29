@@ -5,7 +5,8 @@ ajax.get('/api/configuration/',function(app_config) {
         {type:"text", name:"name", label:"Name",required:true},
         {type:"textarea", name:"description", label:"Description",required:false},
         {type:"user", name:"user_id",required:true, label:"Group Owner", template:"{{#attributes.owner}}{{first_name}} {{last_name}}{{/attributes.owner}}"},
-        {type:"select",label: "Affiliation",name:"affiliation",options:affiliate_options}
+        {type:"select",label: "Affiliation",name:"affiliation",options:affiliate_options},
+        {name:"type","label":"Type",type:"select",options:[{label:'Manually Managed',value:'manual'},{label:'Automatically Managed',value:'auto'}]},
     ];
 
     ajax.get('/api/groups',function(data) {

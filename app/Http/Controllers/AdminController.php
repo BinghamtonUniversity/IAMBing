@@ -74,7 +74,11 @@ class AdminController extends Controller
 
     public function group_members(Request $request, Group $group) {
         return view('default.admin',['page'=>'groups_members','ids'=>[$group->id],'title'=>'Manage "'.$group->name.'" Group Members','help'=>
-            'Use this page to add / remove users from the current group.'
+            'Use this page to add / remove users from the current group.',
+            'actions' => [
+                ($group->type==='manual')?["name"=>"create","label"=>"Add User to Group"]:'','','',
+                ($group->type==='manual')?["name"=>"delete","label"=>"Remove User from Group"]:'',
+            ],
         ]);
     }
 

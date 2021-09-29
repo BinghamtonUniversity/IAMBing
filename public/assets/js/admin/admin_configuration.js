@@ -52,7 +52,7 @@ gforms.user_attributes = new gform(
         {type:"hidden", name:"id"},
         {type:"hidden", name:"name", value:'user_attributes'},
         {type: "fieldset",label:'Attribute',columns:3,name: "config",array:{max:100},fields: 
-            [{label: "Label",name: "label",},{label: "Name",name: "name"}]
+            [{label: "Label",name: "label",},{label: "Name",name: "name"},{type:"checkbox", name:"array", label:"Multi-Value Attribute", value:false}]
     }],
     "el":".user_attributes",
     "actions":[

@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('first_name')->nullable()->default(null);
             $table->string('last_name')->nullable()->default(null);
             $table->string('default_username')->nullable()->default(null)->index();
+            $table->string('default_email')->nullable()->default(null)->index();
             $table->unsignedBigInteger('sponsor_user_id')->default(null)->nullable()->index();
             $table->rememberToken();
             $table->timestamps();

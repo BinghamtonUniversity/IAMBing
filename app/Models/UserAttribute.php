@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserAttribute extends Model
 {
-    protected $fillable = ['user_id','name','value'];
+    protected $fillable = ['user_id','name','value','array'];
     protected $table = 'user_attributes';
+    protected $casts = ['array'=>'boolean'];
 
     public function user(){
         return $this->belongsTo(User::class);

@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['active','sponsored','default_username', 'ids', 'attributes', 'first_name', 'last_name', 'sponsor_user_id'];
+    protected $fillable = ['active','sponsored','default_username', 'default_email', 'ids', 'attributes', 'first_name', 'last_name', 'sponsor_user_id'];
     protected $hidden = ['user_unique_ids','user_attributes', 'user_permissiins', 'password', 'remember_token','created_at','updated_at'];
     protected $appends = ['ids','permissions','attributes'];
     protected $with = ['user_unique_ids','user_attributes','user_permissions'];
@@ -75,7 +75,11 @@ class User extends Authenticatable
     public function getAttributesAttribute() {
         $attributes = [];
         foreach($this->user_attributes as $attribute) {
-            $attributes[$attribute['name']] = $attribute['value'];
+            if ($attribute['array']===true) {
+                $attributes[$attribute['name']] = explode(',',$attribute['value']);
+            } else {
+                $attributes[$attribute['name']] = $attribute['value'];
+            }
         }
         return $attributes;
     }
@@ -133,7 +137,7 @@ class User extends Authenticatable
             foreach($this->set_attributes as $name => $value) {
                 UserAttribute::updateOrCreate(
                     ['user_id'=>$this->id, 'name'=>$name],
-                    ['value' => $value]
+                    ['value' => is_array($value)?implode(',',$value):$value,'array'=>is_array($value)]
                 );
             }   
             $this->load('user_attributes');    

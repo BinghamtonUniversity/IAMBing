@@ -46,7 +46,7 @@ class GroupController extends Controller
     }
 
     public function get_members(Request $request, Group $group){
-        return GroupMember::select('id','user_id','type')->where('group_id',$group->id)->with('simple_user')->get();
+        return GroupMember::select('id','user_id')->where('group_id',$group->id)->with('simple_user')->get();
     }
 
     public function add_member(Request $request, Group $group){
@@ -54,7 +54,6 @@ class GroupController extends Controller
         $group_membership = new GroupMember([
            'group_id'=>$group->id,
            'user_id'=>$user->id,
-           'type'=>'internal',
         ]);
         $group_membership->save();
         $user->recalculate_entitlements();
