@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\User;
 use App\Models\GroupMember;
@@ -24,46 +25,42 @@ class UpdateGroupMembership implements ShouldQueue
     protected $group_id;
     protected $unique_id;
     protected $api_user;
+    protected $user_id;
 
     public function __construct($config) {
-        // $this->onQueue('update_group_memberships');
         $this->group_id = $config['group_id'];
-        $this->unique_id = $config['unique_id'];
-        $this->api_user = $config['api_user'];
+        $this->unique_id = isset($config['unique_id'])?$config['unique_id']:null;
+        $this->api_user = isset($config['api_user'])?$config['api_user']:null;
+        $this->user_id = isset($config['user_id'])?$config['user_id']:null;
     }
 
-    // public function middleware() {
-    //     return [(new WithoutOverlapping($this->api_user['ids'][$this->unique_id]))->releaseAfter(5)];
-    // }
-
-    public function handle()
-    {
+    public function handle() {
         $group_id = $this->group_id;
         $unique_id = $this->unique_id;
         $api_user = $this->api_user;
+        $user_id = $this->user_id;
 
-        $user = User::whereHas('user_unique_ids', function($q) use ($unique_id, $api_user){
-            $q->where('name',$unique_id)->where('value',$api_user['ids'][$unique_id]);
-        })->first();
+        if (is_null($user_id)) {
+            $user = User::whereHas('user_unique_ids', function($q) use ($unique_id, $api_user){
+                $q->where('name',$unique_id)->where('value',$api_user['ids'][$unique_id]);
+            })->first();
+        } else {
+            $user = User::where('id',$user_id)->first();
+        }
 
-        // try {
-            // User Doesn't Exist... Create It!
-            if (is_null($user)) {
-                $user = new User($api_user);
-                $user->save();
-                $user_id = $user->id;
-            } 
+        if (is_null($user)) {
+            $user = new User($api_user);
+            $user->save();
+            $user_id = $user->id;
+        } 
 
-            // Add Member to Group
-            $group_member = GroupMember::where('group_id',$group_id)->where('user_id',$user->id)->first();
-            if (is_null($group_member)) {
-                $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
-                $group_member->save();
-                $user->recalculate_entitlements();
-            }
-        // } catch (Throwable $exception) {
-            // Do Nothing... wait until the sync process runs again!
-        // }
+        // Add Member to Group
+        $group_member = GroupMember::where('group_id',$group_id)->where('user_id',$user->id)->first();
+        if (is_null($group_member)) {
+            $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
+            $group_member->save();
+            $user->recalculate_entitlements();
+        }
     }
 
     public function failed(Throwable $exception) {

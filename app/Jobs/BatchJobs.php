@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\User;
 use App\Models\GroupMember;
@@ -54,18 +55,8 @@ class BatchJobs implements ShouldQueue
             $user_ids_which_arent_group_members = $user_ids->pluck('user_id')->diff($group_member_user_ids);
 
             foreach($api_users as $api_user) {
-                $userinfo = $user_ids->firstWhere('unique_id',$api_user['ids'][$unique_id]);
                 if ($unique_ids_which_dont_exist->contains($api_user['ids'][$unique_id])) {
                     // User Doesn't exist.. create them!
-                    echo "Creating: ".$api_user['first_name']."\n";
-                    UpdateGroupMembership::dispatch([
-                        'group_id' => $group_id,
-                        'api_user' => $api_user,
-                        'unique_id' => $unique_id
-                    ]);
-                } else if (!is_null($userinfo) && $user_ids_which_arent_group_members->contains($userinfo->user_id)) {
-                    // User Exists, but isnt a member... add them to the group!
-                    echo "Adding: ".$api_user['first_name']."\n";
                     UpdateGroupMembership::dispatch([
                         'group_id' => $group_id,
                         'api_user' => $api_user,
@@ -73,9 +64,16 @@ class BatchJobs implements ShouldQueue
                     ]);
                 }
             }
+            foreach($user_ids_which_arent_group_members as $user_id) {
+                // User Exists, but isnt a member... add them to the group!
+                UpdateGroupMembership::dispatch([
+                    'group_id' => $group_id,
+                    'user_id' => $user_id,
+                ]);
+            }
         }
     }
-    
+
     public function failed(Throwable $exception) {
         // Do nothing?
     }
