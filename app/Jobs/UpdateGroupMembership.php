@@ -62,7 +62,7 @@ class UpdateGroupMembership implements ShouldQueue
         // Add Member to Group
         $group_member = GroupMember::where('group_id',$group_id)->where('user_id',$user->id)->first();
         if (is_null($group_member)) {
-            $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id,'type'=>'external']);
+            $group_member = new GroupMember(['group_id'=>$group_id,'user_id'=>$user->id]);
             $group_member->save();
             $user->recalculate_entitlements();
         }
