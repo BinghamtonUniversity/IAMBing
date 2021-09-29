@@ -20,7 +20,7 @@ class UpdateGroupMembership implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 30;
-    public $tries = 1;
+    public $tries = 10;
 
     protected $group_id;
     protected $unique_id;
@@ -32,6 +32,11 @@ class UpdateGroupMembership implements ShouldQueue
         $this->unique_id = isset($config['unique_id'])?$config['unique_id']:null;
         $this->api_user = isset($config['api_user'])?$config['api_user']:null;
         $this->user_id = isset($config['user_id'])?$config['user_id']:null;
+    }
+
+    public function middleware() {
+        $unique_id = $this->user_id?$this->user_id:$this->api_user['ids'][$this->unique_id];
+        return [(new WithoutOverlapping($unique_id))->releaseAfter(60)];
     }
 
     public function handle() {

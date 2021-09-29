@@ -24,15 +24,17 @@ $('#adminDataGrid').html(`
         </div>
     </div>
     <div class="col-sm-9 user-view" style="display:none;">
-    <div class="col-sm-6">
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">User</h3></div>
-            <div class="panel-body user-edit"></div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 class="panel-title">User</h3></div>
+                    <div class="panel-body user-edit"></div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="userinfo-column"></div>
+            </div>
         </div>
-    </div>
-    <div class="col-sm-6">
-        <div class="userinfo-column"></div>
-    </div>
     </div>
 </div>
 <style>

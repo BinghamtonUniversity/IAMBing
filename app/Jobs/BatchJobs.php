@@ -21,20 +21,19 @@ class BatchJobs implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 20000;
-    public $tries = 1;
+    public $tries = 10;
 
     protected $job_type;
     protected $payload;
 
     public function __construct($config) {
-        // $this->onQueue('batch_jobs');
         $this->job_type = $config['job_type'];
         $this->payload = $config['payload'];
     }
 
-    // public function middleware() {
-        // return [(new WithoutOverlapping($this->payload['group_id']))->releaseAfter(5)];
-    // }
+    public function middleware() {
+        return [(new WithoutOverlapping($this->payload['group_id']))->releaseAfter(60)];
+    }
 
     public function handle()
     {
