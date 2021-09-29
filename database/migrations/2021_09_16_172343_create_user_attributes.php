@@ -18,6 +18,7 @@ class CreateUserAttributes extends Migration
             $table->unsignedBigInteger('user_id')->index();
             $table->string('name');
             $table->string('value')->nullable()->default(null);
+            $table->boolean('array')->default(false);
             $table->timestamps();
             $table->index(['user_id', 'name']);
         });

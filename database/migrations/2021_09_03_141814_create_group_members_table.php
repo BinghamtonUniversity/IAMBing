@@ -17,7 +17,6 @@ class CreateGroupMembersTable extends Migration
             $table->id();
             $table->unsignedBigInteger('group_id')->index();
             $table->unsignedBigInteger('user_id')->index();
-            $table->enum('type',['internal','external']);
             $table->unique(['user_id','group_id']);
             $table->foreign('group_id')->references('id')->on('groups');
             $table->foreign('user_id')->references('id')->on('users');

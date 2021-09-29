@@ -20,6 +20,9 @@ class CreateGroupsTable extends Migration
             $table->string('affiliation')->nullable()->default(null);
             $table->unsignedInteger('order')->default(4294967295);
             $table->unsignedBigInteger('user_id')->index(); // Owner
+            $table->enum('type',['manual','auto'])->default('manual');
+            // Delete user if they are removed from this group (and are not a member of any other groups)
+            $table->boolean('purge_user_on_remove')->default(false);
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users');
         });
