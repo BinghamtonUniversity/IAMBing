@@ -21,11 +21,12 @@ $('#adminDataGrid').html(`
         These are the various affiliations a person may have.  <a href="https://infrastructure.tamu.edu/directory/attribute/attribute_eduPersonAffiliation.html">More Info</a>
     </div>
     <div class="affiliations"></div>
-    <h3>Database Reset</h3>
+    <h3>Database / Job Queue Reset</h3>
     <div class="alert alert-info">
-    Refresh the IAMBing Database! (Seriously guys, this is pretty serious)
+    Refresh the IAMBing Database and/or Redis Job Queue! (Seriously guys, this is pretty serious)
     </div>
     <div class="btn btn-danger nuke_database">Reset Database</div>
+    <div class="btn btn-danger nuke_redis">Flush Job Queue (Redis)</div>
 `);
 
 var gforms = {};
@@ -104,10 +105,17 @@ gforms.affiliations = new gform(
 
 $('.nuke_database').on('click',function() {
     toastr.warning('Database reset in progress...');
-    ajax.get('/db/refresh',function(data) {
+    ajax.get('/api/configuration/refresh/db',function(data) {
         toastr.success('Database has been reset!');
     });
 });
+$('.nuke_redis').on('click',function() {
+    toastr.warning('Redis Job Queue flush in progress...');
+    ajax.get('/api/configuration/refresh/redis',function(data) {
+        toastr.success('Redis Job Queue has been reset!');
+    });
+});
+
 
 ajax.get('/api/configuration/',function(data) {
     _.each(data,function(item) {
