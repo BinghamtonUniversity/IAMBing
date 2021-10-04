@@ -148,7 +148,7 @@ user_entitlements_template = `
 <h5>Enforced</h5>
 <div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
 <div style="font-size:20px;">
-{{#entitlements}}
+{{#user_entitlements}}
     {{#pivot.override}}
         {{#pivot.type === 'remove'}}
             <div class="label label-danger">{{name}}</div>
@@ -162,11 +162,11 @@ user_entitlements_template = `
     {{^pivot.override}}
         <div class="label label-default">{{name}}</div>
     {{/}}
-{{/entitlements}}
+{{/user_entitlements}}
 </div>
-{{^entitlements}}
+{{^user_entitlements}}
     <div class="alert alert-warning">No Entitlements</div>
-{{/entitlements}}
+{{/user_entitlements}}
 <hr>
 <h5>Calculated</h5>
 <div class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements which are automatically calculated based on group memberships</div>

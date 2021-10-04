@@ -66,9 +66,9 @@ class DatabaseSeeder extends Seeder
         ]]);
         $endpoint1->save();
 
-        $system1 = new System(['name'=>'BU','config'=>['default_username_template'=>'{{default_username}}']]);
+        $system1 = new System(['name'=>'BU','config'=>['default_account_id_template'=>'{{default_username}}']]);
         $system1->save();
-        $system2 = new System(['name'=>'Google Workspace','config'=>['default_username_template'=>'{{default_username}}@binghamton.edu']]);
+        $system2 = new System(['name'=>'Google Workspace','config'=>['default_account_id_template'=>'{{default_username}}@binghamton.edu']]);
         $system2->save();
 
         $entitlement1 = new Entitlement(['name'=>'Wifi','system_id'=>$system1->id]);

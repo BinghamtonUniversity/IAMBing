@@ -25,7 +25,7 @@ class UserController extends Controller
     }
 
     public function get_user(Request $request, User $user) {
-        $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->with('entitlements')->with('sponsored_users')->first();
+        $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->with('user_entitlements')->with('sponsored_users')->first();
 
         // TJC -- Clean THIS UP!
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');

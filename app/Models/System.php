@@ -11,11 +11,11 @@ class System extends Model
 
 
     public function accounts(){
-        return $this->hasMany(Accounts::class,'system_id');
+        return $this->hasMany(Account::class);
     }
 
     public function entitlements(){
-        return $this->hasMany(Accounts::class,'system_id');
+        return $this->hasMany(Entitlement::class);
     }
 
 }
