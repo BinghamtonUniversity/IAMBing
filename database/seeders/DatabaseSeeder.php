@@ -68,7 +68,7 @@ class DatabaseSeeder extends Seeder
             'actions' => [
               [
                 'path' => '/ad/user/{{account.account_id}}',
-                'verb' => 'POST',
+                'verb' => 'PUT',
                 'action' => 'create',
                 'endpoint' => '1',
                 'response_code' => 200,

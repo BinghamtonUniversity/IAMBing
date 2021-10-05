@@ -55,7 +55,6 @@ class Account extends Model
                     'username' => $endpoint->config->username,
                     'password' => $endpoint->config->secret,
                 ];
-                // dd($payload);
                 $response = $http_helper->http_fetch($payload);
             }
         }
