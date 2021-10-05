@@ -59,6 +59,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/users/{user}/accounts/{account}',[UserController::class,'get_account']);
         Route::post('/users/{user}/accounts',[UserController::class,'add_account'])->middleware('can:manage_users,App\Models\User');
         Route::delete('/users/{user}/accounts/{account}',[UserController::class,'delete_account'])->middleware('can:manage_users,App\Models\User');
+        Route::put('/users/{user}/accounts/{account}',[UserController::class,'update_account'])->middleware('can:manage_users,App\Models\User');
         Route::get('/users/{user}/groups',[UserController::class,'get_groups']);
         Route::get('/users/{user}/entitlements',[UserController::class,'get_entitlements']);
         Route::post('/users/{user}/entitlements',[UserController::class,'add_entitlement']);

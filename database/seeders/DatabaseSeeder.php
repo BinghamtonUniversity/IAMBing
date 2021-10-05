@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-
         $default_username_template = new Configuration(['name'=>'default_username_template','config'=>'{{first_name.0}}{{last_name.0}}{{last_name.1}}{{last_name.2}}{{last_name.3}}{{last_name.4}}{{last_name.5}}{{last_name.6}}{{last_name.7}}{{last_name.8}}{{last_name.9}}{{last_name.10}}{{#iterator}}{{iterator}}{{/iterator}}']);
         $default_username_template->save();
         $user_attributes = new Configuration(['name'=>'user_attributes','config'=>[['name'=>"nickname",'label'=>'Nickname'],['name'=>'binghamton_emails','label'=>'Binghamton Email','array'=>true],['name'=>'personal_emails','label'=>'Personal Email','array'=>true]]]);
@@ -56,60 +55,79 @@ class DatabaseSeeder extends Seeder
         $group11 = new Group(['name'=>'Volunteers','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
         $group11->save();
 
-
         $endpoint1 = new Endpoint(['name'=>'DataProxy Default','config'=>[
             'content_type' => 'application/x-www-form-urlencoded',
-            'secret' => 'password',
+            'secret' => '',
             'type' => 'http_basic_auth',
-            'url' => 'https://hermesprod.binghamton.edu/iam',
-            'username' => 'username',
+            'url' => 'https://hermesdev.binghamton.edu/iam',
+            'username' => '',
         ]]);
         $endpoint1->save();
 
-        $system1 = new System(['name'=>'BU','config'=>['default_account_id_template'=>'{{default_username}}']]);
+        $system1 = new System(['name'=>'BU','default_account_id_template'=>'{{default_username}}','onremove' => 'disable','config'=>[
+            'actions' => [
+              [
+                'path' => '/ad/user/{{account.account_id}}',
+                'verb' => 'POST',
+                'action' => 'create',
+                'endpoint' => '1',
+                'response_code' => 200,
+              ],
+              [
+                'path' => '/ad/user/{{account.account_id}}',
+                'verb' => 'PUT',
+                'action' => 'update',
+                'endpoint' => '1',
+                'response_code' => 200,
+              ],
+              [
+                'path' => '/ad/user/{{account.account_id}}',
+                'verb' => 'DELETE',
+                'action' => 'delete',
+                'endpoint' => '1',
+                'response_code' => 200,
+              ]
+            ]
+          ]]);
         $system1->save();
-        $system2 = new System(['name'=>'Google Workspace','config'=>['default_account_id_template'=>'{{default_username}}@binghamton.edu']]);
+        $system2 = new System(['name'=>'Google Workspace','default_account_id_template'=>'{{default_username}}@binghamton.edu','onremove' => 'delete','config'=>[]]);
         $system2->save();
 
-        $entitlement1 = new Entitlement(['name'=>'Wifi','system_id'=>$system1->id]);
+        $entitlement1 = new Entitlement(['name'=>'Staff Wifi','system_id'=>$system1->id]);
         $entitlement1->save();
         $entitlement2 = new Entitlement(['name'=>'Staff VPN','system_id'=>$system1->id]);
         $entitlement2->save();
-        $entitlement3 = new Entitlement(['name'=>'Email','system_id'=>$system2->id]);
+        $entitlement3 = new Entitlement(['name'=>'Staff Bingview','system_id'=>$system1->id]);
         $entitlement3->save();
-        $entitlement4 = new Entitlement(['name'=>'Google Drive','system_id'=>$system2->id]);
+        $entitlement4 = new Entitlement(['name'=>'Google Account','system_id'=>$system2->id]);
         $entitlement4->save();
         $entitlement5 = new Entitlement(['name'=>'Undergrad Slate','system_id'=>$system1->id]);
         $entitlement5->save();
-        $entitlement6 = new Entitlement(['name'=>'Alumni Email','system_id'=>$system2->id]);
+        $entitlement6 = new Entitlement(['name'=>'Enforce 2FA','system_id'=>$system1->id]);
         $entitlement6->save();
+        $entitlement7 = new Entitlement(['name'=>'Student Wifi','system_id'=>$system1->id]);
+        $entitlement7->save();
 
         // Provision Wifi
         $group_entitlement1 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement1->id]);
         $group_entitlement1->save();
-        $group_entitlement2 = new GroupEntitlement(['group_id'=>$group2->id,'entitlement_id'=>$entitlement1->id]);
-        $group_entitlement2->save();
         $group_entitlement3 = new GroupEntitlement(['group_id'=>$group3->id,'entitlement_id'=>$entitlement1->id]);
         $group_entitlement3->save();
-        $group_entitlement4 = new GroupEntitlement(['group_id'=>$group4->id,'entitlement_id'=>$entitlement1->id]);
+        $group_entitlement2 = new GroupEntitlement(['group_id'=>$group2->id,'entitlement_id'=>$entitlement7->id]);
+        $group_entitlement2->save();
+        $group_entitlement4 = new GroupEntitlement(['group_id'=>$group4->id,'entitlement_id'=>$entitlement7->id]);
         $group_entitlement4->save();
 
-        // Provision Email
-        $group_entitlement5 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement3->id]);
+        // Provision Google
+        $group_entitlement5 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement4->id]);
         $group_entitlement5->save();
-        $group_entitlement6 = new GroupEntitlement(['group_id'=>$group2->id,'entitlement_id'=>$entitlement3->id]);
+        $group_entitlement6 = new GroupEntitlement(['group_id'=>$group2->id,'entitlement_id'=>$entitlement4->id]);
         $group_entitlement6->save();
-        $group_entitlement7 = new GroupEntitlement(['group_id'=>$group3->id,'entitlement_id'=>$entitlement3->id]);
+        $group_entitlement7 = new GroupEntitlement(['group_id'=>$group3->id,'entitlement_id'=>$entitlement4->id]);
         $group_entitlement7->save();
-        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group4->id,'entitlement_id'=>$entitlement3->id]);
+        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group4->id,'entitlement_id'=>$entitlement4->id]);
         $group_entitlement8->save();
-        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group10->id,'entitlement_id'=>$entitlement3->id]);
-        $group_entitlement8->save();
-
-        // Alumni Email
-        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group7->id,'entitlement_id'=>$entitlement6->id]);
-        $group_entitlement8->save();
-        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group8->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement8 = new GroupEntitlement(['group_id'=>$group10->id,'entitlement_id'=>$entitlement4->id]);
         $group_entitlement8->save();
 
         // Staff VPN
@@ -123,6 +141,32 @@ class DatabaseSeeder extends Seeder
         $group_entitlement10->save();
         $group_entitlement11 = new GroupEntitlement(['group_id'=>$group6->id,'entitlement_id'=>$entitlement5->id]);
         $group_entitlement11->save();
+
+        // Enable 2FA
+        $group_entitlement12 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement12->save();
+        $group_entitlement13 = new GroupEntitlement(['group_id'=>$group2->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement13->save();
+        $group_entitlement14 = new GroupEntitlement(['group_id'=>$group3->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement14->save();
+        $group_entitlement15 = new GroupEntitlement(['group_id'=>$group4->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement15->save();
+        $group_entitlement16 = new GroupEntitlement(['group_id'=>$group7->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement16->save();
+        $group_entitlement17 = new GroupEntitlement(['group_id'=>$group9->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement17->save();
+        $group_entitlement18 = new GroupEntitlement(['group_id'=>$group10->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement18->save();
+        $group_entitlement19 = new GroupEntitlement(['group_id'=>$group11->id,'entitlement_id'=>$entitlement6->id]);
+        $group_entitlement19->save();
+
+        // Staff Bingview
+        $group_entitlement20 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement3->id]);
+        $group_entitlement20->save();
+        $group_entitlement21 = new GroupEntitlement(['group_id'=>$group3->id,'entitlement_id'=>$entitlement3->id]);
+        $group_entitlement21->save();
+        
+        
 
     }
 }

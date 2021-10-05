@@ -15,18 +15,38 @@ ajax.get('/api/systems',function(data) {
         {type:"hidden", name:"id"},
         {type:"text", name:"name", label:"Name",required:true},
         {
+            "type": "text",
+            "name": "default_account_id_template",
+            "label": "Default Account ID Template",
+            "edit": true,
+            "value": "{{default_username}}",
+            "help": "This is the default template value which will be used to create this account.  (Note that the default account id can only be used to create the first account for a given user for a particular system, as further accounts with this ID will result in collisions)"
+        },
+        {
+            "type": "select",
+            "label": "On Remove",
+            "name": "onremove",
+            "options": [
+                {
+                    "label": "Delete Account",
+                    "value": "delete"
+                },
+                {
+                    "label": "Disable Account",
+                    "value": "disable"
+                },
+                {
+                    "label": "No Action",
+                    "value": "none"
+                }
+            ],
+            "help":"When an account in this system is automatically removed (due to a lost entitlement), what should happen to the account?"
+        },
+        {
 			"type": "fieldset",
 			"label": "Configuration",
 			"name": "config",
 			"fields": [
-				{
-					"type": "text",
-					"name": "default_account_id_template",
-					"label": "Default Account ID Template",
-					"edit": true,
-					"value": "{{default_username}}",
-                    "help": "This is the default template value which will be used to create this account.  (Note that the default account id can only be used to create the first account for a given user for a particular system, as further accounts with this ID will result in collisions)"
-				},
 				{
 					"type": "fieldset",
 					"label": "Actions",

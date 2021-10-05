@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class System extends Model
 {
-    protected $fillable = ['name','config'];
+    protected $fillable = ['name','onremove','default_account_id_template','config'];
     protected $casts = ['config'=>'object','entitlement_id'=>'string'];
 
 

@@ -68,7 +68,7 @@ userlist_template = `
 userinfo_column_template = `
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/accounts">Manage Accounts</a>
+    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/accounts">Override Accounts</a>
     Systems / Accounts
 </h3></div>
 <div class="panel-body user-accounts">{{>user_accounts_template}}</div>
@@ -79,7 +79,7 @@ userinfo_column_template = `
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/entitlements">Manage Entitlements</a>
+    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/entitlements">Override Entitlements</a>
     Entitlements
 </h3></div>
 <div class="panel-body user-entitlements">{{>user_entitlements_template}}</div>
@@ -179,9 +179,17 @@ user_entitlements_template = `
 
 
 user_accounts_template = `
+<div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this user, which facilitate their entitlements.</div>
 <div style="font-size:20px;">
     {{#systems}}
-        <div class="label label-default">{{name}} / {{pivot.username}}</div>
+        {{#if pivot.status === 'active'}}
+            <div class="label label-default">{{name}} / {{pivot.account_id}}</div>
+        {{/if}}
+    {{/systems}}
+    {{#systems}}
+        {{#if pivot.status === 'disabled'}}
+            <div class="label label-danger">{{name}} / {{pivot.account_id}}</div>
+        {{/if}}
     {{/systems}}
 </div>
 {{^systems}}

@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Arr;
-use App\Libraries\HttpHelper;
 
 class User extends Authenticatable
 {
@@ -47,7 +46,7 @@ class User extends Authenticatable
     }
 
     public function systems() {
-        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('username');
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->whereNull('deleted_at')->withPivot('account_id','status');
     }
 
     public function user_unique_ids() {
@@ -119,7 +118,7 @@ class User extends Authenticatable
     }
 
     private function username_check_available($username) {
-        $accounts = Account::where('username',$username)->get();
+        $accounts = Account::where('account_id',$username)->get();
         $users = User::where('default_username',$username)->get();
         if (count($accounts) > 0 || count($users) > 0) {
             return false;
@@ -171,20 +170,27 @@ class User extends Authenticatable
         }
     }
 
-    public function add_account($system, $username = null) {
+    public function add_account($system, $account_id = null) {
         $account = new Account(['user_id'=>$this->id,'system_id'=>$system->id]);
-        if (!is_null($username)) {
-            $account->username = $username;
+        if (!is_null($account_id)) {
+            $account->account_id = $account_id;
         } else {
-            $template = $system->config->default_account_id_template;
-            $account->username = $this->username_generate($template);
+            $template = $system->default_account_id_template;
+            $account->account_id = $this->username_generate($template);
         }
-        $account->save();
-        return $account;
+        $existing_account = Account::where('user_id',$this->id)->where('system_id',$system->id)->where('account_id',$account->account_id)->withTrashed()->first();
+        if (is_null($existing_account)) {
+            $account->save();
+            return $account;
+        } else {
+            $existing_account->status = 'active';
+            $existing_account->restore();
+            $existing_account->save();
+            return $existing_account;
+        }
     }
 
     public function recalculate_entitlements() {
-        // TJC -- All of this should be moved to an observer!
         // This code adds new accounts for any new systems
         $user = $this;
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
@@ -209,53 +215,45 @@ class User extends Authenticatable
                 $entitlement->update(['type'=>'add','override'=>false,'override_expiration'=>null,'override_description'=>null,'override_user_id'=>null]);
             }
         }
-        // Provision System Accounts for Unmet Entitlements
+        $this->sync_accounts();
+    }
+
+    public function sync_accounts() {
+        $user = $this;
+        // Create New Accounts for Unmet Entitlements
         $existing_user_entitlements = UserEntitlement::select('entitlement_id')->where('user_id',$user->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
         $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_user_entitlements)->get()->pluck('system_id')->unique();
-        $system_ids_has = Account::select('system_id')->where('user_id',$user->id)->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->where('user_id',$user->id)->where('status','active')->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
+        // dd($diff);
         foreach($diff as $system_id) {
             $system = System::where('id',$system_id)->first();
-            $user->add_account($system);
+            $myaccount = $user->add_account($system);
+            $myaccount->sync('create');
         }
-        // This code deletes any accounts for any systems
+
+        // Delete accounts for Former Entitlements
         $diff = $system_ids_has->diff($system_ids_needed);
-        Account::where('user_id',$user->id)->whereIn('system_id',$diff)->delete();
-        // END
-
-        $myaccounts = Account::where('user_id',$user->id)->with('system')->get();
-        $m = new \Mustache_Engine;
-
-        $myuser = User::where('id',$user->id)->with('user_entitlements')->first()->only([
-            'first_name','last_name','attributes','entitlements','ids','default_username','default_email','id'
-        ]);
-        $group_ids = GroupMember::select('group_id')->where('user_id',$myuser['id'])->get()->pluck('group_id');
-        $myuser['affiliations'] = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values()->toArray();
-        $myuser['primary_affiliation'] = isset($myuser['affiliations'][0])?$myuser['affiliations'][0]:null;
-
-        foreach($myaccounts as $myaccount) {
-            $mysystem = $myaccount->system;
-            if ($mysystem->name === 'BU') {
-                $action_definition = Arr::first($mysystem->config->actions, function ($value, $key) {
-                    return $value->action === 'update';
-                });
-                if (!is_null($action_definition)) {
-                    $endpoint = Endpoint::where('id',$action_definition->endpoint)->first();
-                    $myuser['account_id'] = $myaccount->username;
-                    $url = $m->render($endpoint->config->url.$action_definition->path, $myuser);   
-                    $http_helper = new HTTPHelper();
-                    $payload = [
-                        'url'  => $url,
-                        'verb' => $action_definition->verb,
-                        'data' => $myuser,
-                        'username' => $endpoint->config->username,
-                        'password' => $endpoint->config->secret,
-                    ];
-                    // dd($payload);
-                    $response = $http_helper->http_fetch($payload);
-                    dd($response);
-                }
+        $myaccounts_to_delete = Account::where('user_id',$user->id)->with('system')->whereIn('system_id',$diff)->get();
+        foreach($myaccounts_to_delete as $myaccount) {
+            if ($myaccount->system->onremove === 'delete') {
+                $myaccount->sync('delete');
+                $myaccount->delete();
+            } else if ($myaccount->system->onremove === 'disable') {
+                $myaccount->sync('disable');
+                $myaccount->disable();
             }
+        }
+
+        // Sync All Accounts with current attributes and entitlements
+        $myaccounts = Account::where('user_id',$user->id)->with('system')->get();
+        // dd($myaccounts->toArray());
+        foreach($myaccounts as $myaccount) {
+            // if ($myaccount->system->name === 'BU') {
+                // if ($myaccount->status === 'active') {
+                    $myaccount->sync('update');
+                // }
+            // }
         }
     }
 

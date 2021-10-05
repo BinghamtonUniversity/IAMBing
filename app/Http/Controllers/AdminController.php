@@ -49,7 +49,7 @@ class AdminController extends Controller
 
     public function user_accounts(Request $request, User $user) {
         return view('default.admin',['page'=>'users_accounts','ids'=>[$user->id],'title'=>$user->first_name.' '.$user->last_name.'\'s Accounts','help'=>
-            'Manage accounts for this user.'
+            'Note that while you may add / delete accounts for a given user, these accounts may be overridden by the user\'s entitlements.  Proceed with caution.'
         ]);
     }
 

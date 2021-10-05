@@ -17,11 +17,17 @@ class CreateAccountsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('system_id')->index();
-            $table->string('username')->index();
+            $table->string('account_id')->index();
+            $table->enum('status',[
+                'active',
+                'disabled',
+                'deleted',
+            ])->default('active');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('system_id')->references('id')->on('systems');
-            $table->unique(['user_id','system_id','username']);
+            $table->unique(['user_id','system_id','account_id','deleted_at']);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

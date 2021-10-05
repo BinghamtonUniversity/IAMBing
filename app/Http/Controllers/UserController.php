@@ -26,12 +26,9 @@ class UserController extends Controller
 
     public function get_user(Request $request, User $user) {
         $user = User::where('id',$user->id)->with('groups')->with('accounts')->with('systems')->with('user_entitlements')->with('sponsored_users')->first();
-
-        // TJC -- Clean THIS UP!
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
         $user->calculated_entitlements = Entitlement::whereIn('id',$calculated_entitlement_ids)->get();
-        // $user->entitlements = Entitlement::whereIn('id',$enforced_entitlement_ids)->get();
         $user->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values();
         $user->primary_affiliation = isset($user->affiliations[0])?$user->affiliations[0]:null;
         return $user;
@@ -40,11 +37,13 @@ class UserController extends Controller
     public function add_user(Request $request) {
         $user = new User($request->all());
         $user->save();
+        $user->recalculate_entitlements();
         return $user;
     }
 
     public function update_user(Request $request, User $user) {
         $user->update($request->all());
+        $user->recalculate_entitlements();
         return $user;
     }
 
@@ -138,17 +137,26 @@ class UserController extends Controller
 
     public function add_account(User $user, Request $request) {
         $system = System::where('id',$request->system_id)->first();
-        if ($request->has('username')) {
-            $account = $user->add_account($system, $request->username);
+        if ($request->has('account_id')) {
+            $account = $user->add_account($system, $request->account_id);
         } else {
             $account = $user->add_account($system);
         }        
-        return $account;
+        $user->recalculate_entitlements();
+        return Account::where('id',$account->id)->first();
     }
 
     public function delete_account(User $user, Account $account) {
+        $account->sync('delete');
         $account->delete();
+        $user->recalculate_entitlements();
         return "1";
+    }
+
+    public function update_account(Request $request, User $user, Account $account) {
+        $account->update($request->all());
+        $user->recalculate_entitlements();
+        return Account::where('id',$account->id)->first();
     }
 
     public function get_groups(User $user) {
