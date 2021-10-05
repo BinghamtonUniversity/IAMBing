@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Libraries\HttpHelper;
+use App\Libraries\HTTPHelper;
 use Illuminate\Support\Arr;
 
 class Account extends Model
