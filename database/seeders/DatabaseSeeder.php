@@ -86,6 +86,13 @@ class DatabaseSeeder extends Seeder
                 'action' => 'delete',
                 'endpoint' => '1',
                 'response_code' => 200,
+              ],
+              [
+                'path' => '/ad/user/{{account.account_id}}',
+                'verb' => 'GET',
+                'action' => 'info',
+                'endpoint' => '1',
+                'response_code' => 200,
               ]
             ]
           ]]);

@@ -25,6 +25,10 @@ class Account extends Model
         $this->save();
     }
 
+    public function get_info() {
+        $this->info = $this->sync('info');
+    }
+
     private function build_sync_user() {
         $myuser = User::where('id',$this->user_id)->with('user_entitlements')->first()->only([
             'first_name','last_name','attributes','entitlements','ids','default_username','default_email','id'
@@ -56,6 +60,11 @@ class Account extends Model
                     'password' => $endpoint->config->secret,
                 ];
                 $response = $http_helper->http_fetch($payload);
+                if ($response['code'] == $action_definition->response_code) {
+                    return $response['content'];
+                } else {
+                    return false;
+                }
             }
         }
     }

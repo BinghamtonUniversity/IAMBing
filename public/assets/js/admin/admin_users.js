@@ -183,12 +183,18 @@ user_accounts_template = `
 <div style="font-size:20px;">
     {{#systems}}
         {{#if pivot.status === 'active'}}
-            <div class="label label-default">{{name}} / {{pivot.account_id}}</div>
+            <div class="label label-default">
+                <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i> 
+                {{name}} / {{pivot.account_id}}
+            </div>
         {{/if}}
     {{/systems}}
     {{#systems}}
         {{#if pivot.status === 'disabled'}}
-            <div class="label label-danger">{{name}} / {{pivot.account_id}}</div>
+            <div class="label label-danger">
+                <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i> 
+                {{name}} / {{pivot.account_id}}
+            </div>
         {{/if}}
     {{/systems}}
 </div>
@@ -341,6 +347,21 @@ var manage_user = function(user_id) {
             // end
 
         });
+
+        $('body').on('click','.account-info-btn',function(e){
+            $.ajax({
+                url: '/api/users/'+user_id+'/accounts/'+e.target.dataset.id,
+                success: function(data) {
+                    var mymodal = new gform(
+                        {"fields":[
+                            {name:'output',value:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>',type:'output',label:''}
+                        ],
+                        "title":data.account_id+" Account Info",
+                        "actions":[]}
+                    ).modal();
+                }.bind(e)
+            })
+        });    
     } else {
         $('.user-view').hide();
     }
@@ -378,5 +399,4 @@ ajax.get('/api/configuration/',function(data) {
     if (typeof id !== 'undefined') {
         manage_user(id);
     }
-
 })

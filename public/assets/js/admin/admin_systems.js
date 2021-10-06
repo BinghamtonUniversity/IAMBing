@@ -81,6 +81,10 @@ ajax.get('/api/systems',function(data) {
 										{
 											"label": "Please Select an Option"
 										},
+                                        {
+											"label": "Get Account Info",
+											"value": "info"
+										},
 										{
 											"label": "Create Account",
 											"value": "create"

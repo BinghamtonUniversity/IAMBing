@@ -131,7 +131,8 @@ class UserController extends Controller
         return Account::where('user_id',$user->id)->get();
     }
 
-    public function get_account(Account $account) {
+    public function get_account(User $user, Account $account) {
+        $account->get_info();
         return $account;
     }
 
