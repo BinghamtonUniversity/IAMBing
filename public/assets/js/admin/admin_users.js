@@ -348,18 +348,19 @@ var manage_user = function(user_id) {
 
         });
 
+        var mymodal = new gform(
+            {"fields":[
+                {name:'output',value:'',type:'output',label:''}
+            ],
+            "title":"Account Info",
+            "actions":[]}
+        );
         $('body').on('click','.account-info-btn',function(e){
             $.ajax({
                 url: '/api/users/'+user_id+'/accounts/'+e.target.dataset.id,
                 success: function(data) {
-                    var mymodal = new gform(
-                        {"fields":[
-                            {name:'output',value:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>',type:'output',label:''}
-                        ],
-                        "title":data.account_id+" Account Info",
-                        "actions":[]}
-                    ).modal();
-                }.bind(e)
+                    mymodal.modal().set({output:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>'});
+                }
             })
         });    
     } else {
