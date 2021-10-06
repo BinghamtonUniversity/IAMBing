@@ -64,7 +64,9 @@ class User extends Authenticatable
     public function getEntitlementsAttribute() {
         $entitlements = [];
         foreach($this->user_entitlements as $entitlement) {
-            $entitlements[] = $entitlement->name;
+            if ($entitlement->type === 'add') {
+                $entitlements[] = $entitlement->name;
+            }
         }
         return $entitlements;
     }
