@@ -54,6 +54,12 @@ class DatabaseSeeder extends Seeder
         $group10->save();
         $group11 = new Group(['name'=>'Volunteers','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
         $group11->save();
+        $group12 = new Group(['name'=>'Sponsored Accounts in BU','user_id'=>$example_user->id,'order'=>6]);
+        $group12->save();
+        $group13 = new Group(['name'=>'Sponsored Accounts in Google','user_id'=>$example_user->id,'order'=>6]);
+        $group13->save();
+        $group14 = new Group(['name'=>'Bulk Loaded Users','user_id'=>$example_user->id,'order'=>6]);
+        $group14->save();
 
         $endpoint1 = new Endpoint(['name'=>'DataProxy Default','config'=>[
             'content_type' => 'application/x-www-form-urlencoded',
@@ -114,6 +120,8 @@ class DatabaseSeeder extends Seeder
         $entitlement6->save();
         $entitlement7 = new Entitlement(['name'=>'Student Wifi','system_id'=>$system1->id]);
         $entitlement7->save();
+        $entitlement8 = new Entitlement(['name'=>'BU Account','system_id'=>$system1->id]);
+        $entitlement8->save();
 
         // Provision Wifi
         $group_entitlement1 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement1->id]);
@@ -136,6 +144,10 @@ class DatabaseSeeder extends Seeder
         $group_entitlement8->save();
         $group_entitlement8 = new GroupEntitlement(['group_id'=>$group10->id,'entitlement_id'=>$entitlement4->id]);
         $group_entitlement8->save();
+        $group_entitlement22 = new GroupEntitlement(['group_id'=>$group13->id,'entitlement_id'=>$entitlement4->id]);
+        $group_entitlement22->save();
+        $group_entitlement24 = new GroupEntitlement(['group_id'=>$group14->id,'entitlement_id'=>$entitlement4->id]);
+        $group_entitlement24->save();
 
         // Staff VPN
         $group_entitlement9 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement2->id]);
@@ -172,8 +184,11 @@ class DatabaseSeeder extends Seeder
         $group_entitlement20->save();
         $group_entitlement21 = new GroupEntitlement(['group_id'=>$group3->id,'entitlement_id'=>$entitlement3->id]);
         $group_entitlement21->save();
-        
-        
 
+        // BU Only Accounts
+        $group_entitlement23 = new GroupEntitlement(['group_id'=>$group12->id,'entitlement_id'=>$entitlement8->id]);
+        $group_entitlement23->save();
+        $group_entitlement25 = new GroupEntitlement(['group_id'=>$group14->id,'entitlement_id'=>$entitlement8->id]);
+        $group_entitlement25->save();
     }
 }
