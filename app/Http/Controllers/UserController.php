@@ -137,16 +137,17 @@ class UserController extends Controller
     }
 
     public function add_account(User $user, Request $request) {
-        $system = System::where('id',$request->system_id)->first();
-        if ($request->has('account_id')) {
-            $account = $user->add_account($system, $request->account_id);
-        } else {
-            $account = $user->add_account($system);
+        if ($request->status === 'active' && is_null(System::where('id',$request->system_id)->where('override_active',true)->first())) {
+            return response(json_encode(['error'=>'You cannot manually activate accounts within this system!']),403)->header('Content-Type', 'application/json');
         }
-        $account->override_user_id = Auth::user()->id;
+        $system = System::where('id',$request->system_id)->first();
+        $account = $user->add_account($system, $request->account_id);
+        if ($request->override) {
+            $account->override_user_id = Auth::user()->id;
+        }
         $account->update($request->all());
         $user->recalculate_entitlements();
-        return Account::where('id',$account->id)->first();
+        return Account::where('id',$account->id)->with('override_user')->first();
     }
 
     public function delete_account(User $user, Account $account) {
@@ -157,7 +158,10 @@ class UserController extends Controller
     }
 
     public function update_account(Request $request, User $user, Account $account) {
-        if ($account->override) {
+        if ($request->status === 'active' && is_null(System::where('id',$request->system_id)->where('override_active',true)->first())) {
+            return response(json_encode(['error'=>'You cannot manually activate accounts within this system!']),403)->header('Content-Type', 'application/json');
+        }
+        if ($request->override) {
             $account->override_user_id = Auth::user()->id;
         } else {
             $account->override_description = null;
@@ -165,7 +169,7 @@ class UserController extends Controller
         }
         $account->update($request->all());
         $user->recalculate_entitlements();
-        return Account::where('id',$account->id)->first();
+        return Account::where('id',$account->id)->with('override_user')->first();
     }
 
     public function get_groups(User $user) {

@@ -20,7 +20,8 @@ class CreateSystemsTable extends Migration
             $table->enum('onremove',[
                 'disable',
                 'delete',
-            ])->default('delete');
+            ])->default('disable');
+            $table->boolean('override_active')->default(true);
             $table->json('config');
             $table->timestamps();
         });

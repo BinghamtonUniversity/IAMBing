@@ -56,8 +56,9 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
                         }
                     ],
                 },
-                {type:"checkbox", name: "override",value:true,options:[{value:false,},{value:true}],show:false,parse:true},
-                {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100}
+                {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this user\'s calculated entitlements!'},
+                {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},
+                {type:"text", name:"override_user_id", label:"Override User", show:false, parse:false,template:"{{attributes.override_user.first_name}} {{attributes.override_user.last_name}}"},    
             ]
         }).on('save',function(form_event){
             toastr.info('Processing... Please Wait')

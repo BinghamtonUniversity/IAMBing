@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class System extends Model
 {
-    protected $fillable = ['name','onremove','default_account_id_template','config'];
-    protected $casts = ['config'=>'object','entitlement_id'=>'string','id'=>'string'];
+    protected $fillable = ['name','onremove','default_account_id_template','config','override_active'];
+    protected $casts = ['config'=>'object','entitlement_id'=>'string','id'=>'string','override_active'=>'boolean'];
 
 
     public function accounts(){
