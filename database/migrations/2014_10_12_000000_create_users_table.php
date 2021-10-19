@@ -15,10 +15,10 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->boolean('active')->default(true);
+            $table->string('iamid')->nullable()->default(null)->index();
             $table->boolean('sponsored')->default(false);
-            $table->string('first_name')->nullable()->default(null);
-            $table->string('last_name')->nullable()->default(null);
+            $table->string('first_name')->nullable()->default(null)->index();
+            $table->string('last_name')->nullable()->default(null)->index();
             $table->string('default_username')->nullable()->default(null)->index();
             $table->string('default_email')->nullable()->default(null)->index();
             $table->unsignedBigInteger('sponsor_user_id')->default(null)->nullable()->index();

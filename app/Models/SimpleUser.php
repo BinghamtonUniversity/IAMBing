@@ -22,7 +22,7 @@ class SimpleUser extends Authenticatable
     }
 
     public function entitlements() {
-        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override','override_description','override_expiration');
+        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override','override_description','override_user_id');
     }
 
     public function user_permissions(){

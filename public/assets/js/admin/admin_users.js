@@ -1,15 +1,13 @@
 gform.options = {autoFocus:false};
 user_form_attributes = [
-    {type:"switch", name:"active", label:"Active", value:true, columns:6, options:[{label:'Inactive',value:false},{label:'Active',value:true}]},
     {type:"switch", name:"sponsored", label:"Sponsored", value:false, columns:6, options:[{label:'Default',value:false},{label:'Sponsored',value:true}]},
-    {type:"text", name:"id", label: 'IAMBing ID', edit:false},
+    {type:"text", name:"iamid", label: 'IAM ID', edit:false},
     {type:"text", name:"first_name", label:"First Name", required:true},
     {type:"text", name:"last_name", label:"Last Name", required:true},
     {type:"text", name:"default_username", label:"Default Username", required:false, help:'Leave blank to define automatically'},
     {type:"text", name:"default_email", label:"Default Email Address", required:false},
     {type:"user", name:"sponsor_user_id",required:false, label:"Sponsor",show:[{type:'matches',name:'sponsored',value:true}]},
 ];
-
 
 $('#adminDataGrid').html(`
 <div class="row">
@@ -152,11 +150,11 @@ user_entitlements_template = `
     {{#pivot.override}}
         {{#pivot.type === 'remove'}}
             <div class="label label-danger">{{name}}</div>
-            <div style="text-align:center;font-size:12px;">(Manually Removed Until: {{pivot.override_expiration}})</div>
+            <div style="text-align:center;font-size:12px;">(Manually Removed)</div>
         {{/}}
         {{#pivot.type === 'add'}}
             <div class="label label-success">{{name}}</div>
-            <div style="text-align:center;font-size:12px;">(Manually Added Until: {{pivot.override_expiration}})</div>
+            <div style="text-align:center;font-size:12px;">(Manually Added)</div>
         {{/}}
     {{/}}
     {{^pivot.override}}
@@ -314,7 +312,7 @@ var manage_user = function(user_id) {
                 });
             }).on('recalculate',function(form_event) {
                 form_data = form_event.form.get();
-                ajax.get('/api/users/'+form_data.id+'/recalculate',function(data) {
+                ajax.get('/api/users/'+user_id+'/recalculate',function(data) {
                     manage_user(data.id);
                 });
             });

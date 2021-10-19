@@ -73,9 +73,9 @@ class UserController extends Controller
         $search = []; $users = [];
         if (count($search_elements_parsed) === 1 && $search_elements_parsed[0]!='') {
             $search[0] = $search_elements_parsed[0];
-            $users = User::select('id','first_name','last_name','default_username','default_email')
+            $users = User::select('id','iamid','first_name','last_name','default_username','default_email')
                 ->where(function ($query) use ($search) {
-                    $query->where('id',$search[0])
+                    $query->where('iamid',$search[0])
                         ->orWhere('first_name','like',$search[0].'%')
                         ->orWhere('last_name','like',$search[0].'%')
                         ->orWhere('default_username',$search[0])
@@ -90,7 +90,7 @@ class UserController extends Controller
         } else if (count($search_elements_parsed) > 1) {
             $search[0] = $search_elements_parsed[0];
             $search[1] = $search_elements_parsed[count($search_elements_parsed)-1];
-            $users = User::select('id','first_name','last_name','default_username','default_email')
+            $users = User::select('id','iamid','first_name','last_name','default_username','default_email')
                 ->where(function ($query) use ($search) {
                     $query->where(function ($query) use ($search) {
                         $query->where('first_name','like',$search[0].'%')
@@ -103,7 +103,7 @@ class UserController extends Controller
                     ->limit(25)->get()->toArray();
         }
         foreach($users as $index => $user) {
-            $users[$index] = array_intersect_key($user, array_flip(['id','first_name','last_name','default_username','default_email']));
+            $users[$index] = array_intersect_key($user, array_flip(['id','iamid','first_name','last_name','default_username','default_email']));
         }
 
         return $users;
@@ -128,7 +128,7 @@ class UserController extends Controller
     }
 
     public function get_accounts(User $user) {
-        return Account::where('user_id',$user->id)->get();
+        return Account::where('user_id',$user->id)->with('override_user')->get();
     }
 
     public function get_account(User $user, Account $account) {
@@ -142,7 +142,9 @@ class UserController extends Controller
             $account = $user->add_account($system, $request->account_id);
         } else {
             $account = $user->add_account($system);
-        }        
+        }
+        $account->override_user_id = Auth::user()->id;
+        $account->update($request->all());
         $user->recalculate_entitlements();
         return Account::where('id',$account->id)->first();
     }
@@ -155,6 +157,12 @@ class UserController extends Controller
     }
 
     public function update_account(Request $request, User $user, Account $account) {
+        if ($account->override) {
+            $account->override_user_id = Auth::user()->id;
+        } else {
+            $account->override_description = null;
+            $account->override_user_id = null;
+        }
         $account->update($request->all());
         $user->recalculate_entitlements();
         return Account::where('id',$account->id)->first();
@@ -165,7 +173,7 @@ class UserController extends Controller
     }
 
     public function get_entitlements(User $user) {
-        $user_entitlements = UserEntitlement::where('user_id',$user->id);
+        $user_entitlements = UserEntitlement::where('user_id',$user->id)->with('override_user');
         return $user_entitlements->get();
     }
 

@@ -19,7 +19,6 @@ class CreateUserEntitlementsTable extends Migration
             $table->unsignedBigInteger('entitlement_id')->index();
             $table->enum('type', ['add','remove'])->default('add');
             $table->boolean('override')->default(false);
-            $table->date('override_expiration')->nullable()->default(null);
             $table->string('override_description', 100)->nullable()->default(null);
             $table->unsignedBigInteger('override_user_id')->nullable()->default(null)->index();
             $table->unique(['user_id','entitlement_id']);

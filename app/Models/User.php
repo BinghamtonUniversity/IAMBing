@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -30,7 +31,7 @@ class User extends Authenticatable
     }
 
     public function user_entitlements() {
-        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override','override_description','override_expiration');
+        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override','override_description','override_user_id');
     }
 
     public function user_permissions(){
@@ -201,8 +202,8 @@ class User extends Authenticatable
         // Check to see if calculated entitlements match enforced entitlements
         $existing_user_entitlements = UserEntitlement::where('user_id',$user->id)->get();
         foreach($existing_user_entitlements as $user_entitlement) {
-            if (!$user_entitlement->override || $user_entitlement->override_expiration->isPast()) {
-                $user_entitlement->update(['override'=>false,'override_expiration'=>null,'override_description'=>null,'override_user_id'=>null]);
+            if (!$user_entitlement->override) {
+                $user_entitlement->update(['override'=>false,'override_description'=>null,'override_user_id'=>null]);
                 if (!$calculated_entitlement_ids->contains($user_entitlement->entitlement_id)) {
                     $user_entitlement->delete();
                 }
@@ -213,8 +214,8 @@ class User extends Authenticatable
             if (is_null($entitlement)) {
                 $new_user_entitlement = new UserEntitlement(['user_id'=>$user->id,'entitlement_id'=>$calculated_entitlement_id]);
                 $new_user_entitlement->save();
-            } else if ((!$entitlement->override || $entitlement->override_expiration->isPast()) && $entitlement->type === 'remove') {
-                $entitlement->update(['type'=>'add','override'=>false,'override_expiration'=>null,'override_description'=>null,'override_user_id'=>null]);
+            } else if ((!$entitlement->override) && $entitlement->type === 'remove') {
+                $entitlement->update(['type'=>'add','override'=>false,'override_description'=>null,'override_user_id'=>null]);
             }
         }
         $this->sync_accounts();
@@ -227,35 +228,34 @@ class User extends Authenticatable
         $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_user_entitlements)->get()->pluck('system_id')->unique();
         $system_ids_has = Account::select('system_id')->where('user_id',$user->id)->where('status','active')->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
-        // dd($diff);
         foreach($diff as $system_id) {
-            $system = System::where('id',$system_id)->first();
-            $myaccount = $user->add_account($system);
-            $myaccount->sync('create');
+            $overridden_acct = Account::where('user_id',$user->id)->where('system_id',$system_id)->where('override',true)->first();
+            if (is_null($overridden_acct)) {
+                $system = System::where('id',$system_id)->first();
+                $myaccount = $user->add_account($system);
+                $myaccount->sync('create');
+            }
         }
 
         // Delete accounts for Former Entitlements
         $diff = $system_ids_has->diff($system_ids_needed);
         $myaccounts_to_delete = Account::where('user_id',$user->id)->with('system')->whereIn('system_id',$diff)->get();
         foreach($myaccounts_to_delete as $myaccount) {
-            if ($myaccount->system->onremove === 'delete') {
-                $myaccount->sync('delete');
-                $myaccount->delete();
-            } else if ($myaccount->system->onremove === 'disable') {
-                $myaccount->sync('disable');
-                $myaccount->disable();
+            if (!$myaccount->override) {
+                if ($myaccount->system->onremove === 'delete') {
+                    $myaccount->sync('delete');
+                    $myaccount->delete();
+                } else if ($myaccount->system->onremove === 'disable') {
+                    $myaccount->sync('disable');
+                    $myaccount->disable();
+                }
             }
         }
 
         // Sync All Accounts with current attributes and entitlements
         $myaccounts = Account::where('user_id',$user->id)->with('system')->get();
-        // dd($myaccounts->toArray());
         foreach($myaccounts as $myaccount) {
-            // if ($myaccount->system->name === 'BU') {
-                // if ($myaccount->status === 'active') {
-                    $myaccount->sync('update');
-                // }
-            // }
+            $myaccount->sync('update');
         }
     }
 
@@ -263,6 +263,9 @@ class User extends Authenticatable
     {
         static::created(function ($user) {
             $user->save_actions();
+            // Create IAM ID by base36 encoding the user id
+            $user->iamid = 'IAM'.strtoupper(base_convert($user->id,10,36));
+            $user->save();
         });
         static::updated(function ($user) {
             $user->save_actions();

@@ -23,9 +23,13 @@ class CreateAccountsTable extends Migration
                 'disabled',
                 'deleted',
             ])->default('active');
+            $table->boolean('override')->default(false);
+            $table->string('override_description', 100)->nullable()->default(null);
+            $table->unsignedBigInteger('override_user_id')->nullable()->default(null)->index();
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('system_id')->references('id')->on('systems');
             $table->unique(['user_id','system_id','account_id','deleted_at']);
+            $table->foreign('override_user_id')->references('id')->on('users');
             $table->timestamps();
             $table->softDeletes();
         });

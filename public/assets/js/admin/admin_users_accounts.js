@@ -4,10 +4,9 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
     search: false,columns: false,upload:false,download:false,title:'Users',
     entries:[],
     actions:[
-        {"name":"create","label":"Add Account"},
-        '',
-        {"label":"Change Account Status","name":"change_status","min":1,"max":1,"type":"default"},
-        '',
+        {"name":"add","label":"Create Account"},
+        {"name":"edit","label":"Change Account Status"},
+        '','',
         {"name":"delete","label":"Delete Account"},
     ],
     count:20,
@@ -16,7 +15,6 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
         {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{label:"{{name}}", value:"{{id}}"}},
         {type:"text", name:"account_id", label:"Account ID", show:[{type:'matches',name:'use_default_account_id',value:false}], required:'show',help:'This is the unique identifier which will be used for this account.  It may be a username or some other unique id.'},    
         {
-            "edit":false,
             "type": "select",
             "label": "Status",
             "name": "status",
@@ -30,43 +28,60 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
                     "value": "disabled"
                 }
             ],
-        }
+        },
+        {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this user\'s calculated entitlements!'},
+        {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},
+        {type:"text", name:"override_user_id", label:"Override User", show:false, parse:false,template:"{{attributes.override_user.first_name}} {{attributes.override_user.last_name}}"},    
     ], data: data
-    }).on("model:created",function(grid_event) {
-        ajax.post('/api/users/'+id+'/accounts',grid_event.model.attributes,function(data) {
+    }).on("add",function(grid_event) {
+        new gform({
+            "legend":"Add Manual Override Account",
+            "name": "override_account",
+            "fields": [
+                {type:"hidden", name:"id"},
+                {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{label:"{{name}}", value:"{{id}}"}},
+                {type:"text", name:"account_id", label:"Account ID", show:[{type:'matches',name:'use_default_account_id',value:false}], required:'show',help:'This is the unique identifier which will be used for this account.  It may be a username or some other unique id.'},    
+                {
+                    "type": "select",
+                    "label": "Status",
+                    "name": "status",
+                    "options": [
+                        {
+                            "label": "Active",
+                            "value": "active"
+                        },
+                        {
+                            "label": "Disabled",
+                            "value": "disabled"
+                        }
+                    ],
+                },
+                {type:"checkbox", name: "override",value:true,options:[{value:false,},{value:true}],show:false,parse:true},
+                {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100}
+            ]
+        }).on('save',function(form_event){
+            toastr.info('Processing... Please Wait')
+            form_event.form.trigger('close');
+            ajax.post('/api/users/'+id+'/accounts',form_event.form.get(),function(data) {
+                gdg.add(data);
+            },function(data){
+                // Do nothing?
+            });
+        }).on('cancel',function(form_event){
+            form_event.form.trigger('close');
+        }).modal()
+    }).on("model:edited",function(grid_event) {
+        ajax.put('/api/users/'+id+'/accounts/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
             grid_event.model.update(data)
         },function(data) {
             grid_event.model.undo();
-        });
+        }); 
     }).on("model:deleted",function(grid_event) {
         ajax.delete('/api/users/'+id+'/accounts/'+grid_event.model.attributes.id,{},
             function(data) {},
             function(data) {
             grid_event.model.undo();
         });
-    }).on("model:change_status",function(grid_event) {
-        var myform = new gform(
-            {"fields":[
-                {type:"hidden", name:"id"},
-                {type: "select",label: "Status",name: "status",options: [
-                    {label: "Active",value: "active"},
-                    {label: "Disabled",value: "disabled"}
-                ]}
-            ],
-            "title":"Change Account Status",
-            "actions":[
-                {"type":"save"}
-            ]}
-        ).on('save',function(e) {
-            if(e.form.validate()) {
-                ajax.put('/api/users/'+id+'/accounts/'+e.form.get('id'),e.form.get(), function (data) {
-                    grid_event.model.set(data);
-                    e.form.trigger('close');
-                });
-            }
-        }); 
-        myform.modal().set(grid_event.model.attributes);   
     });
-
 });
 
