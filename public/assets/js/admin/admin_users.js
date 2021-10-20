@@ -149,12 +149,16 @@ user_entitlements_template = `
 {{#user_entitlements}}
     {{#pivot.override}}
         {{#pivot.type === 'remove'}}
-            <div class="label label-danger">{{name}}</div>
-            <div style="text-align:center;font-size:12px;">(Manually Removed)</div>
+            <div class="label label-danger">
+                {{name}}
+                <div class="tinytext">(Manually Removed)</div>
+            </div>
         {{/}}
         {{#pivot.type === 'add'}}
-            <div class="label label-success">{{name}}</div>
-            <div style="text-align:center;font-size:12px;">(Manually Added)</div>
+            <div class="label label-success">
+                {{name}}
+                <div class="tinytext">(Manually Added)</div>
+            </div>
         {{/}}
     {{/}}
     {{^pivot.override}}
@@ -180,18 +184,18 @@ user_accounts_template = `
 <div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this user, which facilitate their entitlements.</div>
 <div style="font-size:20px;">
     {{#systems}}
-        {{#if pivot.status === 'active'}}
-            <div class="label label-default">
+        {{#if pivot.override === 1}}
+            <div class="label {{#pivot.status === 'active'}}label-success{{/}}{{#pivot.status === 'disabled'}}label-danger{{/}}">
                 <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i> 
                 {{name}} / {{pivot.account_id}}
+                {{#pivot.status === 'active'}}<div class="tinytext">(Enabled via Manul Override)</div>{{/}}
+                {{#pivot.status === 'disabled'}}<div class="tinytext">(Disabled via Manual Override)</div>{{/}}    
             </div>
-        {{/if}}
-    {{/systems}}
-    {{#systems}}
-        {{#if pivot.status === 'disabled'}}
-            <div class="label label-danger">
+        {{else}}
+            <div class="label {{#pivot.status === 'active'}}label-default{{/}}{{#pivot.status === 'disabled'}}label-warning{{/}}">
                 <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i> 
                 {{name}} / {{pivot.account_id}}
+                {{#pivot.status === 'disabled'}}<div class="tinytext">(Automatically Disabled)</div>{{/}}
             </div>
         {{/if}}
     {{/systems}}

@@ -759,3 +759,9 @@ a.list-group-action {
     font-size:15px;
     font-weight:bold;
 }
+
+.tinytext {
+  text-align:center;
+  font-size:12px;
+  margin-top:3px;
+}
