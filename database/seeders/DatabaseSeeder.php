@@ -28,31 +28,31 @@ class DatabaseSeeder extends Seeder
         $user_unique_ids->save();
         $affiliations = new Configuration(['name'=>'affiliations','config'=>['faculty','staff','student','employee','member','affiliate','alum','library-walk-in','applicant']]);
         $affiliations->save();
-        
+
         $example_user = new User(['first_name'=>'Example','last_name'=>'User','attributes'=>['nickname'=>'Dude'],'default_username'=>'euser1']);
         $example_user->save();
 
-        $group1 = new Group(['name'=>'Staff','user_id'=>$example_user->id,'affiliation'=>'staff','order'=>2]);
+        $group1 = new Group(['name'=>'staff','user_id'=>$example_user->id,'affiliation'=>'staff','order'=>2]);
         $group1->save();
-        $group2 = new Group(['name'=>'Matriculated Students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>3]);
+        $group2 = new Group(['name'=>'matriculated_students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>3]);
         $group2->save();
-        $group3 = new Group(['name'=>'Faculty','user_id'=>$example_user->id,'affiliation'=>'faculty','order'=>1]);
+        $group3 = new Group(['name'=>'faculty','user_id'=>$example_user->id,'affiliation'=>'faculty','order'=>1]);
         $group3->save();
-        $group4 = new Group(['name'=>'Nonmatriculated Students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>4]);
+        $group4 = new Group(['name'=>'nonmatriculated_students','user_id'=>$example_user->id,'affiliation'=>'student','order'=>4]);
         $group4->save();
-        $group5 = new Group(['name'=>'Applicants','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
+        $group5 = new Group(['name'=>'applicants','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
         $group5->save();
-        $group6 = new Group(['name'=>'Admitted Applicants','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
+        $group6 = new Group(['name'=>'admitted_applicants','user_id'=>$example_user->id,'affiliation'=>'applicant','order'=>5]);
         $group6->save();
-        $group7 = new Group(['name'=>'Alumni','user_id'=>$example_user->id,'affiliation'=>'alum','order'=>6]);
+        $group7 = new Group(['name'=>'alumni','user_id'=>$example_user->id,'affiliation'=>'alum','order'=>6]);
         $group7->save();
-        $group8 = new Group(['name'=>'Recent Alumni','user_id'=>$example_user->id,'affiliation'=>'alum','order'=>6]);
+        $group8 = new Group(['name'=>'recent_alumni','user_id'=>$example_user->id,'affiliation'=>'alum','order'=>6]);
         $group8->save();
         // $group9 = new Group(['name'=>'Retirees','user_id'=>$example_user->id,'affiliation'=>null,'order'=>6]);
         // $group9->save();
-        $group10 = new Group(['name'=>'RF Staff','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
+        $group10 = new Group(['name'=>'rf_staff','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
         $group10->save();
-        $group11 = new Group(['name'=>'Volunteers','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
+        $group11 = new Group(['name'=>'volunteers','user_id'=>$example_user->id,'affiliation'=>'affiliate','order'=>6]);
         $group11->save();
         // $group12 = new Group(['name'=>'Sponsored Accounts in BU','user_id'=>$example_user->id,'order'=>6]);
         // $group12->save();
@@ -60,31 +60,31 @@ class DatabaseSeeder extends Seeder
         // $group13->save();
         // $group14 = new Group(['name'=>'Bulk Loaded Users','user_id'=>$example_user->id,'order'=>6]);
         // $group14->save();
-        
+
         //START 11/09/2021, AKT - Added the groups below
-        $group15 = new Group(['name'=>'On Campus Students','user_id'=>$example_user->id,'order'=>6]);
+        $group15 = new Group(['name'=>'on_campus_students','user_id'=>$example_user->id,'order'=>6]);
         $group15->save();
-        $group16 = new Group(['name'=>'Secondary Accounts','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group16 = new Group(['name'=>'secondary_accounts','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group16->save();
-        $group17 = new Group(['name'=>'Vendors','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group17 = new Group(['name'=>'vendors','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group17->save();
-        $group18 = new Group(['name'=>'AdminNetAccess VPN','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group18 = new Group(['name'=>'admin_net_access_vpn','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group18->save();
-        $group19 = new Group(['name'=>'AdminNetAccess Wifi','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group19 = new Group(['name'=>'admin_net_access_wifi','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group19->save();
-        $group20 = new Group(['name'=>'Deny Wifi','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group20 = new Group(['name'=>'deny_wifi','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group20->save();
-        $group21 = new Group(['name'=>'Other Bingview','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group21 = new Group(['name'=>'other_bingview','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group21->save();
-        $group22 = new Group(['name'=>'RDP Access','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group22 = new Group(['name'=>'rdp_access','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group22->save();
-        $group23 = new Group(['name'=>'Interactive Login','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group23 = new Group(['name'=>'interactive_login','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group23->save();
-        $group24 = new Group(['name'=>'Email Address','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group24 = new Group(['name'=>'email_address','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group24->save();
-        $group25 = new Group(['name'=>'Network Shares','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group25 = new Group(['name'=>'network_shares','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group25->save();
-        $group26 = new Group(['name'=>'Spectrum Access','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
+        $group26 = new Group(['name'=>'spectrum_access','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group26->save();
         //END 11/09/2021, AKT
 
@@ -149,7 +149,7 @@ class DatabaseSeeder extends Seeder
         $entitlement7->save();
         $entitlement8 = new Entitlement(['name'=>'BU Account','system_id'=>$system1->id]);
         $entitlement8->save();
-        
+
         //START 11/09/2021, AKT - Added the entitlements below
         $entitlement9 = new Entitlement(['name'=>'AdminNetAccess Wifi','system_id'=>$system1->id]);
         $entitlement9->save();
@@ -217,7 +217,7 @@ class DatabaseSeeder extends Seeder
         $group_entitlement30->save();
 
         // Provision Google //
-        
+
         //Google Account
         $group_entitlement5 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement4->id]);
         $group_entitlement5->save();
@@ -271,7 +271,7 @@ class DatabaseSeeder extends Seeder
         $group_entitlement68->save();
         $group_entitlement66 = new GroupEntitlement(['group_id'=>$group10->id,'entitlement_id'=>$entitlement20->id]);
         $group_entitlement66->save();
-        
+
         // Google Sites
         $group_entitlement67 = new GroupEntitlement(['group_id'=>$group1->id,'entitlement_id'=>$entitlement21->id]);
         $group_entitlement67->save();
@@ -444,7 +444,7 @@ class DatabaseSeeder extends Seeder
         $group_entitlement50 = new GroupEntitlement(['group_id'=>$group10->id,'entitlement_id'=>$entitlement14->id]);
         $group_entitlement50->save();
 
-        // Spectrum Access // 
+        // Spectrum Access //
         $group_entitlement51 = new GroupEntitlement(['group_id'=>$group15->id,'entitlement_id'=>$entitlement18->id]);
         $group_entitlement51->save();
         $group_entitlement52 = new GroupEntitlement(['group_id'=>$group26->id,'entitlement_id'=>$entitlement18->id]);
