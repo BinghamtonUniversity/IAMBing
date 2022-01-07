@@ -32,16 +32,26 @@ class AdminController extends Controller
             $ids = [$user->id];
         }
         $user = Auth::user();
-        return view('default.admin',['page'=>'users','ids'=>$ids,'title'=>'Manage Users',
-            'actions' => [
-                ["name"=>"create","label"=>"Add User"],
-                '',
-                ["name"=>"edit","label"=>"Edit User"],
-                $user->can('manage_user_permissions','App\User')?["label"=>"Edit Permissions","name"=>"edit_perm","min"=>1,"max"=>1,"type"=>"default"]:'',
-                ["label"=>"Manage Assignments","name"=>"assignments","min"=>1,"max"=>1,"type"=>"default"],
-                '',
-                ["name"=>"delete","label"=>"Delete User"]
-            ],
+
+
+        // Actions to be used to send to the Manage Users page
+        $user_actions = [];
+        if ($user->can('manage_users','App\User')){
+            $user_actions[] = ["type"=>"save","label"=>"Update User"];
+            $user_actions[] = ["type"=>"button","label"=>"Delete User","action"=>"delete","modifiers"=>"btn btn-danger"];
+            $user_actions[] = ["type"=>"button","label"=>"Recalculate","action"=>"recalculate","modifiers"=>"btn btn-warning"];
+        }
+        if ($user->can('merge_users','App\User')){
+            $user_actions[] = ["type"=>"button","label"=>"Merge Into","action"=>"merge_user","modifiers"=>"btn btn-danger"];
+        }
+        if ($user->can('impersonate_user','App\User')){
+            $user_actions[] = ["type"=>"button","label"=>"Impersonate User","action"=>"login","modifiers"=>"btn btn-warning"];
+        }
+
+        return view('default.admin',[
+            'page'=>'users','ids'=>$ids,
+            'title'=>'Manage Users',
+            'actions' => $user_actions,
             'help'=>
                 'Use this page to create, search for, view, delete, and modify existing users.'
         ]);
@@ -67,7 +77,7 @@ class AdminController extends Controller
 
     public function groups(Request $request) {
         return view('default.admin',['page'=>'groups','ids'=>[],'title'=>'Manage Groups','help'=>
-            'Use this page to manage groups.  You may add/remove exsting groups, 
+            'Use this page to manage groups.  You may add/remove exsting groups,
             rename groups, and manage group memeberships.'
         ]);
     }

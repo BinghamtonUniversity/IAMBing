@@ -87,6 +87,12 @@ class DatabaseSeeder extends Seeder
         $group26 = new Group(['name'=>'spectrum_access','user_id'=>$example_user->id,'type'=>'manual','order'=>6]);
         $group26->save();
         //END 11/09/2021, AKT
+        $group27 = new Group(['name'=>'recent_faculty','user_id'=>$example_user->id,'order'=>6]);
+        $group27->save();
+        $group28 = new Group(['name'=>'online_students','user_id'=>$example_user->id,'order'=>6]);
+        $group28->save();
+        $group29 = new Group(['name'=>'currently_registered_students','user_id'=>$example_user->id,'order'=>6]);
+        $group29->save();
 
         $endpoint1 = new Endpoint(['name'=>'DataProxy Default','config'=>[
             'content_type' => 'application/x-www-form-urlencoded',
@@ -189,6 +195,7 @@ class DatabaseSeeder extends Seeder
         $entitlement25->save();
         $entitlement26 = new Entitlement(['name'=>'Google Vault','system_id'=>$system2->id]);
         $entitlement26->save();
+
         //END 11/09/2021, AKT
 
         // Provision Wifi //

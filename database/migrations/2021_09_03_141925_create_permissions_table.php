@@ -17,11 +17,22 @@ class CreatePermissionsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
             $table->enum('permission',[
-                'manage_user_permissions',
-                'manage_groups',
-                'manage_users',
-                'manage_systems',
-                'manage_entitlements',
+                "view_users",
+                "manage_users",
+                "manage_user_permissions",
+                "merge_users",
+                "override_user_accounts",
+                "override_user_entitlements",
+                "manage_user_groups",
+                "impersonate_users",
+                "view_groups",
+                "manage_groups",
+                "manage_systems",
+                "manage_apis",
+                "manage_entitlements",
+                "view_jobs",
+                "manage_jobs",
+                "manage_systems_config"
             ]);
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();

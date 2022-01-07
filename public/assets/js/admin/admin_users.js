@@ -1,5 +1,6 @@
 gform.options = {autoFocus:false};
 user_form_attributes = [
+    {type:"hidden", name:"id", label: 'id'},
     {type:"switch", name:"sponsored", label:"Sponsored", value:false, columns:6, options:[{label:'Default',value:false},{label:'Sponsored',value:true}]},
     {type:"text", name:"iamid", label: 'IAM ID', edit:false},
     {type:"text", name:"first_name", label:"First Name", required:true},
@@ -66,7 +67,11 @@ userlist_template = `
 userinfo_column_template = `
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/accounts">Override Accounts</a>
+    {{#permissions}}
+        {{#if . == "override_user_accounts"}}
+            <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/accounts">Override Accounts</a>
+        {{/if}}
+    {{/permissions}}
     Systems / Accounts
 </h3></div>
 <div class="panel-body user-accounts">{{>user_accounts_template}}</div>
@@ -77,14 +82,23 @@ userinfo_column_template = `
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/entitlements">Override Entitlements</a>
+    {{#permissions}}
+        {{#if . == "override_user_entitlements"}}
+            <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/entitlements">Override Entitlements</a>
+        {{/if}}
+    {{/permissions}}
+
     Entitlements
 </h3></div>
 <div class="panel-body user-entitlements">{{>user_entitlements_template}}</div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/groups">Manage Groups</a> 
+    {{#permissions}}
+        {{#if . == "manage_user_groups"}}
+            <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/groups">Manage Groups</a>
+        {{/if}}
+    {{/permissions}}
     Groups
 </h3></div>
 <div class="panel-body user-groups">{{>user_groups_template}}</div>
@@ -115,7 +129,7 @@ user_groups_template = `
 sponsored_users_template = `
 <div style="font-size:20px;">
 {{#sponsored_users}}
-    <a href="/users/{{id}}" class="label label-default">            
+    <a href="/users/{{id}}" class="label label-default">
         <div class="label label-primary pull-right">{{default_username}}</div>
         {{first_name}} {{last_name}}
     </a>
@@ -186,14 +200,14 @@ user_accounts_template = `
     {{#systems}}
         {{#if pivot.override === 1}}
             <div class="label {{#pivot.status === 'active'}}label-success{{/}}{{#pivot.status === 'disabled'}}label-danger{{/}}">
-                <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i> 
+                <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i>
                 {{name}} / {{pivot.account_id}}
-                {{#pivot.status === 'active'}}<div class="tinytext">(Enabled via Manul Override)</div>{{/}}
-                {{#pivot.status === 'disabled'}}<div class="tinytext">(Disabled via Manual Override)</div>{{/}}    
+                {{#pivot.status === 'active'}}<div class="tinytext">(Enabled via Manual Override)</div>{{/}}
+                {{#pivot.status === 'disabled'}}<div class="tinytext">(Disabled via Manual Override)</div>{{/}}
             </div>
         {{else}}
             <div class="label {{#pivot.status === 'active'}}label-default{{/}}{{#pivot.status === 'disabled'}}label-warning{{/}}">
-                <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i> 
+                <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i>
                 {{name}} / {{pivot.account_id}}
                 {{#pivot.status === 'disabled'}}<div class="tinytext">(Automatically Disabled)</div>{{/}}
             </div>
@@ -211,7 +225,7 @@ $('.user-new').on('click',function() {
         {"fields":user_form_attributes,
         "title":"Create New User",
         "actions":[
-            {"type":"save"}
+           {"type":"save"}
         ]}
     ).modal().on('save',function(form_event) {
         if(form_event.form.validate())
@@ -227,6 +241,7 @@ $('.user-new').on('click',function() {
 var manage_user = function(user_id) {
     if (user_id != null && user_id != '') {
         ajax.get('/api/users/'+user_id,function(data) {
+            console.log(data)
             window.history.pushState({},'','/users/'+user_id);
             $('.user-view').show();
 
@@ -246,19 +261,26 @@ var manage_user = function(user_id) {
             // $('.user-affiliations').html(Ractive({template:user_affiliations_template,data:data}).toHTML());
             // $('.user-accounts').html(gform.m(user_accounts_template,data));
             // $('.user-entitlements').html(Ractive({template:user_entitlements_template,data:data}).toHTML());
-
+            console.log(data)
             // Edit User
             new gform(
-                {"fields":user_form_attributes,
+                {
+                    "fields":user_form_attributes.map(d=>{
+                    d.edit = data.permissions.some(e=> {return e === "manage_users"})
+                    return d;
+                }),
                 "el":".user-edit",
                 "data":data,
-                "actions":[
-                    {"type":"save","label":"Update User","modifiers":"btn btn-primary"},
-                    {"type":"button","label":"Delete User","action":"delete","modifiers":"btn btn-danger"},
-                    {"type":"button","label":"Merge Into","action":"merge_user","modifiers":"btn btn-danger"},
-                    {"type":"button","label":"Login","action":"login","modifiers":"btn btn-warning"},
-                    {"type":"button","label":"Recalculate","action":"recalculate","modifiers":"btn btn-warning"}
-                ]}
+                // "edit":,
+                "actions": actions
+                // [
+                //     {"type":"save","label":"Update User","modifiers":"btn btn-primary"},
+                //     {"type":"button","label":"Delete User","action":"delete","modifiers":"btn btn-danger"},
+                //     {"type":"button","label":"Merge Into","action":"merge_user","modifiers":"btn btn-danger"},
+                //     {"type":"button","label":"Login","action":"login","modifiers":"btn btn-warning"},
+                //     {"type":"button","label":"Recalculate","action":"recalculate","modifiers":"btn btn-warning"}
+                // ]
+                }
             ).on('delete',function(form_event) {
                 form_data = form_event.form.get();
                 if (confirm('Are you super sure you want to do this?  This action cannot be undone!')){
@@ -274,8 +296,8 @@ var manage_user = function(user_id) {
                         "type": "user",
                         "label": "Target User",
                         "name": "target_user",
-                        "required":true,          
-                    },{type:"checkbox", name:"delete", label:"Delete Source User", value:false,help:"By checking this box, the `source` user will be irretrievably deleted from BComply."},
+                        "required":true,
+                    },{type:"checkbox", name:"delete", label:"Delete Source User", value:false,help:"By checking this box, the `source` user will be irretrievably deleted from IAMBing."},
                     {type:"output",parse:false,value:'<div class="alert alert-danger">This action will migrate/transfer all assignments from the source user to the specified target user.  This is a permanent and "undoable" action.</div>'}],
                     "title":"Merge Into",
                     "actions":[
@@ -301,10 +323,11 @@ var manage_user = function(user_id) {
                     }
                 }).on('cancel',function(merge_form_event) {
                     merge_form_event.form.trigger('close');
-                });            
+                });
             }).on('save',function(form_event) {
                 if(form_event.form.validate())
                 {
+
                     form_data = form_event.form.get();
                     ajax.put('/api/users/' + form_data.id, form_data, function (data) {
                     });
@@ -329,19 +352,80 @@ var manage_user = function(user_id) {
                         "label": "Permissions",
                         "name": "permissions",
                         "multiple": true,
+                        "edit": data.permissions.some(e=> {return e === "manage_user_permissions"}),
                         "options": [
-                            'manage_user_permissions',
-                            'manage_groups',
-                            'manage_users',
-                            'manage_systems',
-                            'manage_entitlements'
+                            {   "label":"View Users",
+                                "value":"view_users"
+                            },
+                            {
+                                "label": "Manage Users",
+                                "value": "manage_users"
+                            },
+                            {
+                                "label": "Manage User Permissions",
+                                "value": "manage_user_permissions"
+                            },
+                            {
+                                "label": "Merge User",
+                                "value": "merge_users"
+                            },
+                            {
+                                "label": "Override User Accounts",
+                                "value": "override_user_accounts"
+                            },
+                            {
+                                "label": "Override User Entitlements",
+                                "value": "override_user_entitlements"
+                            },
+                            {
+                                "label": "Impersonate User",
+                                "value": "impersonate_users"
+                            },
+                            {
+                                "label": "Manage User Groups",
+                                "value": "manage_user_groups"
+                            },
+                            {
+                                "label": "View Groups",
+                                "value": "view_groups"
+                            },
+                            {
+                                "label": "Manage Groups",
+                                "value": "manage_groups"
+                            },
+                            {
+                                "label": "Manage Systems",
+                                "value": "manage_systems"
+                            },
+                            {
+                                "label": "Manage Apis",
+                                "value": "manage_apis"
+                            },
+                            {
+                                "label": "Manage Entitlements",
+                                "value": "manage_entitlements"
+                            },
+                            {
+                                "label": "View Jobs",
+                                "value": "view_jobs"
+                            },
+                            {
+                                "label": "Manage Jobs",
+                                "value": "manage_jobs"
+                            },
+                            {
+                                "label": "Manage Systems Config",
+                                "value": "manage_systems_config"
+                            }
                         ]
-                    }    
+                    }
                 ],
                 "el":".user-site-permissions",
                 "data":{"permissions":data.permissions},
                 "actions":[
-                    {"type":"save","label":"Update Permissions","modifiers":"btn btn-primary"}
+                    {
+                        "type": data.permissions.some(e=> {return e === "manage_user_permissions"}) ?"save":"hidden",
+                        "label":"Update Permissions","modifiers":"btn btn-primary"}
                 ]}
             ).on('save',function(form_event) {
                 ajax.put('/api/users/'+user_id+'/permissions',form_event.form.get(),function(data) {});
@@ -362,9 +446,13 @@ var manage_user = function(user_id) {
                 url: '/api/users/'+user_id+'/accounts/'+e.target.dataset.id,
                 success: function(data) {
                     mymodal.modal().set({output:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>'});
+                },
+                error: function(data){
+                    console.log(data)
+                    toastr.error(data.responseJSON.message)
                 }
             })
-        });    
+        });
     } else {
         $('.user-view').hide();
     }
