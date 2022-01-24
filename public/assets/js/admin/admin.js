@@ -4,6 +4,7 @@ toastr.options = {
 
 window.ajax = {};
 window.ajax.get = function(url,callback_success,callback_error) {
+    // debugger
     $.ajax({
         type: "GET",
         url: url,
@@ -25,7 +26,7 @@ window.ajax.post = function(url,data,callback_success,callback_error) {
         contentType: "application/json",
         data: JSON.stringify(data),
         success:function(data) {
-            toastr.success("Created Sucessfully")
+            toastr.success("Created Successfully")
             if (typeof callback_success !== 'undefined') {callback_success(data);}
         },
         error:function(data) {
@@ -110,4 +111,3 @@ gform.types['user']= _.extend({}, gform.types['smallcombo'], {
         }
 
   })
-  

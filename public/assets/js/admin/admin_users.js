@@ -67,11 +67,11 @@ userlist_template = `
 userinfo_column_template = `
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    {{#permissions}}
+    {{#auth_user_perms}}
         {{#if . == "override_user_accounts"}}
             <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/accounts">Override Accounts</a>
         {{/if}}
-    {{/permissions}}
+    {{/auth_user_perms}}
     Systems / Accounts
 </h3></div>
 <div class="panel-body user-accounts">{{>user_accounts_template}}</div>
@@ -82,11 +82,11 @@ userinfo_column_template = `
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    {{#permissions}}
+    {{#auth_user_perms}}
         {{#if . == "override_user_entitlements"}}
             <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/entitlements">Override Entitlements</a>
         {{/if}}
-    {{/permissions}}
+    {{/auth_user_perms}}
 
     Entitlements
 </h3></div>
@@ -94,11 +94,11 @@ userinfo_column_template = `
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    {{#permissions}}
-        {{#if . == "manage_user_groups"}}
+    {{#auth_user_perms}}
+        {{#if . == "manage_groups"}}
             <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/groups">Manage Groups</a>
         {{/if}}
-    {{/permissions}}
+    {{/auth_user_perms}}
     Groups
 </h3></div>
 <div class="panel-body user-groups">{{>user_groups_template}}</div>
@@ -241,7 +241,7 @@ $('.user-new').on('click',function() {
 var manage_user = function(user_id) {
     if (user_id != null && user_id != '') {
         ajax.get('/api/users/'+user_id,function(data) {
-            console.log(data)
+            data.auth_user_perms = auth_user_perms;
             window.history.pushState({},'','/users/'+user_id);
             $('.user-view').show();
 
@@ -261,12 +261,13 @@ var manage_user = function(user_id) {
             // $('.user-affiliations').html(Ractive({template:user_affiliations_template,data:data}).toHTML());
             // $('.user-accounts').html(gform.m(user_accounts_template,data));
             // $('.user-entitlements').html(Ractive({template:user_entitlements_template,data:data}).toHTML());
-            console.log(data)
+            // console.log(data)
             // Edit User
             new gform(
                 {
-                    "fields":user_form_attributes.map(d=>{
-                    d.edit = data.permissions.some(e=> {return e === "manage_users"})
+                    "fields":user_form_attributes
+                        .map(d=>{
+                    d.edit = auth_user_perms.some(e=> {return e === "manage_users"})
                     return d;
                 }),
                 "el":".user-edit",
@@ -352,7 +353,7 @@ var manage_user = function(user_id) {
                         "label": "Permissions",
                         "name": "permissions",
                         "multiple": true,
-                        "edit": data.permissions.some(e=> {return e === "manage_user_permissions"}),
+                        "edit": auth_user_perms.some(e=> {return e === "manage_user_permissions"}),
                         "options": [
                             {   "label":"View Users",
                                 "value":"view_users"
@@ -382,11 +383,7 @@ var manage_user = function(user_id) {
                                 "value": "impersonate_users"
                             },
                             {
-                                "label": "Manage User Groups",
-                                "value": "manage_user_groups"
-                            },
-                            {
-                                "label": "View Groups",
+                                "label": "List and Search All Groups",
                                 "value": "view_groups"
                             },
                             {
@@ -424,7 +421,7 @@ var manage_user = function(user_id) {
                 "data":{"permissions":data.permissions},
                 "actions":[
                     {
-                        "type": data.permissions.some(e=> {return e === "manage_user_permissions"}) ?"save":"hidden",
+                        "type": auth_user_perms.some(e=> {return e === "manage_user_permissions"}) ?"save":"hidden",
                         "label":"Update Permissions","modifiers":"btn btn-primary"}
                 ]}
             ).on('save',function(form_event) {

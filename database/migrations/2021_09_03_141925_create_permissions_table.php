@@ -23,7 +23,6 @@ class CreatePermissionsTable extends Migration
                 "merge_users",
                 "override_user_accounts",
                 "override_user_entitlements",
-                "manage_user_groups",
                 "impersonate_users",
                 "view_groups",
                 "manage_groups",

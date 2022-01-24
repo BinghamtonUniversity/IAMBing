@@ -5,11 +5,9 @@ dashboard_template = `
         <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">My Groups</h3></div>
             <div class="panel-body">
-                <ul>
-                    {{#groups}}
-                        <li><a href="/groups/{{id}}/members">{{name}}</a></li>
-                    {{/groups}}
-                </ul>
+                {{#groups}}
+                    <li>{{name}}</li>
+                {{/groups}}
                 {{^groups}}
                     <div class="alert alert-warning">No Group Memberships</div>
                 {{/groups}}

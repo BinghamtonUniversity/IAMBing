@@ -29,6 +29,9 @@ class User extends Authenticatable
     public function groups() {
         return $this->belongsToMany(Group::class,'group_members')->orderBy('order');
     }
+   public function admin_groups(){
+       return $this->hasMany(GroupAdmin::class,'user_id');
+   }
 
     public function user_entitlements() {
         return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override','override_description','override_user_id');
@@ -138,8 +141,8 @@ class User extends Authenticatable
                     ['user_id'=>$this->id, 'name'=>$name],
                     ['value' => $value]
                 );
-            }    
-            $this->load('user_unique_ids');    
+            }
+            $this->load('user_unique_ids');
         }
         if (!is_null($this->set_attributes)) {
             foreach($this->set_attributes as $name => $value) {
@@ -147,8 +150,8 @@ class User extends Authenticatable
                     ['user_id'=>$this->id, 'name'=>$name],
                     ['value' => is_array($value)?implode(',',$value):$value,'array'=>is_array($value)]
                 );
-            }   
-            $this->load('user_attributes');    
+            }
+            $this->load('user_attributes');
         }
         // Create and Set New Username
         if (($this->first_name !== '' && $this->last_name !== '' && $this->first_name !== null && $this->last_name !== null) &&
@@ -158,7 +161,7 @@ class User extends Authenticatable
             $configuration = Configuration::where('name','default_username_template')->first();
             if (!is_null($configuration)) {
                 $template = $configuration->config;
-            }        
+            }
             do {
                 $username = $this->username_generate($template, $iterator);
                 if (!$this->username_check_available($username)) {
@@ -166,7 +169,7 @@ class User extends Authenticatable
                     $iterator++;
                 } else {
                     break;
-                } 
+                }
             } while ($is_taken);
             $this->default_username = $username;
             $this->save();
@@ -198,7 +201,7 @@ class User extends Authenticatable
         $user = $this;
         $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
-        
+
         // Check to see if calculated entitlements match enforced entitlements
         $existing_user_entitlements = UserEntitlement::where('user_id',$user->id)->get();
         foreach($existing_user_entitlements as $user_entitlement) {
@@ -257,6 +260,7 @@ class User extends Authenticatable
         foreach($myaccounts as $myaccount) {
             $myaccount->sync('update');
         }
+
     }
 
     protected static function booted()
@@ -271,4 +275,14 @@ class User extends Authenticatable
             $user->save_actions();
         });
     }
+    public function is_group_admin($group_id=null){
+        if (is_null($group_id)){
+            return (bool)GroupAdmin::where('user_id',$this->id)->first();
+        }
+
+        return (bool)GroupAdmin::where('user_id',$this->id)
+            ->where('group_id',$group_id)
+            ->first();
+    }
+
 }

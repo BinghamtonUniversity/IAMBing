@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Group;
@@ -16,7 +17,11 @@ class AdminController extends Controller
     }
 
     public function admin(Request $request) {
-        return view('default.admin',['page'=>'dashboard','ids'=>[Auth::user()->id],'title'=>'Admin']);
+        return view('default.admin',[
+            'page'=>'dashboard',
+            'ids'=>[Auth::user()->id],
+            'title'=>'Admin'
+        ]);
     }
 
     public function configuration(Request $request) {
@@ -33,6 +38,7 @@ class AdminController extends Controller
         }
         $user = Auth::user();
 
+        $auth_user_perms = Permission::where('user_id',$user->id)->select('permission')->get()->pluck('permission')->toArray();
 
         // Actions to be used to send to the Manage Users page
         $user_actions = [];
@@ -52,6 +58,7 @@ class AdminController extends Controller
             'page'=>'users','ids'=>$ids,
             'title'=>'Manage Users',
             'actions' => $user_actions,
+            'permissions'=> $auth_user_perms,
             'help'=>
                 'Use this page to create, search for, view, delete, and modify existing users.'
         ]);
@@ -75,9 +82,42 @@ class AdminController extends Controller
         ]);
     }
 
-    public function groups(Request $request) {
-        return view('default.admin',['page'=>'groups','ids'=>[],'title'=>'Manage Groups','help'=>
-            'Use this page to manage groups.  You may add/remove exsting groups,
+    public function groups(Request $request, Group $group) {
+        $user = Auth::user();
+
+        $auth_user_perms = Permission::where('user_id',$user->id)->select('permission')->get()->pluck('permission')->toArray();
+
+        // Actions to be used to send to the Manage Users page
+        $user_actions = [];
+        if ($user->can('manage_groups','App\Group')){
+            $user_actions[] = ["name"=>"create","label"=>"New Group"];
+            $user_actions[] = ["|"];
+            $user_actions[] = ["name"=>"edit","label"=>"Update Group"];   
+        }
+        $user_actions[] = ["label"=>"Manage Members","name"=>"manage_members","min"=>1,"max"=>1,"type"=>"default"];
+        
+        if ($user->can('manage_groups','App\Group')){
+            $user_actions[] = ["label"=>"Manage Administrators","name"=>"manage_admins","min"=>1,"max"=>1,"type"=>"default"];
+        }
+        
+        if(in_array('manage_groups',$auth_user_perms) && in_array('manage_entitlements',$auth_user_perms)){
+            $user_actions[] = ["label"=>"Manage Entitlements","name"=>"manage_entitlements","min"=>1,"max"=>1,"type"=>"warning"];
+        }
+            
+        if ($user->can('manage_groups','App\Group')){
+            $user_actions[] = ['name'=>'sort', 'max'=>1, 'label'=> '<i class="fa fa-sort"></i> Sort'];
+            $user_actions[] = ["|"];
+            $user_actions[] = ["|"];
+            $user_actions[] = ["label"=>"Delete",'name'=>'delete', 'min'=>1];
+        }
+        
+        return view('default.admin',
+            ['page'=>'groups',
+            'ids'=>[],
+            // 'permissions'=> $auth_user_perms,
+            'actions' => $user_actions,
+            'title'=>'Manage Groups',
+            'help'=>'Use this page to manage groups.  You may add/remove exsting groups,
             rename groups, and manage group memeberships.'
         ]);
     }

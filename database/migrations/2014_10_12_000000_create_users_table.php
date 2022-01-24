@@ -16,6 +16,7 @@ class CreateUsersTable extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('iamid')->nullable()->default(null)->index();
+            // $table->enum('type', ['person', 'organization','service'])->nullable()->default(['person']);
             $table->boolean('sponsored')->default(false);
             $table->string('first_name')->nullable()->default(null)->index();
             $table->string('last_name')->nullable()->default(null)->index();

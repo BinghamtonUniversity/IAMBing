@@ -22,7 +22,7 @@
     </script>
     <link rel="stylesheet" href="/assets/css/bootstrap.darkly.min.css" media="(prefers-color-scheme: dark)" />
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css" media="(prefers-color-scheme: light)" />
-    <!-- AFTER -->  
+    <!-- AFTER -->
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <!--<link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">-->
@@ -31,7 +31,7 @@
     <link href="/assets/css/toastr.min.css" rel="stylesheet">
     <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
 
-    
+
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -76,7 +76,7 @@
           <li><a href="/"><h4 style="margin:0;">IAMBing Admin</h4></a>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle user-info" data-toggle="dropdown" role="button">
-                <img class="gravatar" src="https://www.gravatar.com/avatar/{{ md5(Auth::user()->email) }}?d=mm" /> 
+                <img class="gravatar" src="https://www.gravatar.com/avatar/{{ md5(Auth::user()->email) }}?d=mm" />
                 {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
                 <span class="caret"></span>
               </a>
@@ -102,7 +102,9 @@
               @can('view_in_admin',App\Models\Configuration::class)
                   <li class="visible-xs-block @if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
               @endcan
+              @can('view_in_admin',App\Models\Job::class)
               <li class="visible-xs-block"><a href="/horizon" target="_blank"><i class="fa fa-chart-line fa-fw"></i>&nbsp; Jobs (Horizon)</a></li>
+              @endcan
               <li class="visible-xs-block"><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-info fa-fw"></i>&nbsp; View Documentation</a></li>
             </li>
           </ul>
@@ -132,7 +134,9 @@
             @can('view_in_admin',App\Models\Configuration::class)
                 <li class="@if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
             @endcan
+            @can('view_in_admin',App\Models\Job::class)
             <li><a href="/horizon" target="_blank"><i class="fa fa-fw fa-chart-line"></i>&nbsp; Jobs (Horizon)</a></li>
+            @endcan
             <li><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-fw fa-info"></i>&nbsp; View Documentation</a></li>
         </ul>
     </div>
@@ -170,7 +174,7 @@
         </div>
       </div>
     </div>
-    
+
 <!-- Begin Modal -->
 <div class="modal fade" id="adminModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
@@ -195,20 +199,23 @@
     <script src="/assets/js/vendor/lodash.min.js"></script>
     <script>_.findWhere = _.find; _.where = _.filter;_.pluck = _.map;_.contains = _.includes;</script>
     <script src='/assets/js/vendor/hogan.min.js'></script>
-    <script src='/assets/js/vendor/toastr.min.js'></script> 
+    <script src='/assets/js/vendor/toastr.min.js'></script>
     <script src='/assets/js/vendor/gform_bootstrap.js'></script>
-    <script src='/assets/js/vendor/GrapheneDataGrid.min.js'></script> 
-    <script src='/assets/js/vendor/moment.js'></script> 
-    <script src='/assets/js/vendor/bootstrap-datetimepicker.min.js'></script> 
-    <script src='/assets/js/vendor/sortable.js'></script> 
-    <script src='/assets/js/vendor/ractive.min.js'></script> 
+    <script src='/assets/js/vendor/GrapheneDataGrid.min.js'></script>
+    <script src='/assets/js/vendor/moment.js'></script>
+    <script src='/assets/js/vendor/bootstrap-datetimepicker.min.js'></script>
+    <script src='/assets/js/vendor/sortable.js'></script>
+    <script src='/assets/js/vendor/ractive.min.js'></script>
     <script src="/assets/js/admin/admin.js"></script>
     <script>
-        @if(isset($ids)) window.ids={!!json_encode($ids)!!}; @endif 
+        @if(isset($ids)) window.ids={!!json_encode($ids)!!}; @endif
         if (typeof window.ids !== 'undefined' && Array.isArray(window.ids)) {
             window.id = window.ids[window.ids.length-1]
         }
-        @if(isset($actions)) window.actions={!!json_encode($actions)!!}; @endif 
+        @if(isset($actions)) window.actions={!!json_encode($actions)!!}; @endif
+        @if(isset($permissions))
+            window.auth_user_perms = {!! json_encode($permissions) !!};
+        @endif
     </script>
     <script src="/assets/js/admin/admin_{{$page}}.js"></script>
   </body>

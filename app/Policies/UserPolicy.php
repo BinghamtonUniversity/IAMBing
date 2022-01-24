@@ -29,24 +29,43 @@ class UserPolicy
                 ->orWhere('permission','merge_user')
                 ->orWhere('permission','override_user_accounts')
                 ->orWhere('permission','override_user_entitlements')
-                ->orWhere('permission','manage_user_groups')
                 ->orWhere('permission','impersonate_user');
         })->first();
     }
-    public function search_user(User $user){
+
+    public function view_user_info(User $user){
         $permission = Permission::where('user_id',$user->id);
         return $permission->where(function ($q){
+            $q->orWhere('permission','view_users')
+                ->orWhere('permission','manage_users')
+                ->orWhere('permission','manage_user_permissions')
+                ->orWhere('permission','merge_user')
+                ->orWhere('permission','override_user_accounts')
+                ->orWhere('permission','override_user_entitlements')
+                ->orWhere('permission','impersonate_user');
+        })->first();
+    }
+
+
+    public function list_search(User $user){
+        $permission = Permission::where('user_id',$user->id);
+        return $user->is_group_admin() || $permission->where(function ($q){
             $q->orWhere('permission','view_users')
                 ->orWhere('permission','manage_users')
                 ->orWhere('permission','manage_user_permissions')
                 ->orWhere('permission','merge_users')
                 ->orWhere('permission','override_user_accounts')
                 ->orWhere('permission','override_user_entitlements')
-                ->orWhere('permission','manage_user_groups')
                 ->orWhere('permission','impersonate_users');
         })->first();
     }
-    public function manage_users(User $user) {
+    public function add_users(User $user) {
+        return Permission::where('user_id',$user->id)->where('permission','manage_users')->first();
+    }
+    public function update_users(User $user){
+        return Permission::where('user_id',$user->id)->where('permission','manage_users')->first();
+    }
+    public function delete_users(User $user){
         return Permission::where('user_id',$user->id)->where('permission','manage_users')->first();
     }
 
@@ -60,14 +79,11 @@ class UserPolicy
     public function override_user_accounts(User $user){
         return Permission::where('user_id',$user->id)->where('permission','override_user_accounts')->first();
     }
-
     public function override_user_entitlements(User $user){
         return Permission::where('user_id',$user->id)->where('permission','override_user_entitlements')->first();
-    }
-    public function manage_user_groups(User $user){
-        return Permission::where('user_id',$user->id)->where('permission','manage_user_groups')->first();
     }
     public function impersonate_users(User $user){
         return Permission::where('user_id',$user->id)->where('permission','impersonate_users')->first();
     }
+
 }

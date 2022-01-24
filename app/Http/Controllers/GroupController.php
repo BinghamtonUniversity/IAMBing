@@ -6,30 +6,38 @@ use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\GroupAdmin;
 use App\Models\GroupEntitlement;
+use App\Models\Permission;
 use App\Models\UserEntitlement;
 use App\Models\Entitlement;
 use App\Models\Account;
 use App\Models\User;
 use App\Models\System;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
     public function get_all_groups(){
-        return Group::with('owner')->get();
+        // dd();
+        if(Auth::user()->user_permissions->pluck('permission')->contains('view_groups') || Auth::user()->user_permissions->pluck('permission')->contains('manage_groups')){
+            return Group::get();
+        }
+        
+        // If user doesn't have manage_groups permissions, then only return the groups they're an admin of
+        return Group::whereIn('id',Auth::user()->admin_groups->pluck('group_id'))->get();  
     }
     public function get_group(Group $group){
-        return Group::where('id',$group->id)->with('owner');
+        return Group::where('id',$group->id);
     }
 
     public function add_group(Request $request){
         $group = new Group($request->all());
         $group->save();
-        return Group::where('id',$group->id)->with('owner')->first();
+        return Group::where('id',$group->id)->first();
     }
     public function update_group(Request $request, Group $group){
         $group->update($request->all());
-        return Group::where('id',$group->id)->with('owner')->first();
+        return Group::where('id',$group->id)->first();
     }
 
     public function update_groups_order(Request $request){
@@ -63,7 +71,7 @@ class GroupController extends Controller
     public function delete_member(Group $group,User $user)
     {
         $result = GroupMember::where('group_id','=',$group->id)->where('user_id','=',$user->id)->delete();
-        $user->recalculate_entitlements();        
+        $user->recalculate_entitlements();
         return $result;
     }
 
