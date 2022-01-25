@@ -31,18 +31,22 @@ class DatabaseSeeder extends Seeder
         $affiliations = new Configuration(['name'=>'affiliations','config'=>['faculty','staff','student','employee','member','affiliate','alum','library-walk-in','applicant']]);
         $affiliations->save();
 
+        // Create Example Users
         $example_user = new User(['first_name'=>'Example','last_name'=>'User','attributes'=>['nickname'=>'Dude'],'default_username'=>'euser1']);
         $example_user->save();
-        $example_user2 = new User(['first_name'=>'Ali Kemal','last_name'=>'Tanriverdi','attributes'=>['nickname'=>'Dude'],
-                                  'default_username'=>'atanriverdi','default_email'=>'atanrive@binghamton.edu'
+        $example_user2 = new User(['first_name'=>'Ali Kemal','last_name'=>'Tanriverdi','attributes'=>['nickname'=>'Awesome Dude'],
+                                  'default_username'=>'atanrive','default_email'=>'atanrive@binghamton.edu'
                                 ]);
         $example_user2->save();
+
+        // Create unique id for the user
         $example_unique_id = new UserUniqueID(['user_id'=>2,'name'=>"bnumber",'value'=>"B00450942"]);
         $example_unique_id->save();
+        // Give sample user the manage_user_permissions for initial tests
         $permission = new Permission(['user_id'=>2,'permission'=>"manage_user_permissions"]);
         $permission->save();
-        
-
+  
+        // Group creations
         $staff = new Group(['slug'=>'staff','name'=>"Staff",'affiliation'=>'staff','order'=>2]);
         $staff->save();
         $matriculated_students = new Group(['slug'=>'matriculated_students','name'=>"Matriculated Students",'affiliation'=>'student','order'=>3]);
@@ -65,14 +69,6 @@ class DatabaseSeeder extends Seeder
         $rf_staff->save();
         $volunteers = new Group(['slug'=>'volunteers','name'=>"Volunteers",'affiliation'=>'affiliate','order'=>6]);
         $volunteers->save();
-        // $group12 = new Group(['name'=>'Sponsored Accounts in BU','order'=>6]);
-        // $group12->save();
-        // $group13 = new Group(['name'=>'Sponsored Accounts in Google','order'=>6]);
-        // $group13->save();
-        // $group14 = new Group(['name'=>'Bulk Loaded Users','order'=>6]);
-        // $group14->save();
-
-        //START 11/09/2021, AKT - Added the groups below
         $on_campus_students = new Group(['slug'=>'on_campus_students','name'=>'On Campus Students','order'=>6]);
         $on_campus_students->save();
         $secondary_accounts = new Group(['slug'=>'secondary_accounts','name'=>"Secondary Accounts",'type'=>'manual','order'=>6]);
@@ -97,15 +93,15 @@ class DatabaseSeeder extends Seeder
         $network_shares->save();
         $spectrum_access = new Group(['slug'=>'spectrum_access','name'=>"Spectrum Acess",'type'=>'manual','order'=>6]);
         $spectrum_access->save();
-        //END 11/09/2021, AKT
         $recent_faculty = new Group(['slug'=>'recent_faculty','name'=>"Recent Faculty",'order'=>6]);
         $recent_faculty->save();
         $online_students = new Group(['slug'=>'online_students','name'=>"Online Students",'order'=>6]);
         $online_students->save();
         $currently_enrolled_students = new Group(['slug'=>'currently_enrolled_students','name'=>"Currently Enrolled Students",'order'=>6]);
         $currently_enrolled_students->save();
-        
+        // END Group Creations
 
+        // Create sample endpoint
         $endpoint1 = new Endpoint(['name'=>'DataProxy Default','config'=>[
             'content_type' => 'application/x-www-form-urlencoded',
             'secret' => '',
@@ -114,7 +110,8 @@ class DatabaseSeeder extends Seeder
             'username' => '',
         ]]);
         $endpoint1->save();
-
+        
+        // Create sample systems
         $system1 = new System(['name'=>'BU','default_account_id_template'=>'{{default_username}}','onremove' => 'disable','config'=>[
             'actions' => [
               [
@@ -164,15 +161,10 @@ class DatabaseSeeder extends Seeder
         $employee_vpn_ent->save();
         $staff_bingview_ent = new Entitlement(['name'=>'Staff Bingview','system_id'=>$system1->id]);
         $staff_bingview_ent->save();
-        // $undergrad_slate = new Entitlement(['name'=>'Undergrad Slate','system_id'=>$system1->id]);
-        // $entitlement5->save();
         $enforce_2fa_ent = new Entitlement(['name'=>'Enforce 2FA','system_id'=>$system1->id]);
         $enforce_2fa_ent->save();
         $student_wifi_ent = new Entitlement(['name'=>'Student Wifi','system_id'=>$system1->id]);
         $student_wifi_ent->save();
-        
-
-        //START 11/09/2021, AKT - Added the entitlements below
         $admin_net_access_wifi_ent = new Entitlement(['name'=>'AdminNetAccess Wifi','system_id'=>$system1->id]);
         $admin_net_access_wifi_ent->save();
         $deny_wifi_ent = new Entitlement(['name'=>'Deny Wifi','system_id'=>$system1->id]);
@@ -194,7 +186,7 @@ class DatabaseSeeder extends Seeder
         $spectrum_access_ent = new Entitlement(['name'=>'Spectrum Access','system_id'=>$system1->id]);
         $spectrum_access_ent->save();
 
-        //Google System Operations
+        //Google System Entitlements
         $google_account_google_ent = new Entitlement(['name'=>'Google Account','system_id'=>$system2->id]);
         $google_account_google_ent->save();
         $google_email_google_ent = new Entitlement(['name'=>'Google Email','system_id'=>$system2->id]);
@@ -216,7 +208,8 @@ class DatabaseSeeder extends Seeder
         $google_addons_google_ent = new Entitlement(['name'=>'Google Addons','system_id'=>$system2->id]);
         $google_addons_google_ent->save();
 
-      
+      //START BU/ AD Account Entitlements Creations
+
         //BU Account Group Entitlements Definitions
         $bu_account_group_ent1 = new GroupEntitlement(['group_id'=>$faculty->id,'entitlement_id'=>$bu_account_ent->id]);
         $bu_account_group_ent1->save();
@@ -394,8 +387,9 @@ class DatabaseSeeder extends Seeder
         $spectrum_access_group_ent2 = new GroupEntitlement(['group_id'=>$spectrum_access->id,'entitlement_id'=>$spectrum_access_ent->id]);
         $spectrum_access_group_ent2->save();
 
+        // END BU/ AD Account Entitlements Creations // 
 
-        // Provision Google Group Entitlements//
+        // START Google Group Entitlements//
 
         //Google Account
         $google_account_group_google_ent1 = new GroupEntitlement(['group_id'=>$faculty->id,'entitlement_id'=>$google_account_google_ent->id]);
@@ -547,5 +541,7 @@ class DatabaseSeeder extends Seeder
         $google_addons_group_google_ent6->save();
         $google_addons_group_google_ent7 = new GroupEntitlement(['group_id'=>$rf_staff->id,'entitlement_id'=>$google_addons_google_ent->id]);
         $google_addons_group_google_ent7->save();
+
+        // END Google Group Entitlements//
     }
 }

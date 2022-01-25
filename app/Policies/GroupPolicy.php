@@ -47,10 +47,6 @@ class GroupPolicy
         return $group->isAdmin($user) || $this->manage_groups($user,$group);
     }
 
-    public function delete_groups(User $user){
-        return Permission::where('user_id',$user->id)->where('permission','manage_groups')->first();
-    }
-
     public function manage_group_entitlements(User $user){
         $permission = Permission::where('user_id',$user->id)->get()->pluck('permission')->toArray();
         return in_array('manage_groups',$permission) && in_array('manage_entitlements',$permission);

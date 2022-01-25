@@ -29,7 +29,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     /* Admin Pages */
     Route::get('/', [AdminController::class, 'admin']);
     Route::get('/users/{user?}', [AdminController::class, 'users'])->middleware('can:view_in_admin,App\Models\User');
-    Route::get('/users/{user}/accounts', [AdminController::class, 'user_accounts'])->middleware('can:view_in_admin,App\Models\User');
+    Route::get('/users/{user}/accounts', [AdminController::class, 'user_accounts'])->middleware('can:override_user_accounts,App\Models\User');
     Route::get('/users/{user}/groups', [AdminController::class, 'user_groups'])->middleware('can:manage_groups,App\Models\Group');
     Route::get('/users/{user}/permissions', [AdminController::class, 'user_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
     Route::get('/users/{user}/entitlements', [AdminController::class, 'user_entitlements'])->middleware('can:override_user_entitlements,App\Models\User');
@@ -83,7 +83,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::post('/groups',[GroupController::class,'add_group'])->middleware('can:manage_groups,App\Models\Group');
         Route::put('/groups/order',[GroupController::class,'update_groups_order'])->middleware('can:manage_groups,App\Models\Group');
         Route::put('/groups/{group}',[GroupController::class,'update_group'])->middleware('can:manage_groups,App\Models\Group');
-        Route::delete('/groups/{group}',[GroupController::class,'delete_group'])->middleware('can:delete_groups,App\Models\Group');
+        Route::delete('/groups/{group}',[GroupController::class,'delete_group'])->middleware('can:manage_groups,App\Models\Group');
         Route::get('/groups/{group}/members',[GroupController::class,'get_members'])->middleware('can:manage_group_members,group');
         Route::post('/groups/{group}/members',[GroupController::class,'add_member'])->middleware('can:manage_group_members,group');
         Route::delete('/groups/{group}/members/{user}',[GroupController::class,'delete_member'])->middleware('can:manage_group_members,group');
@@ -114,7 +114,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::delete('/entitlements/{entitlement}/groups/{group}',[EntitlementController::class,'delete_group'])->middleware('can:manage_entitlements,App\Models\Entitlement');
 
         /* API Endpoints Methods */
-        Route::get('/endpoints',[EndpointController::class,'get_all_endpoints'])->middleware('can:view_in_admin,App\Models\Endpoint');
+        Route::get('/endpoints',[EndpointController::class,'get_all_endpoints'])->middleware('can:list_search,App\Models\Endpoint');
         Route::get('/endpoints/{endpoint}',[EndpointController::class,'get_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
         Route::post('/endpoints',[EndpointController::class,'add_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
         Route::put('/endpoints/{endpoint}',[EndpointController::class,'update_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
