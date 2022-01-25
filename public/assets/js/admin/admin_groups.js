@@ -3,6 +3,7 @@ ajax.get('/api/configuration/',function(app_config) {
     var group_form_fields = [
         {type:"hidden", name:"id"},
         {type:"text", name:"name", label:"Name",required:true},
+        {type:"text", name:"slug", label:"Slug",required:true},
         {type:"textarea", name:"description", label:"Description",required:false},
         {type:"select",label: "Affiliation",name:"affiliation",options:affiliate_options},
         {name:"type","label":"Type",type:"select",options:[{label:'Manually Managed',value:'manual'},{label:'Automatically Managed',value:'auto'}]},

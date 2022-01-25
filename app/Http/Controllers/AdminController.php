@@ -42,7 +42,7 @@ class AdminController extends Controller
 
         // Actions to be used to send to the Manage Users page
         $user_actions = [];
-        if ($user->can('manage_users','App\User')){
+        if ($user->can('update_users','App\User')){
             $user_actions[] = ["type"=>"save","label"=>"Update User"];
             $user_actions[] = ["type"=>"button","label"=>"Delete User","action"=>"delete","modifiers"=>"btn btn-danger"];
             $user_actions[] = ["type"=>"button","label"=>"Recalculate","action"=>"recalculate","modifiers"=>"btn btn-warning"];

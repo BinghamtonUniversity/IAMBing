@@ -16,6 +16,7 @@ class CreateGroupsTable extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug');
             $table->text('description')->nullable()->default(null);
             $table->string('affiliation')->nullable()->default(null);
             $table->unsignedInteger('order')->default(4294967295);

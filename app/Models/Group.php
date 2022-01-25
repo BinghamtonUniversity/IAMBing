@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-    protected $fillable = ['name','description','affiliation','type'];
+    protected $fillable = ['name','slug','description','affiliation','type'];
     // protected $casts = ['user_id'=>'string'];
 
     public function members(){
