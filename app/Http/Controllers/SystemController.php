@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\System;
-use App\Models\User;
+use App\Models\Identity;
 use Illuminate\Http\Request;
 
 class SystemController extends Controller
@@ -25,7 +25,7 @@ class SystemController extends Controller
         return $system;
     }
 
-    public function delete_system(System $system,User $user)
+    public function delete_system(System $system,Identity $identity)
     {
         return System::where('id','=',$system->id)->delete();
     }

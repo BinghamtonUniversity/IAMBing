@@ -16,7 +16,7 @@ ajax.get('/api/module_versions/public',function(data) {
         ], data: data,
     }).on("model:save",function(grid_event) {
         console.log(grid_event.model.attributes);
-        ajax.post('/api/users/assignments/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
+        ajax.post('/api/identitys/assignments/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
             grid_event.model.attributes = data;
             grid_event.model.draw();
         },function(err) {

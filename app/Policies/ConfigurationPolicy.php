@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Permission;
-use App\Models\User;
+use App\Models\Identity;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class ConfigurationPolicy
@@ -20,25 +20,25 @@ class ConfigurationPolicy
         //
     }
 
-    public function view_in_admin(User $user){
+    public function view_in_admin(Identity $identity){
         return Permission::where('permission','manage_systems_config')->first();
     }
 
-    public function list_search(User $user){
+    public function list_search(Identity $identity){
         // return true;
-        return Permission::where('user_id',$user->id)->where(function($q){
-            $q->orWhere('permission','view_users')
-            ->orWhere('permission','manage_users')
-            ->orWhere('permission','manage_user_permissions')
-            ->orWhere('permission','override_user_accounts')
-            ->orWhere('permission','merge_users')
-            ->orWhere('permission','impersonate_user')
+        return Permission::where('identity_id',$identity->id)->where(function($q){
+            $q->orWhere('permission','view_identities')
+            ->orWhere('permission','manage_identities')
+            ->orWhere('permission','manage_identity_permissions')
+            ->orWhere('permission','override_identity_accounts')
+            ->orWhere('permission','merge_identities')
+            ->orWhere('permission','impersonate_identities')
             ->orWhere('permission','view_groups')
             ->orWhere('permission','manage_groups');
         })->first();
     }
 
-    public function update(User $user){
+    public function update(Identity $identity){
         return Permission::where('permission','manage_systems_config')->first();;
     }
 }

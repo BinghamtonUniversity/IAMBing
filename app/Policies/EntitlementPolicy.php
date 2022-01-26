@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Permission;
-use App\Models\User;
+use App\Models\Identity;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class EntitlementPolicy
@@ -20,14 +20,14 @@ class EntitlementPolicy
         //
     }
 
-    public function view_in_admin(User $user){
+    public function view_in_admin(Identity $identity){
         return Permission::where('permission','manage_entitlements')->first();
     }
-    public function list_search(User $user){
-        return Permission::where('permission','manage_entitlements')->orWhere('permission','override_user_entitlements')->first();
+    public function list_search(Identity $identity){
+        return Permission::where('permission','manage_entitlements')->orWhere('permission','override_identity_entitlements')->first();
     }
 
-    public function manage_entitlements(User $user){
+    public function manage_entitlements(Identity $identity){
         return Permission::where('permission','manage_entitlements')->first();
     }
 }

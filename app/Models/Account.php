@@ -10,19 +10,19 @@ use Illuminate\Support\Arr;
 class Account extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['user_id','system_id','account_id','status','override','override_description','override_user_id'];
+    protected $fillable = ['identity_id','system_id','account_id','status','override','override_description','override_identity_id'];
     protected $casts = ['override'=>'boolean','system_id'=>'string'];
 
     public function system(){
         return $this->belongsTo(System::class);
     }
 
-    public function user(){
-        return $this->belongsTo(User::class);
+    public function identity(){
+        return $this->belongsTo(Identity::class);
     }
 
-    public function override_user(){
-        return $this->belongsTo(SimpleUser::class,'override_user_id');
+    public function override_identity(){
+        return $this->belongsTo(SimpleIdentity::class,'override_identity_id');
     }
 
     public function disable() {
@@ -34,18 +34,18 @@ class Account extends Model
         $this->info = $this->sync('info');
     }
 
-    private function build_sync_user() {
-        $myuser = User::where('id',$this->user_id)->with('user_entitlements')->first()->only([
+    private function build_sync_identity() {
+        $myidentity = Identity::where('id',$this->identity_id)->with('identity_entitlements')->first()->only([
             'first_name','last_name','attributes','entitlements','ids','default_username','default_email','id'
         ]);
-        $group_ids = GroupMember::select('group_id')->where('user_id',$myuser['id'])->get()->pluck('group_id');
-        $myuser['affiliations'] = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values()->toArray();
-        $myuser['primary_affiliation'] = isset($myuser['affiliations'][0])?$myuser['affiliations'][0]:null;
-        return $myuser;
+        $group_ids = GroupMember::select('group_id')->where('identity_id',$myidentity['id'])->get()->pluck('group_id');
+        $myidentity['affiliations'] = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values()->toArray();
+        $myidentity['primary_affiliation'] = isset($myidentity['affiliations'][0])?$myidentity['affiliations'][0]:null;
+        return $myidentity;
     }
 
     public function sync($action) {
-        $myuser = $this->build_sync_user();
+        $myidentity = $this->build_sync_identity();
         $m = new \Mustache_Engine;
         $mysystem = System::where('id',$this->system_id)->first();
         if (isset($mysystem->config->actions) && is_array($mysystem->config->actions)) {
@@ -54,13 +54,13 @@ class Account extends Model
             });
             if (!is_null($action_definition)) {
                 $endpoint = Endpoint::where('id',$action_definition->endpoint)->first();
-                $myuser['account'] = $this->only('account_id','status');
-                $url = $m->render($endpoint->config->url.$action_definition->path, $myuser);   
+                $myidentity['account'] = $this->only('account_id','status');
+                $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
                 $http_helper = new HTTPHelper();
                 $payload = [
                     'url'  => $url,
                     'verb' => $action_definition->verb,
-                    'data' => $myuser,
+                    'data' => $myidentity,
                     'username' => $endpoint->config->username,
                     'password' => $endpoint->config->secret,
                 ];

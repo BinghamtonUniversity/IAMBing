@@ -6,7 +6,7 @@ use App\Libraries\HTTPHelper;
 
 class IAMBingGroupSync
 {
-    static private $users = [
+    static private $identities = [
         [
             'ids'=>['bnumber'=>'B00505893'],
             'first_name'=>'Tim',
@@ -41,14 +41,14 @@ class IAMBingGroupSync
         'Applicants'=>['B00612268','B00123467'],
     ];
 
-    static private function get_users($bnumbers) {
-        $users = [];
-        foreach(self::$users as $user) {
-            if (in_array($user['ids']['bnumber'],$bnumbers)) {
-                $users[] = $user;
+    static private function get_identities($bnumbers) {
+        $identities = [];
+        foreach(self::$identities as $identity) {
+            if (in_array($identity['ids']['bnumber'],$bnumbers)) {
+                $identities[] = $identity;
             }
         }
-        return $users;
+        return $identities;
     }
 
     static private $iambing_url = 'http://iambing.local:8000';
@@ -64,7 +64,7 @@ class IAMBingGroupSync
             $graphene_response = $httphelper->http_fetch([
                 'url'  => self::$iambing_url.'/api/public/groups/'.$group_name.'/members',
                 'verb' => 'POST',
-                'data' => ['users'=>self::get_users($bnumbers),'id'=>'bnumber'],
+                'data' => ['identities'=>self::get_identities($bnumbers),'id'=>'bnumber'],
                 'username' => self::$iambing_username,
                 'password' => self::$iambing_password,
                 'headers' => ['Accept'=>'application/json'],

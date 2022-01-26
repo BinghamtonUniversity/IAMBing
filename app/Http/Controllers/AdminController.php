@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Entitlement;
-use App\Models\User;
+use App\Models\Identity;
 use App\Models\Account;
 use Illuminate\Support\Facades\Artisan;
 
@@ -25,78 +25,79 @@ class AdminController extends Controller
     }
 
     public function configuration(Request $request) {
-        return view('default.admin',['page'=>'configuration','ids'=>[],'title'=>'Manage System Configuration','help'=>
+        $auth_user_perms = Permission::where('identity_id',Auth::user()->id)->select('permission')->get()->pluck('permission')->toArray();
+        return view('default.admin',['page'=>'configuration','ids'=>[],'title'=>'Manage System Configuration','permissions'=>$auth_user_perms,'help'=>
             'System Wide Configuration Options'
         ]);
     }
 
-    public function users(Request $request, User $user=null) {
-        if (is_null($user)) {
+    public function identities(Request $request, Identity $identity=null) {
+        if (is_null($identity)) {
             $ids = [];
         } else {
-            $ids = [$user->id];
+            $ids = [$identity->id];
         }
-        $user = Auth::user();
+        $identity = Auth::user();
 
-        $auth_user_perms = Permission::where('user_id',$user->id)->select('permission')->get()->pluck('permission')->toArray();
+        $auth_user_perms = Permission::where('identity_id',$identity->id)->select('permission')->get()->pluck('permission')->toArray();
 
-        // Actions to be used to send to the Manage Users page
+        // Actions to be used to send to the Manage Identities page
         $user_actions = [];
-        if ($user->can('update_users','App\User')){
-            $user_actions[] = ["type"=>"save","label"=>"Update User"];
-            $user_actions[] = ["type"=>"button","label"=>"Delete User","action"=>"delete","modifiers"=>"btn btn-danger"];
+        if ($identity->can('update_identities','App\Identity')){
+            $user_actions[] = ["type"=>"save","label"=>"Update Identity"];
+            $user_actions[] = ["type"=>"button","label"=>"Delete Identity","action"=>"delete","modifiers"=>"btn btn-danger"];
             $user_actions[] = ["type"=>"button","label"=>"Recalculate","action"=>"recalculate","modifiers"=>"btn btn-warning"];
         }
-        if ($user->can('merge_users','App\User')){
-            $user_actions[] = ["type"=>"button","label"=>"Merge Into","action"=>"merge_user","modifiers"=>"btn btn-danger"];
+        if ($identity->can('merge_identities','App\Identity')){
+            $user_actions[] = ["type"=>"button","label"=>"Merge Into","action"=>"merge_identity","modifiers"=>"btn btn-danger"];
         }
-        if ($user->can('impersonate_user','App\User')){
-            $user_actions[] = ["type"=>"button","label"=>"Impersonate User","action"=>"login","modifiers"=>"btn btn-warning"];
+        if ($identity->can('impersonate_identities','App\Identity')){
+            $user_actions[] = ["type"=>"button","label"=>"Impersonate Identity","action"=>"login","modifiers"=>"btn btn-warning"];
         }
 
         return view('default.admin',[
-            'page'=>'users','ids'=>$ids,
-            'title'=>'Manage Users',
+            'page'=>'identities','ids'=>$ids,
+            'title'=>'Manage Identities',
             'actions' => $user_actions,
             'permissions'=> $auth_user_perms,
             'help'=>
-                'Use this page to create, search for, view, delete, and modify existing users.'
+                'Use this page to create, search for, view, delete, and modify existing identities.'
         ]);
     }
 
-    public function user_accounts(Request $request, User $user) {
-        return view('default.admin',['page'=>'users_accounts','ids'=>[$user->id],'title'=>$user->first_name.' '.$user->last_name.'\'s Accounts','help'=>
-            'Note that while you may add / delete accounts for a given user, these accounts may be overridden by the user\'s entitlements.  Proceed with caution.'
+    public function identity_accounts(Request $request, Identity $identity) {
+        return view('default.admin',['page'=>'identities_accounts','ids'=>[$identity->id],'title'=>$identity->first_name.' '.$identity->last_name.'\'s Accounts','help'=>
+            'Note that while you may add / delete accounts for a given identity, these accounts may be overridden by the identity\'s entitlements.  Proceed with caution.'
         ]);
     }
 
-    public function user_groups(Request $request, User $user) {
-        return view('default.admin',['page'=>'users_groups','ids'=>[$user->id],'title'=>$user->first_name.' '.$user->last_name.'\'s Groups','help'=>
-            'Manage groups for this user.'
+    public function identity_groups(Request $request, Identity $identity) {
+        return view('default.admin',['page'=>'identities_groups','ids'=>[$identity->id],'title'=>$identity->first_name.' '.$identity->last_name.'\'s Groups','help'=>
+            'Manage groups for this identity.'
         ]);
     }
 
-    public function user_entitlements(Request $request, User $user) {
-        return view('default.admin',['page'=>'users_entitlements','ids'=>[$user->id],'title'=>$user->first_name.' '.$user->last_name.'\'s Entitlements','help'=>
-            'Manage entitlements for this user.'
+    public function identity_entitlements(Request $request, Identity $identity) {
+        return view('default.admin',['page'=>'identities_entitlements','ids'=>[$identity->id],'title'=>$identity->first_name.' '.$identity->last_name.'\'s Entitlements','help'=>
+            'Manage entitlements for this identity.'
         ]);
     }
 
     public function groups(Request $request, Group $group) {
-        $user = Auth::user();
+        $identity = Auth::user();
 
-        $auth_user_perms = Permission::where('user_id',$user->id)->select('permission')->get()->pluck('permission')->toArray();
+        $auth_user_perms = Permission::where('identity_id',$identity->id)->select('permission')->get()->pluck('permission')->toArray();
 
-        // Actions to be used to send to the Manage Users page
+        // Actions to be used to send to the Manage Identities page
         $user_actions = [];
-        if ($user->can('manage_groups','App\Group')){
+        if ($identity->can('manage_groups','App\Group')){
             $user_actions[] = ["name"=>"create","label"=>"New Group"];
             $user_actions[] = ["|"];
             $user_actions[] = ["name"=>"edit","label"=>"Update Group"];   
         }
         $user_actions[] = ["label"=>"Manage Members","name"=>"manage_members","min"=>1,"max"=>1,"type"=>"default"];
         
-        if ($user->can('manage_groups','App\Group')){
+        if ($identity->can('manage_groups','App\Group')){
             $user_actions[] = ["label"=>"Manage Administrators","name"=>"manage_admins","min"=>1,"max"=>1,"type"=>"default"];
         }
         
@@ -104,7 +105,7 @@ class AdminController extends Controller
             $user_actions[] = ["label"=>"Manage Entitlements","name"=>"manage_entitlements","min"=>1,"max"=>1,"type"=>"warning"];
         }
             
-        if ($user->can('manage_groups','App\Group')){
+        if ($identity->can('manage_groups','App\Group')){
             $user_actions[] = ['name'=>'sort', 'max'=>1, 'label'=> '<i class="fa fa-sort"></i> Sort'];
             $user_actions[] = ["|"];
             $user_actions[] = ["|"];
@@ -124,10 +125,10 @@ class AdminController extends Controller
 
     public function group_members(Request $request, Group $group) {
         return view('default.admin',['page'=>'groups_members','ids'=>[$group->id],'title'=>'Manage "'.$group->name.'" Group Members','help'=>
-            'Use this page to add / remove users from the current group.',
+            'Use this page to add / remove identities from the current group.',
             'actions' => [
-                ($group->type==='manual')?["name"=>"create","label"=>"Add User to Group"]:'','','',
-                ($group->type==='manual')?["name"=>"delete","label"=>"Remove User from Group"]:'',
+                ($group->type==='manual')?["name"=>"create","label"=>"Add Identity to Group"]:'','','',
+                ($group->type==='manual')?["name"=>"delete","label"=>"Remove Identity from Group"]:'',
             ],
         ]);
     }
@@ -140,7 +141,7 @@ class AdminController extends Controller
 
     public function group_entitlements(Request $request, Group $group) {
         return view('default.admin',['page'=>'groups_entitlements','ids'=>[$group->id],'title'=>'Manage "'.$group->name.'" Group Entitlements','help'=>
-            'Use this page to manage entitlements for the current group.  (Users who are members of this group will automatically be granted any entitlements which are listed here)'
+            'Use this page to manage entitlements for the current group.  (Identities who are members of this group will automatically be granted any entitlements which are listed here)'
         ]);
     }
 
@@ -151,14 +152,32 @@ class AdminController extends Controller
     }
 
     public function entitlements(Request $request) {
-        return view('default.admin',['page'=>'entitlements','ids'=>[],'title'=>'Manage Entitlements','help'=>
-            'Use this page to manage entitlements.  (Entitlements are "things" a user can or cannot do within an external system.  Examples: Access Wifi, Utilize VPN)'
+        $identity = Auth::user();
+
+        $user_actions[]= ["name"=>"create","label"=>"New Entitlement"];
+        $user_actions[]= [''];
+        $user_actions[] = ["name"=>"edit","label"=>"Update Entitlement"];
+
+        if ($identity->can('manage_group_entitlements','App\Group')){
+            $user_actions[] = ["label"=>"Manage Groups","name"=>"manage_groups","min"=>1,"max"=>1,"type"=>"default"];
+        }
+        
+        $user_actions[] = [''];
+        $user_actions[] = ["name"=>"delete","label"=>"Delete Entitlement"];
+
+        return view('default.admin',[
+            'page'=>'entitlements',
+            'ids'=>[],
+            'actions'=>$user_actions,
+            'title'=>'Manage Entitlements',
+            'help'=>
+            'Use this page to manage entitlements.  (Entitlements are "things" a identity can or cannot do within an external system.  Examples: Access Wifi, Utilize VPN)'
         ]);
     }
 
     public function entitlement_groups(Request $request, Entitlement $entitlement) {
         return view('default.admin',['page'=>'entitlements_groups','ids'=>[$entitlement->id],'title'=>'Manage "'.$entitlement->name.'" Entitlement Groups','help'=>
-            'Use this page to manage groups for the current entitlement.  (Users who are members of any groups listed here will automatically be granted this entitlement)'
+            'Use this page to manage groups for the current entitlement.  (Identities who are members of any groups listed here will automatically be granted this entitlement)'
         ]);
     }
 

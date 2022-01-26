@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUserAttributes extends Migration
+class CreateIdentityUniqueIdsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,14 @@ class CreateUserAttributes extends Migration
      */
     public function up()
     {
-        Schema::create('user_attributes', function (Blueprint $table) {
+        Schema::create('identity_unique_ids', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->index();
+            $table->unsignedBigInteger('identity_id')->index();
             $table->string('name');
             $table->string('value')->nullable()->default(null);
-            $table->boolean('array')->default(false);
             $table->timestamps();
-            $table->index(['user_id', 'name']);
+            $table->unique(['name', 'value']);
+            $table->index(['identity_id', 'name']);
         });
     }
 
@@ -31,6 +31,6 @@ class CreateUserAttributes extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_attributes');
+        Schema::dropIfExists('identity_unique_ids');
     }
 }

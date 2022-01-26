@@ -16,7 +16,7 @@ ajax.get('/api/entitlements/'+id+'/groups',function(data) {
     })
     .on("model:created",function(grid_event) {
         ajax.post('/api/entitlements/'+id+'/groups',grid_event.model.attributes,function(data) {
-            grid_event.model.update(data)
+            grid_event.model.update(data);
         },function(data) {
             grid_event.model.undo();
         });

@@ -30,6 +30,6 @@ dashboard_template = `
 </div>
 `;
 
-ajax.get('/api/users/'+id,function(data) {
+ajax.get('/api/identities/'+id,function(data) {
     $('#adminDataGrid').html(gform.m(dashboard_template,data));
 });

@@ -12,8 +12,8 @@ class HTTPHelper {
             'url'  => '',                    // Required
             'verb' => 'GET|POST|PUT|DELETE', // Default: GET
             'data' => [],                    // Optional Array/Object/String containing Data
-            'username' => '',                // Optional BasicAuth Username
-            'password' => '',                // Optional BasicAuth Username
+            'username' => '',                // Optional BasicAuth username
+            'password' => '',                // Optional BasicAuth username
             'content_type' => '',            // Default: application/x-www-form-urlencoded
             'accept_type' => '',             // Optional: "Accept" MIME type
             'timeout' => 300,                // Default: 300 seconds
@@ -51,7 +51,7 @@ class HTTPHelper {
         $request_config = [];
         $request_config['ignore_errors'] = true;
         $request_config['method'] = $verb;
-        $request_config['header'] = "Content-type: ".$content_type."\r\n"."User-Agent: rest\r\n";
+        $request_config['header'] = "Content-type: ".$content_type."\r\n"."Identity-Agent: rest\r\n";
         $request_config['timeout'] = $timeout;
         if (!is_null($username)) {
             $request_config['header'] .= "Authorization: Basic ".base64_encode($username.':'.$password)."\r\n";

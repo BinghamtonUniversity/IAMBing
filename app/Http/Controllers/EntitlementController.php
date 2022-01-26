@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entitlement;
-use App\Models\User;
+use App\Models\Identity;
 use App\Models\GroupEntitlement;
 use App\Models\Group;
 use Illuminate\Http\Request;
@@ -31,7 +31,7 @@ class EntitlementController extends Controller
         return $entitlement;
     }
 
-    public function delete_entitlement(Entitlement $entitlement,User $user)
+    public function delete_entitlement(Entitlement $entitlement,Identity $identity)
     {
         return Entitlement::where('id','=',$entitlement->id)->delete();
     }

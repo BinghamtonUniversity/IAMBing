@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Configuration;
-use App\Models\User;
+use App\Models\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Artisan;

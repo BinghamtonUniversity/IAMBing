@@ -13,13 +13,13 @@ ajax.get('/api/endpoints',function(data) {
     count:20,
     schema:[
         {label: 'Name', name:'name', required: true},
-        {label: 'Configuration',type:"fieldset", name:'config', showColumn:false,template:'<dl class="dl-horizontal"><dt>URL:</dt> <dd>{{attributes.config.url}}</dd><dt>User Name:</dt> <dd>{{attributes.config.username}}</dd><dt>Content Type: </dt><dd>{{attributes.config.content_type}}</dd></dl>', fields:[
+        {label: 'Configuration',type:"fieldset", name:'config', showColumn:false,template:'<dl class="dl-horizontal"><dt>URL:</dt> <dd>{{attributes.config.url}}</dd><dt>Identity Name:</dt> <dd>{{attributes.config.username}}</dd><dt>Content Type: </dt><dd>{{attributes.config.content_type}}</dd></dl>', fields:[
             {label: 'Auth Type', name:'type', type: 'select', options:[
                 {label:'HTTP No Auth', value:'http_no_auth'}, 
                 {label:'HTTP Basic Auth', value:'http_basic_auth'}, 
             ], required: true},    
             {label:'URL', name: 'url', required: true},
-            {label:'Username', required: true,show:[{type:'matches',name:'type',value:'http_basic_auth'}]},
+            {label:'username', required: true,show:[{type:'matches',name:'type',value:'http_basic_auth'}]},
             {label:'Password', 'name':'secret', required: true, show:[{type:'matches',name:'type',value:'http_basic_auth'}]},
             {label:'Content Type', 'name':'content_type', required: true, show:[{type:'matches',name:'type',value:'http_basic_auth'}],type:"select",options:[
                 {label:"Form Data (application/x-www-form-urlencoded)",value:'application/x-www-form-urlencoded'},

@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\IdentityController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\EntitlementController;
@@ -28,11 +28,11 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
     /* Admin Pages */
     Route::get('/', [AdminController::class, 'admin']);
-    Route::get('/users/{user?}', [AdminController::class, 'users'])->middleware('can:view_in_admin,App\Models\User');
-    Route::get('/users/{user}/accounts', [AdminController::class, 'user_accounts'])->middleware('can:override_user_accounts,App\Models\User');
-    Route::get('/users/{user}/groups', [AdminController::class, 'user_groups'])->middleware('can:manage_groups,App\Models\Group');
-    Route::get('/users/{user}/permissions', [AdminController::class, 'user_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
-    Route::get('/users/{user}/entitlements', [AdminController::class, 'user_entitlements'])->middleware('can:override_user_entitlements,App\Models\User');
+    Route::get('/identities/{identity?}', [AdminController::class, 'identities'])->middleware('can:view_in_admin,App\Models\Identity');
+    Route::get('/identities/{identity}/accounts', [AdminController::class, 'identity_accounts'])->middleware('can:override_identity_accounts,App\Models\Identity');
+    Route::get('/identities/{identity}/groups', [AdminController::class, 'identity_groups'])->middleware('can:manage_groups,App\Models\Group');
+    Route::get('/identities/{identity}/permissions', [AdminController::class, 'identity_permissions'])->middleware('can:manage_identity_permissions,App\Models\Identity');
+    Route::get('/identities/{identity}/entitlements', [AdminController::class, 'identity_entitlements'])->middleware('can:override_identity_entitlements,App\Models\Identity');
     Route::get('/groups', [AdminController::class, 'groups'])->middleware('can:list_search,App\Models\Group');
     Route::get('/groups/{group}/members', [AdminController::class, 'group_members'])->middleware('can:manage_group_members,group');
     Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins'])->middleware('can:manage_groups,App\Models\Group');
@@ -41,41 +41,41 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/entitlements', [AdminController::class, 'entitlements'])->middleware('can:list_search,App\Models\Entitlement');
     Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups'])->middleware('can:manage_group_entitlements,App\Models\Group');
     Route::get('/endpoints', [AdminController::class, 'endpoints'])->middleware('can:list_search,App\Models\Endpoint');
-    Route::get('/configuration', [AdminController::class, 'configuration'])->middleware('can:list_search,App\Models\Configuration');
+    Route::get('/configuration', [AdminController::class, 'configuration'])->middleware('can:update,App\Models\Configuration');
 
     Route::group(['prefix' => 'api'], function () {
-        /* User Methods */
-        Route::get('/users','UserController@get_all_users')->middleware('can:view_in_admin,App\Models\User');
-        Route::get('/users/search/{search_string?}',[UserController::class,'search'])->middleware('can:list_search,App\Models\User');
-        Route::get('/users/{user}',[UserController::class,'get_user'])->middleware('can:view_user_info,App\Models\User');
-        Route::post('/users',[UserController::class,'add_user'])->middleware('can:add_users,App\Models\User');
-        Route::put('/users/{user}',[UserController::class,'update_user'])->middleware('can:update_users,App\Models\User');
-        Route::delete('/users/{user}',[UserController::class,'delete_user'])->middleware('can:delete_users,App\Models\User');
-        //User Permissions
-        Route::put('/users/{user}/permissions',[UserController::class,'set_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
-        Route::get('/users/{user}/permissions',[UserController::class,'get_permissions'])->middleware('can:manage_user_permissions,App\Models\User');
-        //Merge User
-        Route::put('/users/{source_user}/merge_into/{target_user}','UserController@merge_user')->middleware('can:merge_users,App\Models\User');
+        /* Identity Methods */
+        Route::get('/identities','IdentityController@get_all_identities')->middleware('can:view_in_admin,App\Models\Identity');
+        Route::get('/identities/search/{search_string?}',[IdentityController::class,'search'])->middleware('can:list_search,App\Models\Identity');
+        Route::get('/identities/{identity}',[IdentityController::class,'get_identity'])->middleware('can:view_identity_info,App\Models\Identity');
+        Route::post('/identities',[IdentityController::class,'add_identity'])->middleware('can:add_identities,App\Models\Identity');
+        Route::put('/identities/{identity}',[IdentityController::class,'update_identity'])->middleware('can:update_identities,App\Models\Identity');
+        Route::delete('/identities/{identity}',[IdentityController::class,'delete_identity'])->middleware('can:delete_identities,App\Models\Identity');
+        //Identity Permissions
+        Route::put('/identities/{identity}/permissions',[IdentityController::class,'set_permissions'])->middleware('can:manage_identity_permissions,App\Models\Identity');
+        Route::get('/identities/{identity}/permissions',[IdentityController::class,'get_permissions'])->middleware('can:manage_identity_permissions,App\Models\Identity');
+        //Merge Identity
+        Route::put('/identities/{source_identity}/merge_into/{target_identity}','IdentityController@merge_identity')->middleware('can:merge_identities,App\Models\Identity');
         //Impersonate
-        Route::post('/login/{user}',[UserController::class,'login_user'])->middleware('can:impersonate_users,App\Models\User');
+        Route::post('/login/{identity}',[IdentityController::class,'login_identity'])->middleware('can:impersonate_identities,App\Models\Identity');
 
-        // User Accounts
-        Route::get('/users/{user}/accounts',[UserController::class,'get_accounts'])->middleware('can:view_user_info,App\Models\User');
-        Route::get('/users/{user}/accounts/{account}',[UserController::class,'get_account'])->middleware('can:view_user_info,App\Models\User');
-        Route::post('/users/{user}/accounts',[UserController::class,'add_account'])->middleware('can:override_user_accounts,App\Models\User');
-        Route::delete('/users/{user}/accounts/{account}',[UserController::class,'delete_account'])->middleware('can:override_user_accounts,App\Models\User');
-        Route::put('/users/{user}/accounts/{account}',[UserController::class,'update_account'])->middleware('can:override_user_accounts,App\Models\User');
+        // Identity Accounts
+        Route::get('/identities/{identity}/accounts',[IdentityController::class,'get_accounts'])->middleware('can:view_identity_info,App\Models\Identity');
+        Route::get('/identities/{identity}/accounts/{account}',[IdentityController::class,'get_account'])->middleware('can:view_identity_info,App\Models\Identity');
+        Route::post('/identities/{identity}/accounts',[IdentityController::class,'add_account'])->middleware('can:override_identity_accounts,App\Models\Identity');
+        Route::delete('/identities/{identity}/accounts/{account}',[IdentityController::class,'delete_account'])->middleware('can:override_identity_accounts,App\Models\Identity');
+        Route::put('/identities/{identity}/accounts/{account}',[IdentityController::class,'update_account'])->middleware('can:override_identity_accounts,App\Models\Identity');
 
-        // User Groups
-        Route::get('/users/{user}/groups',[UserController::class,'get_groups'])->middleware('can:manage_groups,App\Models\Group');
+        // Identity Groups
+        Route::get('/identities/{identity}/groups',[IdentityController::class,'get_groups'])->middleware('can:manage_groups,App\Models\Group');
 
-        // User Entitlements
-        Route::get('/users/{user}/entitlements',[UserController::class,'get_entitlements'])->middleware('can:override_user_entitlements,App\Models\User');
-        Route::post('/users/{user}/entitlements',[UserController::class,'add_entitlement'])->middleware('can:override_user_entitlements,App\Models\User');
-        Route::put('/users/{user}/entitlements/{user_entitlement}',[UserController::class,'update_entitlement'])->middleware('can:override_user_entitlements,App\Models\User');
+        // Identity Entitlements
+        Route::get('/identities/{identity}/entitlements',[IdentityController::class,'get_entitlements'])->middleware('can:override_identity_entitlements,App\Models\Identity');
+        Route::post('/identities/{identity}/entitlements',[IdentityController::class,'add_entitlement'])->middleware('can:override_identity_entitlements,App\Models\Identity');
+        Route::put('/identities/{identity}/entitlements/{identity_entitlement}',[IdentityController::class,'update_entitlement'])->middleware('can:override_identity_entitlements,App\Models\Identity');
 
         // Recalculate
-        Route::get('/users/{user}/recalculate',[UserController::class,'recalculate'])->middleware('can:manage_users,App\Models\User');
+        Route::get('/identities/{identity}/recalculate',[IdentityController::class,'recalculate'])->middleware('can:manage_identities,App\Models\Identity');
 
         /* Group Methods */
         Route::get('/groups',[GroupController::class,'get_all_groups'])->middleware('can:list_search,App\Models\Group');
@@ -86,15 +86,15 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::delete('/groups/{group}',[GroupController::class,'delete_group'])->middleware('can:manage_groups,App\Models\Group');
         Route::get('/groups/{group}/members',[GroupController::class,'get_members'])->middleware('can:manage_group_members,group');
         Route::post('/groups/{group}/members',[GroupController::class,'add_member'])->middleware('can:manage_group_members,group');
-        Route::delete('/groups/{group}/members/{user}',[GroupController::class,'delete_member'])->middleware('can:manage_group_members,group');
+        Route::delete('/groups/{group}/members/{identity}',[GroupController::class,'delete_member'])->middleware('can:manage_group_members,group');
         Route::get('/groups/{group}/admins',[GroupController::class,'get_admins'])->middleware('can:manage_group_admins,group');
         Route::post('/groups/{group}/admins',[GroupController::class,'add_admin'])->middleware('can:manage_group_admins,group');
-        Route::delete('/groups/{group}/admins/{user}',[GroupController::class,'delete_admin'])->middleware('can:manage_group_admins,group');
+        Route::delete('/groups/{group}/admins/{identity}',[GroupController::class,'delete_admin'])->middleware('can:manage_group_admins,group');
         Route::get('/groups/{group}/entitlements',[GroupController::class,'get_entitlements'])->middleware('can:manage_group_entitlements,group');
         Route::post('/groups/{group}/entitlements',[GroupController::class,'add_entitlement'])->middleware('can:manage_group_entitlements,group');
         Route::delete('/groups/{group}/entitlements/{entitlement}',[GroupController::class,'delete_entitlement'])->middleware('can:manage_group_entitlements,group');
-        // Route::post('/groups/{group}/users/{user}','GroupController@add_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
-        // Route::delete('/groups/{group}/users/{user}','GroupController@delete_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
+        // Route::post('/groups/{group}/identities/{identity}','GroupController@add_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
+        // Route::delete('/groups/{group}/identities/{identity}','GroupController@delete_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
 
         /* Systems Methods */
         Route::get('/systems',[SystemController::class,'get_all_systems'])->middleware('can:list_search,App\Models\System');
@@ -122,8 +122,8 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
         /* Configuration Methods */
         Route::get('/configuration',[ConfigurationController::class,'get_configurations'])->middleware('can:list_search,App\Models\Configuration');
-        Route::get('/configuration/refresh/db',[ConfigurationController::class, 'refresh_db'])->middleware('can:list_search,App\Models\Configuration');
-        Route::get('/configuration/refresh/redis',[ConfigurationController::class, 'refresh_redis'])->middleware('can:list_search,App\Models\Configuration');
+        Route::get('/configuration/refresh/db',[ConfigurationController::class, 'refresh_db'])->middleware('can:flush_job_queue,App\Models\Job');
+        Route::get('/configuration/refresh/redis',[ConfigurationController::class, 'refresh_redis'])->middleware('can:flush_job_queue,App\Models\Job');
         Route::put('/configuration/{config_name}',[ConfigurationController::class,'update_configuration'])->middleware('can:update,App\Models\Configuration');
     });
 

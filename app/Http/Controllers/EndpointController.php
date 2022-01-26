@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Endpoint;
-use App\Models\User;
+use App\Models\Identity;
 use Illuminate\Http\Request;
 
 class EndpointController extends Controller
@@ -25,7 +25,7 @@ class EndpointController extends Controller
         return $endpoint;
     }
 
-    public function delete_endpoint(Endpoint $endpoint,User $user) {
+    public function delete_endpoint(Endpoint $endpoint,Identity $identity) {
         return Endpoint::where('id','=',$endpoint->id)->delete();
     }
 }

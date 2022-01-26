@@ -4,10 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-use App\Models\User;
+use App\Models\Identity;
 use App\Models\System;
 use App\Models\Account;
-use App\Models\UserUniqueID;
+use App\Models\IdentityUniqueID;
 use App\Models\GroupMember;
 use App\Models\Group;
 
@@ -18,7 +18,7 @@ class InitBulkLoad extends Command
 
     private function default_username($current_default, $new_username) {
         if (!is_null($current_default)) {
-            // Establish Default Username
+            // Establish Default username
             if (is_numeric(substr($current_default, -1, 1)) && !is_numeric(substr($new_username, -1, 1))) {
                 $current_default = $new_username;
             } else if (is_numeric(substr($current_default, -1, 1)) && is_numeric(substr($new_username, -1, 1))) {
@@ -43,25 +43,25 @@ class InitBulkLoad extends Command
 
             $bu_sys = System::where('name','BU')->first();
             $google_sys = System::where('name','Google Workspace')->first();
-            $bulk_loaded_users_group = Group::where('name','Bulk Loaded Users')->first();
+            $bulk_loaded_identities_group = Group::where('name','Bulk Loaded Identities')->first();
 
-            // Create All PRIMARY Account Users and Accounts
-            foreach($data['users'] as $user) {
-                $new_user = new User([
-                    'first_name'=>$user['firstName'],
-                    'last_name'=>$user['lastName'],
-                    'ids' => ['bnumber'=>$user['uniqueId']],
+            // Create All PRIMARY Account Identities and Accounts
+            foreach($data['identities'] as $identity) {
+                $new_identity = new Identity([
+                    'first_name'=>$identity['firstName'],
+                    'last_name'=>$identity['lastName'],
+                    'ids' => ['bnumber'=>$identity['uniqueId']],
                 ]);
-                $new_user->save();  
-                GroupMember::updateOrCreate(['group_id'=>$bulk_loaded_users_group->id,'user_id'=>$new_user->id],[]);                            
+                $new_identity->save();  
+                GroupMember::updateOrCreate(['group_id'=>$bulk_loaded_identities_group->id,'identity_id'=>$new_identity->id],[]);                            
                 $default_username = null;
                 $default_email = null;
-                foreach($user['accounts'] as $account) {
+                foreach($identity['accounts'] as $account) {
                     if ($account['affiliation'] === 'Primary Account' || $account['affiliation'] === 'Non-Active Account') {
                         if ($account['system'] === 'PODS') {
                             if ($account['affiliation'] === 'Primary Account') {
                                 $new_account = new Account([
-                                    'user_id'=>$new_user->id,
+                                    'identity_id'=>$new_identity->id,
                                     'system_id'=>$bu_sys->id,
                                     'account_id'=>strtolower($account['username'])
                                 ]);
@@ -71,7 +71,7 @@ class InitBulkLoad extends Command
                         } else if ($account['system'] === 'Google') {
                             if ($account['affiliation'] === 'Primary Account') {
                                 $new_account = new Account([
-                                    'user_id'=>$new_user->id,
+                                    'identity_id'=>$new_identity->id,
                                     'system_id'=>$google_sys->id,
                                     'account_id'=>strtolower($account['email'])
                                 ]);
@@ -81,62 +81,62 @@ class InitBulkLoad extends Command
                         }
                     }
                 } 
-                $new_user->default_username = strtolower($default_username);
-                $new_user->default_email = strtolower($default_email).'@binghamton.edu';
-                $new_user->save();     
+                $new_identity->default_username = strtolower($default_username);
+                $new_identity->default_email = strtolower($default_email).'@binghamton.edu';
+                $new_identity->save();     
             }
             
             $sponsored_bu_group = Group::where('name','Sponsored Accounts in BU')->first();
             $sponsored_google_group = Group::where('name','Sponsored Accounts in Google')->first();
 
-            // Create all SECONDARY/SPONSORED Account Users and Accounts
-            foreach($data['users'] as $user) {
-                $sponsor_user = UserUniqueId::where('name','bnumber')->where('value',$user['uniqueId'])->first();
-                foreach($user['accounts'] as $account) {
+            // Create all SECONDARY/SPONSORED Account Identities and Accounts
+            foreach($data['identities'] as $identity) {
+                $sponsor_identity = IdentityUniqueId::where('name','bnumber')->where('value',$identity['uniqueId'])->first();
+                foreach($identity['accounts'] as $account) {
                     if ($account['affiliation'] === 'Secondary Account') {
                         if ($account['system'] === 'PODS') {
-                            $new_user = User::where('default_email',strtolower($account['username']).'@binghamton.edu')->orWhere('default_username',strtolower($account['username']))->first();
-                            if (is_null($new_user)) {
-                                $new_user = new User([
+                            $new_identity = Identity::where('default_email',strtolower($account['username']).'@binghamton.edu')->orWhere('default_username',strtolower($account['username']))->first();
+                            if (is_null($new_identity)) {
+                                $new_identity = new Identity([
                                     'first_name' => strtolower($account['username']),
                                     'sponsored' => true,
-                                    'sponsor_user_id' => $sponsor_user->user_id,
+                                    'sponsor_identity_id' => $sponsor_identity->identity_id,
                                 ]);
-                                $new_user->save();
+                                $new_identity->save();
                             }
-                            $new_user->default_username = strtolower($account['username']);
-                            $new_user->save();
+                            $new_identity->default_username = strtolower($account['username']);
+                            $new_identity->save();
                             $new_account = new Account([
-                                'user_id'=>$new_user->id,
+                                'identity_id'=>$new_identity->id,
                                 'system_id'=>$bu_sys->id,
                                 'account_id'=>strtolower($account['username']),
                                 'default_username' => strtolower($account['username']),
                                 'default_email' => strtolower($account['username']).'@binghamton.edu',
                             ]);
                             $new_account->save();
-                            GroupMember::updateOrCreate(['group_id' => $sponsored_bu_group->id, 'user_id' => $new_user->id],[]);                            
+                            GroupMember::updateOrCreate(['group_id' => $sponsored_bu_group->id, 'identity_id' => $new_identity->id],[]);                            
                         } else if ($account['system'] === 'Google') {
                             $derived_username = strtolower(explode('@',$account['email'])[0]);
-                            $new_user = User::where('default_email',strtolower($account['email']))->orWhere('default_username',$derived_username)->first();
-                            if (is_null($new_user)) {
-                                $new_user = new User([
+                            $new_identity = Identity::where('default_email',strtolower($account['email']))->orWhere('default_username',$derived_username)->first();
+                            if (is_null($new_identity)) {
+                                $new_identity = new Identity([
                                     'first_name' => $derived_username,
                                     'sponsored' => true,
-                                    'sponsor_user_id' => $sponsor_user->user_id,
+                                    'sponsor_identity_id' => $sponsor_identity->identity_id,
                                     'default_username' => $derived_username,
                                     'default_email' => strtolower($account['email']),
                                 ]);
-                                $new_user->save();
+                                $new_identity->save();
                             }
-                            $new_user->default_email = strtolower($account['email']);
-                            $new_user->save();
+                            $new_identity->default_email = strtolower($account['email']);
+                            $new_identity->save();
                             $new_account = new Account([
-                                'user_id'=>$new_user->id,
+                                'identity_id'=>$new_identity->id,
                                 'system_id'=>$google_sys->id,
                                 'account_id'=>strtolower($account['email'])
                             ]);
                             $new_account->save();
-                            GroupMember::updateOrCreate(['group_id' => $sponsored_google_group->id, 'user_id' => $new_user->id],[]);                            
+                            GroupMember::updateOrCreate(['group_id' => $sponsored_google_group->id, 'identity_id' => $new_identity->id],[]);                            
                         }
                     }
                 } 

@@ -1,38 +1,50 @@
 gform.options = {autoFocus:false};
-user_form_attributes = [
+identity_form_attributes = [
     {type:"hidden", name:"id", label: 'id'},
-    {type:"switch", name:"sponsored", label:"Sponsored", value:false, columns:6, options:[{label:'Default',value:false},{label:'Sponsored',value:true}]},
+    {type:"switch", name:"sponsored", label:"Sponsored", value:false, columns:6, options:[{label:'Default',value:false},
+    {label:'Sponsored',value:true}]},
+    {   type:'select',
+        name:'type',
+        label:"Type",
+        required:true,
+        options:[
+            {label:'Please select'},    
+            {value:"person",label:'Person'},
+            {value:"organization",label:'Organization'},
+            {value:"service",label:'Service'}
+        ]
+    },
     {type:"text", name:"iamid", label: 'IAM ID', edit:false},
     {type:"text", name:"first_name", label:"First Name", required:true},
     {type:"text", name:"last_name", label:"Last Name", required:true},
-    {type:"text", name:"default_username", label:"Default Username", required:false, help:'Leave blank to define automatically'},
+    {type:"text", name:"default_username", label:"Default username", required:false, help:'Leave blank to define automatically'},
     {type:"text", name:"default_email", label:"Default Email Address", required:false},
-    {type:"user", name:"sponsor_user_id",required:false, label:"Sponsor",show:[{type:'matches',name:'sponsored',value:true}]},
+    {type:"identity", name:"sponsor_identity_id",required:false, label:"Sponsor",show:[{type:'matches',name:'sponsored',value:true}]},
 ];
 
 $('#adminDataGrid').html(`
 <div class="row">
     <div class="col-sm-3 actions">
         <div class="row">
-            <div class="col-sm-12 user-search"></div>
+            <div class="col-sm-12 identity-search"></div>
         </div>
         <hr>
         <div class="row">
             <div class="col-sm-12">
-                <div class="btn btn-success user-new">Create New User</div><br><br>
+                <div class="btn btn-success identity-new">Create New Identity</div><br><br>
             </div>
         </div>
     </div>
-    <div class="col-sm-9 user-view" style="display:none;">
+    <div class="col-sm-9 identity-view" style="display:none;">
         <div class="row">
             <div class="col-sm-6">
                 <div class="panel panel-default">
-                    <div class="panel-heading"><h3 class="panel-title">User</h3></div>
-                    <div class="panel-body user-edit"></div>
+                    <div class="panel-heading"><h3 class="panel-title">Identity</h3></div>
+                    <div class="panel-body identity-edit"></div>
                 </div>
             </div>
             <div class="col-sm-6">
-                <div class="userinfo-column"></div>
+                <div class="identityinfo-column"></div>
             </div>
         </div>
     </div>
@@ -48,74 +60,74 @@ $('#adminDataGrid').html(`
 </style>
 `);
 
-userlist_template = `
-{{#users.length}}
-    Select User to View
-{{/users.length}}
+identitylist_template = `
+{{#identities.length}}
+    Select Identity to View
+{{/identities.length}}
 <hr style="border:solid 1px #333">
-{{^users.length}}No results{{/users.length}}
+{{^identities.length}}No results{{/identities.length}}
 <div class="list-group">
-    {{#users}}
-        <a href="javascript:void(0);" class="list-group-item user" data-id="{{id}}">
+    {{#identities}}
+        <a href="javascript:void(0);" class="list-group-item identity" data-id="{{id}}">
             <div class="badge pull-right">{{default_username}}</div>
             {{first_name}} {{last_name}}
         </a>
-    {{/users}}
+    {{/identities}}
 </div>
 `;
 
-userinfo_column_template = `
+identityinfo_column_template = `
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
     {{#auth_user_perms}}
-        {{#if . == "override_user_accounts"}}
-            <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/accounts">Override Accounts</a>
+        {{#if . == "override_identity_accounts"}}
+            <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/accounts">Override Accounts</a>
         {{/if}}
     {{/auth_user_perms}}
     Systems / Accounts
 </h3></div>
-<div class="panel-body user-accounts">{{>user_accounts_template}}</div>
+<div class="panel-body identity-accounts">{{>identity_accounts_template}}</div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">Affiliations</h3></div>
-<div class="panel-body user-affiliations">{{>user_affiliations_template}}</div>
+<div class="panel-body identity-affiliations">{{>identity_affiliations_template}}</div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
     {{#auth_user_perms}}
-        {{#if . == "override_user_entitlements"}}
-            <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/entitlements">Override Entitlements</a>
+        {{#if . == "override_identity_entitlements"}}
+            <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/entitlements">Override Entitlements</a>
         {{/if}}
     {{/auth_user_perms}}
 
     Entitlements
 </h3></div>
-<div class="panel-body user-entitlements">{{>user_entitlements_template}}</div>
+<div class="panel-body identity-entitlements">{{>identity_entitlements_template}}</div>
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
     {{#auth_user_perms}}
         {{#if . == "manage_groups"}}
-            <a class="btn btn-primary btn-xs pull-right" href="/users/{{id}}/groups">Manage Groups</a>
+            <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/groups">Manage Groups</a>
         {{/if}}
     {{/auth_user_perms}}
     Groups
 </h3></div>
-<div class="panel-body user-groups">{{>user_groups_template}}</div>
+<div class="panel-body identity-groups">{{>identity_groups_template}}</div>
 </div>
 
 <div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">Sponsored Users</h3></div>
-<div class="panel-body user-groups">{{>sponsored_users_template}}</div>
+<div class="panel-heading"><h3 class="panel-title">Sponsored Identities</h3></div>
+<div class="panel-body identity-groups">{{>sponsored_identities_template}}</div>
 </div>
 
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">Permissions</h3></div>
-<div class="panel-body user-site-permissions"></div>
+<div class="panel-body identity-site-permissions"></div>
 </div>
 `;
 
-user_groups_template = `
+identity_groups_template = `
 <div style="font-size:20px;">
 {{#groups}}
     <a class="label label-default" href="/groups/{{id}}/members">{{name}}</a>
@@ -126,22 +138,22 @@ user_groups_template = `
 {{/groups}}
 `;
 
-sponsored_users_template = `
+sponsored_identities_template = `
 <div style="font-size:20px;">
-{{#sponsored_users}}
-    <a href="/users/{{id}}" class="label label-default">
+{{#sponsored_identities}}
+    <a href="/identities/{{id}}" class="label label-default">
         <div class="label label-primary pull-right">{{default_username}}</div>
         {{first_name}} {{last_name}}
     </a>
-{{/sponsored_users}}
+{{/sponsored_identities}}
 </div>
-{{^sponsored_users}}
-    <div class="alert alert-warning">No Sponsored Users</div>
-{{/sponsored_users}}
+{{^sponsored_identities}}
+    <div class="alert alert-warning">No Sponsored Identities</div>
+{{/sponsored_identities}}
 `;
 
 
-user_affiliations_template = `
+identity_affiliations_template = `
 <div style="font-size:20px;">
     {{#each affiliations: num}}
         {{#if num === 0}}
@@ -156,11 +168,11 @@ user_affiliations_template = `
 {{/affiliations}}
 `;
 
-user_entitlements_template = `
+identity_entitlements_template = `
 <h5>Enforced</h5>
 <div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
 <div style="font-size:20px;">
-{{#user_entitlements}}
+{{#identity_entitlements}}
     {{#pivot.override}}
         {{#pivot.type === 'remove'}}
             <div class="label label-danger">
@@ -178,11 +190,11 @@ user_entitlements_template = `
     {{^pivot.override}}
         <div class="label label-default">{{name}}</div>
     {{/}}
-{{/user_entitlements}}
+{{/identity_entitlements}}
 </div>
-{{^user_entitlements}}
+{{^identity_entitlements}}
     <div class="alert alert-warning">No Entitlements</div>
-{{/user_entitlements}}
+{{/identity_entitlements}}
 <hr>
 <h5>Calculated</h5>
 <div class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements which are automatically calculated based on group memberships</div>
@@ -194,8 +206,8 @@ user_entitlements_template = `
 `;
 
 
-user_accounts_template = `
-<div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this user, which facilitate their entitlements.</div>
+identity_accounts_template = `
+<div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
 <div style="font-size:20px;">
     {{#systems}}
         {{#if pivot.override === 1}}
@@ -219,87 +231,82 @@ user_accounts_template = `
 {{/systems}}
 `;
 
-// Create New User
-$('.user-new').on('click',function() {
+// Create New Identity
+$('.identity-new').on('click',function() {
     new gform(
-        {"fields":user_form_attributes,
-        "title":"Create New User",
+        {"fields":identity_form_attributes,
+        "title":"Create New Identity",
         "actions":[
            {"type":"save"}
         ]}
     ).modal().on('save',function(form_event) {
         if(form_event.form.validate())
         {
-            ajax.post('/api/users', form_event.form.get(), function (data) {
-                manage_user(data.id);
+            ajax.post('/api/identities', form_event.form.get(), function (data) {
+                manage_identity(data.id);
                 form_event.form.trigger('close');
             });
+        }else{
+            toastr.error("Please fill the required fields!");
         }
     });
 })
 
-var manage_user = function(user_id) {
-    if (user_id != null && user_id != '') {
-        ajax.get('/api/users/'+user_id,function(data) {
+var manage_identity = function(identity_id) {
+    if (identity_id != null && identity_id != '') {
+        ajax.get('/api/identities/'+identity_id,function(data) {
             data.auth_user_perms = auth_user_perms;
-            window.history.pushState({},'','/users/'+user_id);
-            $('.user-view').show();
+            window.history.pushState({},'','/identities/'+identity_id);
+            $('.identity-view').show();
 
-            $('.userinfo-column').html(Ractive({
-                template:userinfo_column_template,
+            $('.identityinfo-column').html(Ractive({
+                template:identityinfo_column_template,
                 partials: {
-                    user_groups_template:user_groups_template,
-                    user_entitlements_template:user_entitlements_template,
-                    user_affiliations_template:user_affiliations_template,
-                    user_accounts_template:user_accounts_template,
-                    sponsored_users_template,
+                    identity_groups_template:identity_groups_template,
+                    identity_entitlements_template:identity_entitlements_template,
+                    identity_affiliations_template:identity_affiliations_template,
+                    identity_accounts_template:identity_accounts_template,
+                    sponsored_identities_template,
                 },
                 data:data
             }).toHTML());
 
-            // $('.user-groups').html(gform.m(user_groups_template,data));
-            // $('.user-affiliations').html(Ractive({template:user_affiliations_template,data:data}).toHTML());
-            // $('.user-accounts').html(gform.m(user_accounts_template,data));
-            // $('.user-entitlements').html(Ractive({template:user_entitlements_template,data:data}).toHTML());
+            // $('.identity-groups').html(gform.m(identity_groups_template,data));
+            // $('.identity-affiliations').html(Ractive({template:identity_affiliations_template,data:data}).toHTML());
+            // $('.identity-accounts').html(gform.m(identity_accounts_template,data));
+            // $('.identity-entitlements').html(Ractive({template:identity_entitlements_template,data:data}).toHTML());
             // console.log(data)
-            // Edit User
+            // Edit Identity
             new gform(
                 {
-                    "fields":user_form_attributes
+                    "fields":identity_form_attributes
                         .map(d=>{
-                    d.edit = auth_user_perms.some(e=> {return e === "manage_users"})
-                    return d;
+                                if (d.name =='iamid') return d;
+                                d.edit = auth_user_perms.some(e=> {return e === "manage_identities"})
+                                return d;
                 }),
-                "el":".user-edit",
+                "el":".identity-edit",
                 "data":data,
-                // "edit":,
                 "actions": actions
-                // [
-                //     {"type":"save","label":"Update User","modifiers":"btn btn-primary"},
-                //     {"type":"button","label":"Delete User","action":"delete","modifiers":"btn btn-danger"},
-                //     {"type":"button","label":"Merge Into","action":"merge_user","modifiers":"btn btn-danger"},
-                //     {"type":"button","label":"Login","action":"login","modifiers":"btn btn-warning"},
-                //     {"type":"button","label":"Recalculate","action":"recalculate","modifiers":"btn btn-warning"}
-                // ]
                 }
             ).on('delete',function(form_event) {
                 form_data = form_event.form.get();
                 if (confirm('Are you super sure you want to do this?  This action cannot be undone!')){
-                    ajax.delete('/api/users/'+form_data.id,{},function(data) {
-                        $('.user-view').hide();
+                    ajax.delete('/api/identities/'+form_data.id,{},function(data) {
+                        $('.identity-view').hide();
                     });
                 }
-            }).on('merge_user',function(form_event) {
+            }).on('merge_identity',function(form_event) {
                 form_data = form_event.form.get();
-                source_user = form_data.id;
+                source_identity = form_data.id;
                 new gform(
                     {"fields":[{
-                        "type": "user",
-                        "label": "Target User",
-                        "name": "target_user",
+                        "type": "identity",
+                        "label": "Target Identity",
+                        "name": "target_identity",
                         "required":true,
-                    },{type:"checkbox", name:"delete", label:"Delete Source User", value:false,help:"By checking this box, the `source` user will be irretrievably deleted from IAMBing."},
-                    {type:"output",parse:false,value:'<div class="alert alert-danger">This action will migrate/transfer all assignments from the source user to the specified target user.  This is a permanent and "undoable" action.</div>'}],
+                    },{type:"checkbox", name:"delete", label:"Delete Source Identity", value:false,help:"By checking this box, the `source` identity will be irretrievably deleted from IAMBing."},
+                    {type:"output",parse:false,value:'<div class="alert alert-danger">This action will migrate/transfer all assignments from the source identity to the specified target identity.  This is a permanent and "undoable" action.</div>'}],
                     "title":"Merge Into",
                     "actions":[
                         {"type":"cancel"},
@@ -307,19 +314,21 @@ var manage_user = function(user_id) {
                     ]}
                 ).modal().on('save',function(merge_form_event) {
                     var merge_form_data = merge_form_event.form.get();
-                    if(form_event.form.validate() && merge_form_data.target_user !== '')
+                    if(form_event.form.validate() && merge_form_data.target_identity !== '')
                     {
-                        if (confirm("Are you sure you want to merge these users?  This action cannot be undone!")) {
-                            ajax.put('/api/users/'+source_user+'/merge_into/'+merge_form_data.target_user, {delete:merge_form_data.delete}, function (data) {
+                        if (confirm("Are you sure you want to merge these identities?  This action cannot be undone!")) {
+                            ajax.put('/api/identities/'+source_identity+'/merge_into/'+merge_form_data.target_identity, {delete:merge_form_data.delete}, function (data) {
                                 merge_form_event.form.trigger('close');
                                 if (_.has(data,'errors')) {
                                     toastr.error('One or more errors occurred.')
                                     console.log(data.errors);
                                     window.alert(data.errors.join("\n"))
                                 } else {
-                                    toastr.success('User Merge Successful!');
+                                    toastr.success('Identity Merge Successful!');
                                 }
                             });
+                        }else{
+                            toastr.warning("Aborting the merge...");
                         }
                     }
                 }).on('cancel',function(merge_form_event) {
@@ -330,7 +339,7 @@ var manage_user = function(user_id) {
                 {
 
                     form_data = form_event.form.get();
-                    ajax.put('/api/users/' + form_data.id, form_data, function (data) {
+                    ajax.put('/api/identities/' + form_data.id, form_data, function (data) {
                     });
                 }
             }).on('login',function(form_event) {
@@ -340,8 +349,8 @@ var manage_user = function(user_id) {
                 });
             }).on('recalculate',function(form_event) {
                 form_data = form_event.form.get();
-                ajax.get('/api/users/'+user_id+'/recalculate',function(data) {
-                    manage_user(data.id);
+                ajax.get('/api/identities/'+identity_id+'/recalculate',function(data) {
+                    manage_identity(data.id);
                 });
             });
             // end
@@ -353,34 +362,34 @@ var manage_user = function(user_id) {
                         "label": "Permissions",
                         "name": "permissions",
                         "multiple": true,
-                        "edit": auth_user_perms.some(e=> {return e === "manage_user_permissions"}),
+                        "edit": auth_user_perms.some(e=> {return e === "manage_identity_permissions"}),
                         "options": [
-                            {   "label":"View Users",
-                                "value":"view_users"
+                            {   "label":"View Identities",
+                                "value":"view_identities"
                             },
                             {
-                                "label": "Manage Users",
-                                "value": "manage_users"
+                                "label": "Manage Identities",
+                                "value": "manage_identities"
                             },
                             {
-                                "label": "Manage User Permissions",
-                                "value": "manage_user_permissions"
+                                "label": "Manage Identity Permissions",
+                                "value": "manage_identity_permissions"
                             },
                             {
-                                "label": "Merge User",
-                                "value": "merge_users"
+                                "label": "Merge Identity",
+                                "value": "merge_identities"
                             },
                             {
-                                "label": "Override User Accounts",
-                                "value": "override_user_accounts"
+                                "label": "Override Identity Accounts",
+                                "value": "override_identity_accounts"
                             },
                             {
-                                "label": "Override User Entitlements",
-                                "value": "override_user_entitlements"
+                                "label": "Override Identity Entitlements",
+                                "value": "override_identity_entitlements"
                             },
                             {
-                                "label": "Impersonate User",
-                                "value": "impersonate_users"
+                                "label": "Impersonate Identity",
+                                "value": "impersonate_identities"
                             },
                             {
                                 "label": "List and Search All Groups",
@@ -417,15 +426,15 @@ var manage_user = function(user_id) {
                         ]
                     }
                 ],
-                "el":".user-site-permissions",
+                "el":".identity-site-permissions",
                 "data":{"permissions":data.permissions},
                 "actions":[
                     {
-                        "type": auth_user_perms.some(e=> {return e === "manage_user_permissions"}) ?"save":"hidden",
+                        "type": auth_user_perms.some(e=> {return e === "manage_identity_permissions"}) ?"save":"hidden",
                         "label":"Update Permissions","modifiers":"btn btn-primary"}
                 ]}
             ).on('save',function(form_event) {
-                ajax.put('/api/users/'+user_id+'/permissions',form_event.form.get(),function(data) {});
+                ajax.put('/api/identities/'+identity_id+'/permissions',form_event.form.get(),function(data) {});
             });
             // end
 
@@ -440,7 +449,7 @@ var manage_user = function(user_id) {
         );
         $('body').on('click','.account-info-btn',function(e){
             $.ajax({
-                url: '/api/users/'+user_id+'/accounts/'+e.target.dataset.id,
+                url: '/api/identities/'+identity_id+'/accounts/'+e.target.dataset.id,
                 success: function(data) {
                     mymodal.modal().set({output:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>'});
                 },
@@ -451,40 +460,40 @@ var manage_user = function(user_id) {
             })
         });
     } else {
-        $('.user-view').hide();
+        $('.identity-view').hide();
     }
 }
 
 ajax.get('/api/configuration/',function(data) {
-    var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(data,{name:'user_unique_ids'}).config};
-    user_form_attributes.push(unique_ids_fields);
-    var user_attributes_fields = {type: "fieldset",label:'Attributes',name: "attributes",fields:_.find(data,{name:'user_attributes'}).config};
-    user_form_attributes.push(user_attributes_fields);
+    var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(data,{name:'identity_unique_ids'}).config};
+    identity_form_attributes.push(unique_ids_fields);
+    var identity_attributes_fields = {type: "fieldset",label:'Attributes',name: "attributes",fields:_.find(data,{name:'identity_attributes'}).config};
+    identity_form_attributes.push(identity_attributes_fields);
     new gform(
         {"fields":[
 			{name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, username, or unique id<hr>"},
 			{type:'output',name:'results',label:false}
         ],
-        "el":".user-search",
+        "el":".identity-search",
         "actions":[]
     }).on('change:query',function(){
-        $('.user-view').hide();
+        $('.identity-view').hide();
     })
     .on('change:query',_.debounce(function(e){
         $.ajax({
-            url: '/api/users/search/'+this.toJSON().query,
+            url: '/api/identities/search/'+this.toJSON().query,
             success: function(data) {
-                var html = Ractive({template:userlist_template,data:{users:data}}).toHTML();
+                var html = Ractive({template:identitylist_template,data:{identities:data}}).toHTML();
                 e.form.find('results').update({value:html});
             }.bind(e)
         })
     },500))
 
-    $('body').on('click','.list-group-item.user', function(e){
-		manage_user(e.currentTarget.dataset.id);
+    $('body').on('click','.list-group-item.identity', function(e){
+		manage_identity(e.currentTarget.dataset.id);
     });
 
     if (typeof id !== 'undefined') {
-        manage_user(id);
+        manage_identity(id);
     }
 })

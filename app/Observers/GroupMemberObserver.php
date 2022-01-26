@@ -3,15 +3,15 @@
 namespace App\Observers;
 
 use App\Models\GroupMember;
-use App\Models\User;
+use App\Models\Identity;
 
 class GroupMemberObserver
 {
     public function created(GroupMember $group_member)
     {
-        $user = User::where('id',$group_member->id);
-        $group_memberships = GroupMember::where('user_id',$user->id);
-        dd($user);
+        $identity = Identity::where('id',$group_member->id);
+        $group_memberships = GroupMember::where('identity_id',$identity->id);
+        dd($identity);
     }
 
 

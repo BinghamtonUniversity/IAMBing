@@ -22,7 +22,7 @@ class PublicAPIAuth
             $username = $request->header('PHP_AUTH_USER');
             $password = $request->header('PHP_AUTH_PW');
 
-            if ($username == config('auth.api.user') && $password == config('auth.api.password')) {
+            if ($username == config('auth.api.identity') && $password == config('auth.api.password')) {
                 $logged_in = true;
             }
         }

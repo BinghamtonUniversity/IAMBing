@@ -75,7 +75,7 @@
           <ul class="nav navbar-nav navbar-right">
           <li><a href="/"><h4 style="margin:0;">IAMBing Admin</h4></a>
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle user-info" data-toggle="dropdown" role="button">
+              <a href="#" class="dropdown-toggle identity-info" data-toggle="dropdown" role="button">
                 <img class="gravatar" src="https://www.gravatar.com/avatar/{{ md5(Auth::user()->email) }}?d=mm" />
                 {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
                 <span class="caret"></span>
@@ -84,8 +84,8 @@
                 <li><a href="/"><i class="fa fa-arrow-left"></i> Home</a></li>
                 <li><a href="{{ url('/logout') }}"><i class="fa fa-times-circle"></i> Logout</a></li>
               </ul>
-              @can('view_in_admin',App\Models\User::class)
-                  <li class=" visible-xs-block @if($page=="users") active @endif"><a href="/users"><i class="fa fa-user fa-fw"></i>&nbsp; Users</a></li>
+              @can('view_in_admin',App\Models\Identity::class)
+                  <li class=" visible-xs-block @if($page=="identities") active @endif"><a href="/identities"><i class="fa fa-user fa-fw"></i>&nbsp; Identities</a></li>
               @endcan
               @can('view_in_admin',App\Models\Group::class)
                   <li class="visible-xs-block @if($page=="groups") active @endif"><a href="/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
@@ -116,8 +116,8 @@
     </nav>
     <div class="col-sm-3 col-md-2 sidebar">
         <ul class="nav nav-sidebar">
-            @can('view_in_admin',App\Models\User::class)
-                <li class="@if($page=="users") active @endif"><a href="/users"><i class="fa fa-user fa-fw"></i>&nbsp; Users</a></li>
+            @can('view_in_admin',App\Models\Identity::class)
+                <li class="@if($page=="identities") active @endif"><a href="/identities"><i class="fa fa-user fa-fw"></i>&nbsp; Identities</a></li>
             @endcan
             @can('view_in_admin',App\Models\Group::class)
                 <li class="@if($page=="groups") active @endif"><a href="/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>

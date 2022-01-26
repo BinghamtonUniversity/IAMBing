@@ -12,7 +12,7 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-use App\Models\User;
+use App\Models\Identity;
 use App\Models\GroupMember;
 use Throwable;
 
@@ -40,34 +40,34 @@ class BatchJobs implements ShouldQueue
         $job_type = $this->job_type;
         $payload = $this->payload;
         if ($job_type === 'update_group_memberships') {
-            $api_users = $payload['api_users'];
+            $api_identities = $payload['api_identities'];
             $unique_id = $payload['unique_id'];
             $group_id = $payload['group_id'];
 
             $unique_ids = collect([]);
-            foreach($api_users as $api_user) {
-                $unique_ids[] = $api_user['ids'][$unique_id];
+            foreach($api_identities as $api_identity) {
+                $unique_ids[] = $api_identity['ids'][$unique_id];
             }
-            $user_ids = DB::table('user_unique_ids')->select('value as unique_id','user_id')->where('name',$unique_id)->whereIn('value',$unique_ids)->get();
-            $unique_ids_which_dont_exist = $unique_ids->diff($user_ids->pluck('unique_id'));
-            $group_member_user_ids = DB::table('group_members')->select('user_id')->where('group_id',$group_id)->get()->pluck('user_id');
-            $user_ids_which_arent_group_members = $user_ids->pluck('user_id')->diff($group_member_user_ids);
+            $identity_ids = DB::table('identity_unique_ids')->select('value as unique_id','identity_id')->where('name',$unique_id)->whereIn('value',$unique_ids)->get();
+            $unique_ids_which_dont_exist = $unique_ids->diff($identity_ids->pluck('unique_id'));
+            $group_member_identity_ids = DB::table('group_members')->select('identity_id')->where('group_id',$group_id)->get()->pluck('identity_id');
+            $identity_ids_which_arent_group_members = $identity_ids->pluck('identity_id')->diff($group_member_identity_ids);
 
-            foreach($api_users as $api_user) {
-                if ($unique_ids_which_dont_exist->contains($api_user['ids'][$unique_id])) {
-                    // User Doesn't exist.. create them!
+            foreach($api_identities as $api_identity) {
+                if ($unique_ids_which_dont_exist->contains($api_identity['ids'][$unique_id])) {
+                    // Identity Doesn't exist.. create them!
                     UpdateGroupMembership::dispatch([
                         'group_id' => $group_id,
-                        'api_user' => $api_user,
+                        'api_identity' => $api_identity,
                         'unique_id' => $unique_id
                     ]);
                 }
             }
-            foreach($user_ids_which_arent_group_members as $user_id) {
-                // User Exists, but isnt a member... add them to the group!
+            foreach($identity_ids_which_arent_group_members as $identity_id) {
+                // Identity Exists, but isnt a member... add them to the group!
                 UpdateGroupMembership::dispatch([
                     'group_id' => $group_id,
-                    'user_id' => $user_id,
+                    'identity_id' => $identity_id,
                 ]);
             }
         }

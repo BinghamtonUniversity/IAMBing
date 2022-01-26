@@ -17,10 +17,10 @@ use App\Http\Controllers\PublicAPIController;
 //     $exitCode = Artisan::call('schedule:run');
 //     return ['code'=>$exitCode];
 // });
-// Route::get('/users/{unique_id}/assignments','PublicAPIController@get_user_assignments');
+// Route::get('/identities/{unique_id}/assignments','PublicAPIController@get_identity_assignments');
 // Route::get('/modules/{module}/assignments','PublicAPIController@get_module_assignments');
 
 Route::get('/db/refresh',[AdminController::class, 'refresh_db']);
 
-Route::post('/users',[PublicAPIController::class, 'insert_update_users']);
+Route::post('/identities',[PublicAPIController::class, 'insert_update_identities']);
 Route::post('/groups/{name}/members',[PublicAPIController::class, 'update_group_members']);

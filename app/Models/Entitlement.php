@@ -13,8 +13,8 @@ class Entitlement extends Model
         return $this->hasMany(GroupEntitlement::class,'group_id');
     }
 
-    public function user_entitlements(){
-        return $this->hasMany(UserEntitlement::class);
+    public function identity_entitlements(){
+        return $this->hasMany(IdentityEntitlement::class);
     }
 
     public function system(){

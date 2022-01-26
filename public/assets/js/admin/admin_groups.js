@@ -60,12 +60,12 @@ ajax.get('/api/configuration/',function(app_config) {
             }).on('save',function(form_event){
                 toastr.info('Processing... Please Wait')
                 form_event.form.trigger('close');
-                ajax.post('/api/groups/'+grid_event.model.attributes.id+'/users/bulk_add',form_event.form.get(),function(data) {
+                ajax.post('/api/groups/'+grid_event.model.attributes.id+'/identities/bulk_add',form_event.form.get(),function(data) {
                     if (data.added.length > 0 || data.ignored.length > 0 || data.skipped.length) {
                         template = `
                             {{#skipped.length}}
                                 <div class="alert alert-danger">
-                                    <h5>The Following IDs were ignored, as these users do not exist within BComply:</h5>
+                                    <h5>The Following IDs were ignored, as these identities do not exist within BComply:</h5>
                                     <ul>
                                     {{#skipped}}
                                         <li>{{.}}</li>
@@ -75,7 +75,7 @@ ajax.get('/api/configuration/',function(app_config) {
                             {{/skipped.length}}
                             {{#ignored.length}}
                                 <div class="alert alert-info">
-                                    <h5>The Following IDs were skipped, as these users are already a member of this group:</h5>
+                                    <h5>The Following IDs were skipped, as these identities are already a member of this group:</h5>
                                     <ul>
                                     {{#ignored}}
                                         <li>{{.}}</li>

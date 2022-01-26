@@ -117,17 +117,17 @@ return [
     |--------------------------------------------------------------------------
     | CAS Successful Logon Redirection Url
     |--------------------------------------------------------------------------
-    | By default, CAS will assume that the user should be redirected to the
+    | By default, CAS will assume that the identity should be redirected to the
     | page in which the call was initiated.  You can override this method
-    | and force the user to be redirected to a specific URL here.
+    | and force the identity to be redirected to a specific URL here.
     */
     'cas_redirect_path'   => env('CAS_REDIRECT_PATH', ''),
 
     /*
     |--------------------------------------------------------------------------
     | CAS Supports SAML 1.1, allowing you to retrieve more than just the
-    | user identifier.  If your CAS authentication service supports
-    | this feature, you may be able to retrieve user meta data.
+    | identity identifier.  If your CAS authentication service supports
+    | this feature, you may be able to retrieve identity meta data.
     |--------------------------------------------------------------------------
     */
     'cas_enable_saml'     => env('CAS_ENABLE_SAML', true),
@@ -162,7 +162,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | This will cause CAS to skip authentication and assume this user id.
+    | This will cause CAS to skip authentication and assume this identity id.
     | This should only be used for developmental purposes.  getAttributes()
     | will return null in this condition.
      */

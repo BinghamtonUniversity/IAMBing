@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class GroupAdmin extends Model
 {
-    protected $fillable = ['group_id','user_id'];
+    protected $fillable = ['group_id','identity_id'];
 
     public function group(){
         return $this->belongsTo(Group::class);
     }
 
-    public function user(){
-        return $this->belongsTo(User::class);
+    public function identity(){
+        return $this->belongsTo(Identity::class);
     }
 }

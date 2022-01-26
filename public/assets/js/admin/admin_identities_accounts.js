@@ -1,7 +1,7 @@
-ajax.get('/api/users/'+id+'/accounts',function(data) {
+ajax.get('/api/identities/'+id+'/accounts',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
     item_template: gform.stencils['table_row'],
-    search: false,columns: false,upload:false,download:false,title:'Users',
+    search: false,columns: false,upload:false,download:false,title:'Identities',
     entries:[],
     actions:[
         {"name":"add","label":"Create Account"},
@@ -29,9 +29,9 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
                 }
             ],
         },
-        {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this user\'s calculated entitlements!'},
+        {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this identity\'s calculated entitlements!'},
         {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},
-        {type:"text", name:"override_user_id", label:"Override User", show:false, parse:false,template:"{{attributes.override_user.first_name}} {{attributes.override_user.last_name}}"},    
+        {type:"text", name:"override_identity_id", label:"Override Identity", show:false, parse:false,template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}"},    
     ], data: data
     }).on("add",function(grid_event) {
         new gform({
@@ -56,14 +56,14 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
                         }
                     ],
                 },
-                {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this user\'s calculated entitlements!'},
+                {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this identity\'s calculated entitlements!'},
                 {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},
-                {type:"text", name:"override_user_id", label:"Override User", show:false, parse:false,template:"{{attributes.override_user.first_name}} {{attributes.override_user.last_name}}"},    
+                {type:"text", name:"override_identity_id", label:"Override Identity", show:false, parse:false,template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}"},    
             ]
         }).on('save',function(form_event){
             toastr.info('Processing... Please Wait')
             form_event.form.trigger('close');
-            ajax.post('/api/users/'+id+'/accounts',form_event.form.get(),function(data) {
+            ajax.post('/api/identities/'+id+'/accounts',form_event.form.get(),function(data) {
                 gdg.add(data);
             },function(data){
                 // Do nothing?
@@ -72,13 +72,13 @@ ajax.get('/api/users/'+id+'/accounts',function(data) {
             form_event.form.trigger('close');
         }).modal()
     }).on("model:edited",function(grid_event) {
-        ajax.put('/api/users/'+id+'/accounts/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
+        ajax.put('/api/identities/'+id+'/accounts/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
             grid_event.model.update(data)
         },function(data) {
             grid_event.model.undo();
         }); 
     }).on("model:deleted",function(grid_event) {
-        ajax.delete('/api/users/'+id+'/accounts/'+grid_event.model.attributes.id,{},
+        ajax.delete('/api/identities/'+id+'/accounts/'+grid_event.model.attributes.id,{},
             function(data) {},
             function(data) {
             grid_event.model.undo();

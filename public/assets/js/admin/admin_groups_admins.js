@@ -11,7 +11,7 @@ ajax.get('/api/groups/'+id+'/admins?simple=true',function(data) {
     count:20,
     schema:[
         {type:"hidden", name:"id"},
-        {type:"user", name:"user_id",required:true, label:"User", template:"{{#attributes.simple_user}}{{first_name}} {{last_name}}{{/attributes.simple_user}}{{#attributes.user}}{{first_name}} {{last_name}}{{/attributes.user}}"},
+        {type:"identity", name:"identity_id",required:true, label:"Identity", template:"{{#attributes.simple_identity}}{{first_name}} {{last_name}}{{/attributes.simple_identity}}{{#attributes.identity}}{{first_name}} {{last_name}}{{/attributes.identity}}"},
     ], data: data
     }).on("model:created",function(grid_event) {
         ajax.post('/api/groups/'+id+'/admins',grid_event.model.attributes,function(data) {
@@ -20,7 +20,7 @@ ajax.get('/api/groups/'+id+'/admins?simple=true',function(data) {
             grid_event.model.undo();
         });
     }).on("model:deleted",function(grid_event) {
-        ajax.delete('/api/groups/'+id+'/admins/'+grid_event.model.attributes.user_id,{},
+        ajax.delete('/api/groups/'+id+'/admins/'+grid_event.model.attributes.identity_id,{},
             function(data) {},
             function(data) {
             grid_event.model.undo();

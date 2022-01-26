@@ -13,7 +13,7 @@ class RouteServiceProvider extends ServiceProvider
     /**
      * The path to the "home" route for your application.
      *
-     * This is used by Laravel authentication to redirect users after login.
+     * This is used by Laravel authentication to redirect identities after login.
      *
      * @var string
      */
@@ -59,7 +59,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function configureRateLimiting()
     {
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+            return Limit::perMinute(60)->by(optional($request->identity())->id ?: $request->ip());
         });
     }
 }

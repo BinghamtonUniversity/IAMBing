@@ -15,15 +15,15 @@ class CreatePermissionsTable extends Migration
     {
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->index();
+            $table->unsignedBigInteger('identity_id')->index();
             $table->enum('permission',[
-                "view_users",
-                "manage_users",
-                "manage_user_permissions",
-                "merge_users",
-                "override_user_accounts",
-                "override_user_entitlements",
-                "impersonate_users",
+                "view_identities",
+                "manage_identities",
+                "manage_identity_permissions",
+                "merge_identities",
+                "override_identity_accounts",
+                "override_identity_entitlements",
+                "impersonate_identities",
                 "view_groups",
                 "manage_groups",
                 "manage_systems",
@@ -33,7 +33,7 @@ class CreatePermissionsTable extends Migration
                 "manage_jobs",
                 "manage_systems_config"
             ]);
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('identity_id')->references('id')->on('identities');
             $table->timestamps();
         });
     }

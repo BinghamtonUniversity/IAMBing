@@ -3,14 +3,7 @@ ajax.get('/api/entitlements',function(data) {
     item_template: gform.stencils['table_row'],
     search: false,columns: false,upload:false,download:false,title:'Entitlements',
     entries:[],
-    actions:[
-        {"name":"create","label":"New Entitlement"},
-        '',
-        {"name":"edit","label":"Update Entitlement"},
-        {"label":"Manage Groups","name":"manage_groups","min":1,"max":1,"type":"default"},
-        '',
-        {"name":"delete","label":"Delete Entitlement"}
-    ],
+    actions:actions,
     count:20,
     schema:[
         {type:"hidden", name:"id"},

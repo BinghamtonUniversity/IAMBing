@@ -1,20 +1,20 @@
-ajax.get('/api/users/'+id+'/entitlements',function(data) {
+ajax.get('/api/identities/'+id+'/entitlements',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
     item_template: gform.stencils['table_row'],
     search: false,columns: false,upload:false,download:false,title:'Entitlements',
     entries:[],
     actions:[
         {"name":"add","label":"Add Entitlement"},
-        {"name":"edit","label":"Update User Entitlement"},
+        {"name":"edit","label":"Update Identity Entitlement"},
     ],
     count:20,
     schema:[
         {type:"hidden", name:"id"},
         {name:"entitlement_id","label":"Entitlement",type:"select",options:"/api/entitlements",format:{label:"{{name}}", value:"{{id}}"},edit:false},
         {name:"type","label":"Type",type:"select",options:[{label:'Add',value:'add'},{label:'Remove',value:'remove'}]},
-        {type:"switch", label: "Manually Override This Entitlement",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this entitlement may be updated or deleted by this user\'s calculated entitlements!'},
+        {type:"switch", label: "Manually Override This Entitlement",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this entitlement may be updated or deleted by this identity\'s calculated entitlements!'},
         {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},
-        {type:"text", name:"override_user_id", label:"Override User", show:false, parse:false,template:"{{attributes.override_user.first_name}} {{attributes.override_user.last_name}}"},    
+        {type:"text", name:"override_identity_id", label:"Override Identity", show:false, parse:false,template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}"},    
     ], data: data
     }).on("add",function(grid_event) {
         new gform({
@@ -29,7 +29,7 @@ ajax.get('/api/users/'+id+'/entitlements',function(data) {
         }).on('save',function(form_event){
             toastr.info('Processing... Please Wait')
             form_event.form.trigger('close');
-            ajax.post('/api/users/'+id+'/entitlements',form_event.form.get(),function(data) {
+            ajax.post('/api/identities/'+id+'/entitlements',form_event.form.get(),function(data) {
                 gdg.add(data);
             },function(data){
                 // Do nothing?
@@ -38,7 +38,7 @@ ajax.get('/api/users/'+id+'/entitlements',function(data) {
             form_event.form.trigger('close');
         }).modal()
     }).on("model:edited",function(grid_event) {
-        ajax.put('/api/users/'+id+'/entitlements/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
+        ajax.put('/api/identities/'+id+'/entitlements/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
             grid_event.model.update(data)
         },function(data) {
             grid_event.model.undo();

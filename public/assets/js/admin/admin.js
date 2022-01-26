@@ -77,7 +77,7 @@ window.ajax.delete = function(url,data,callback_success,callback_error) {
     });
 }
 
-gform.types['user']= _.extend({}, gform.types['smallcombo'], {
+gform.types['identity']= _.extend({}, gform.types['smallcombo'], {
 
     toString: function(name,display){
       if(!display){
@@ -98,10 +98,10 @@ gform.types['user']= _.extend({}, gform.types['smallcombo'], {
     defaults:
         {
             strict:true,
-            search:"/api/users/search/{{search}}{{value}}",
+            search:"/api/identities/search/{{search}}{{value}}",
             format:
                 {
-                    title:'{{{label}}}{{^label}}User{{/label}} <span class="text-success pull-right">{{value}}</span>',
+                    title:'{{{label}}}{{^label}}Identity{{/label}} <span class="text-success pull-right">{{value}}</span>',
                     label:"{{first_name}}{{#last_name}} {{last_name}}{{/last_name}}",
                     value:function(item){
                         return item.id;

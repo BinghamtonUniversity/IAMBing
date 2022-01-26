@@ -20,7 +20,7 @@ ajax.get('/api/systems',function(data) {
             "label": "Default Account ID Template",
             "edit": true,
             "value": "{{default_username}}",
-            "help": "This is the default template value which will be used to create this account.  (Note that the default account id can only be used to create the first account for a given user for a particular system, as further accounts with this ID will result in collisions)"
+            "help": "This is the default template value which will be used to create this account.  (Note that the default account id can only be used to create the first account for a given identity for a particular system, as further accounts with this ID will result in collisions)"
         },
         {
             "type": "select",

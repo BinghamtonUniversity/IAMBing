@@ -10,56 +10,56 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class Identity extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['active','sponsored','default_username', 'default_email', 'ids', 'attributes', 'first_name', 'last_name', 'sponsor_user_id'];
-    protected $hidden = ['user_unique_ids','user_attributes', 'user_permissiins', 'password', 'remember_token','created_at','updated_at'];
+    protected $fillable = ['active','type','sponsored','default_username', 'default_email', 'ids', 'attributes', 'first_name', 'last_name', 'sponsor_identity_id'];
+    protected $hidden = ['identity_unique_ids','identity_attributes', 'identity_permissiins', 'password', 'remember_token','created_at','updated_at'];
     protected $appends = ['ids','permissions','attributes','entitlements'];
-    protected $with = ['user_unique_ids','user_attributes','user_permissions'];
+    protected $with = ['identity_unique_ids','identity_attributes','identity_permissions'];
 
     private $set_ids = null;
     private $set_attributes = null;
 
     public function group_memberships(){
-        return $this->hasMany(GroupMember::class,'user_id');
+        return $this->hasMany(GroupMember::class,'identity_id');
     }
 
     public function groups() {
         return $this->belongsToMany(Group::class,'group_members')->orderBy('order');
     }
    public function admin_groups(){
-       return $this->hasMany(GroupAdmin::class,'user_id');
+       return $this->hasMany(GroupAdmin::class,'identity_id');
    }
 
-    public function user_entitlements() {
-        return $this->belongsToMany(Entitlement::class,'user_entitlements')->withPivot('type','override','override_description','override_user_id');
+    public function identity_entitlements() {
+        return $this->belongsToMany(Entitlement::class,'identity_entitlements')->withPivot('type','override','override_description','override_identity_id');
     }
 
-    public function user_permissions(){
-        return $this->hasMany(Permission::class,'user_id');
+    public function identity_permissions(){
+        return $this->hasMany(Permission::class,'identity_id');
     }
 
     public function accounts(){
-        return $this->hasMany(Account::class,'user_id');
+        return $this->hasMany(Account::class,'identity_id');
     }
 
-    public function sponsored_users(){
-        return $this->hasMany(SimpleUser::class,'sponsor_user_id')->where('sponsored',true);
+    public function sponsored_identities(){
+        return $this->hasMany(SimpleIdentity::class,'sponsor_identity_id')->where('sponsored',true);
     }
 
     public function systems() {
         return $this->belongsToMany(System::class,'accounts')->orderBy('name')->whereNull('deleted_at')->withPivot('id','account_id','status','override');
     }
 
-    public function user_unique_ids() {
-        return $this->hasMany(UserUniqueID::class,'user_id');
+    public function identity_unique_ids() {
+        return $this->hasMany(IdentityUniqueID::class,'identity_id');
     }
 
     public function getIdsAttribute() {
         $ids = [];
-        foreach($this->user_unique_ids as $id) {
+        foreach($this->identity_unique_ids as $id) {
             $ids[$id['name']] = $id['value'];
         }
         return $ids;
@@ -67,7 +67,7 @@ class User extends Authenticatable
 
     public function getEntitlementsAttribute() {
         $entitlements = [];
-        foreach($this->user_entitlements as $entitlement) {
+        foreach($this->identity_entitlements as $entitlement) {
             if ($entitlement->pivot->type === 'add') {
                 $entitlements[] = $entitlement->name;
             }
@@ -79,13 +79,13 @@ class User extends Authenticatable
         $this->set_ids = $ids;
     }
 
-    public function user_attributes() {
-        return $this->hasMany(UserAttribute::class,'user_id');
+    public function identity_attributes() {
+        return $this->hasMany(IdentityAttribute::class,'identity_id');
     }
 
     public function getAttributesAttribute() {
         $attributes = [];
-        foreach($this->user_attributes as $attribute) {
+        foreach($this->identity_attributes as $attribute) {
             if ($attribute['array']===true) {
                 $attributes[$attribute['name']] = explode(',',$attribute['value']);
             } else {
@@ -99,9 +99,9 @@ class User extends Authenticatable
         $this->set_attributes = $attributes;
     }
 
-    // Converts User Permissions to Array
+    // Converts Identity Permissions to Array
     public function getPermissionsAttribute() {
-        $permissions = $this->user_permissions()->get();
+        $permissions = $this->identity_permissions()->get();
         $permissions_arr = [];
         foreach($permissions as $permission) {
             $permissions_arr[] = $permission->permission;
@@ -110,7 +110,7 @@ class User extends Authenticatable
     }
 
     public function username_generate($template, $iterator = 0) {
-        // Derive Username
+        // Derive username
         $obj = [
             'first_name' => str_split(strtolower($this->first_name), 1),
             'last_name' => str_split(strtolower($this->last_name), 1),
@@ -125,8 +125,8 @@ class User extends Authenticatable
 
     private function username_check_available($username) {
         $accounts = Account::where('account_id',$username)->get();
-        $users = User::where('default_username',$username)->get();
-        if (count($accounts) > 0 || count($users) > 0) {
+        $identities = Identity::where('default_username',$username)->get();
+        if (count($accounts) > 0 || count($identities) > 0) {
             return false;
         }
         // Do an external lookup using API Endpoints
@@ -137,23 +137,23 @@ class User extends Authenticatable
         // Set IDS and Attributes
         if (!is_null($this->set_ids)) {
             foreach($this->set_ids as $name => $value) {
-                UserUniqueID::updateOrCreate(
-                    ['user_id'=>$this->id, 'name'=>$name],
+                IdentityUniqueID::updateOrCreate(
+                    ['identity_id'=>$this->id, 'name'=>$name],
                     ['value' => $value]
                 );
             }
-            $this->load('user_unique_ids');
+            $this->load('identity_unique_ids');
         }
         if (!is_null($this->set_attributes)) {
             foreach($this->set_attributes as $name => $value) {
-                UserAttribute::updateOrCreate(
-                    ['user_id'=>$this->id, 'name'=>$name],
+                IdentityAttribute::updateOrCreate(
+                    ['identity_id'=>$this->id, 'name'=>$name],
                     ['value' => is_array($value)?implode(',',$value):$value,'array'=>is_array($value)]
                 );
             }
-            $this->load('user_attributes');
+            $this->load('identity_attributes');
         }
-        // Create and Set New Username
+        // Create and Set New username
         if (($this->first_name !== '' && $this->last_name !== '' && $this->first_name !== null && $this->last_name !== null) &&
             (!isset($this->default_username) || $this->default_username === '' || $this->default_username === null)) {
             $is_taken = false;
@@ -177,14 +177,14 @@ class User extends Authenticatable
     }
 
     public function add_account($system, $account_id = null) {
-        $account = new Account(['user_id'=>$this->id,'system_id'=>$system->id]);
+        $account = new Account(['identity_id'=>$this->id,'system_id'=>$system->id]);
         if (!is_null($account_id)) {
             $account->account_id = $account_id;
         } else {
             $template = $system->default_account_id_template;
             $account->account_id = $this->username_generate($template);
         }
-        $existing_account = Account::where('user_id',$this->id)->where('system_id',$system->id)->where('account_id',$account->account_id)->withTrashed()->first();
+        $existing_account = Account::where('identity_id',$this->id)->where('system_id',$system->id)->where('account_id',$account->account_id)->withTrashed()->first();
         if (is_null($existing_account)) {
             $account->save();
             return $account;
@@ -198,51 +198,51 @@ class User extends Authenticatable
 
     public function recalculate_entitlements() {
         // This code adds new accounts for any new systems
-        $user = $this;
-        $group_ids = GroupMember::select('group_id')->where('user_id',$user->id)->get()->pluck('group_id');
+        $identity = $this;
+        $group_ids = GroupMember::select('group_id')->where('identity_id',$identity->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
 
         // Check to see if calculated entitlements match enforced entitlements
-        $existing_user_entitlements = UserEntitlement::where('user_id',$user->id)->get();
-        foreach($existing_user_entitlements as $user_entitlement) {
-            if (!$user_entitlement->override) {
-                $user_entitlement->update(['override'=>false,'override_description'=>null,'override_user_id'=>null]);
-                if (!$calculated_entitlement_ids->contains($user_entitlement->entitlement_id)) {
-                    $user_entitlement->delete();
+        $existing_identity_entitlements = IdentityEntitlement::where('identity_id',$identity->id)->get();
+        foreach($existing_identity_entitlements as $identity_entitlement) {
+            if (!$identity_entitlement->override) {
+                $identity_entitlement->update(['override'=>false,'override_description'=>null,'override_identity_id'=>null]);
+                if (!$calculated_entitlement_ids->contains($identity_entitlement->entitlement_id)) {
+                    $identity_entitlement->delete();
                 }
             }
         }
         foreach($calculated_entitlement_ids as $calculated_entitlement_id) {
-            $entitlement = $existing_user_entitlements->firstWhere('entitlement_id',$calculated_entitlement_id);
+            $entitlement = $existing_identity_entitlements->firstWhere('entitlement_id',$calculated_entitlement_id);
             if (is_null($entitlement)) {
-                $new_user_entitlement = new UserEntitlement(['user_id'=>$user->id,'entitlement_id'=>$calculated_entitlement_id]);
-                $new_user_entitlement->save();
+                $new_identity_entitlement = new IdentityEntitlement(['identity_id'=>$identity->id,'entitlement_id'=>$calculated_entitlement_id]);
+                $new_identity_entitlement->save();
             } else if ((!$entitlement->override) && $entitlement->type === 'remove') {
-                $entitlement->update(['type'=>'add','override'=>false,'override_description'=>null,'override_user_id'=>null]);
+                $entitlement->update(['type'=>'add','override'=>false,'override_description'=>null,'override_identity_id'=>null]);
             }
         }
         $this->sync_accounts();
     }
 
     public function sync_accounts() {
-        $user = $this;
+        $identity = $this;
         // Create New Accounts for Unmet Entitlements
-        $existing_user_entitlements = UserEntitlement::select('entitlement_id')->where('user_id',$user->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
-        $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_user_entitlements)->get()->pluck('system_id')->unique();
-        $system_ids_has = Account::select('system_id')->where('user_id',$user->id)->where('status','active')->get()->pluck('system_id')->unique();
+        $existing_identity_entitlements = IdentityEntitlement::select('entitlement_id')->where('identity_id',$identity->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
+        $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_identity_entitlements)->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->where('identity_id',$identity->id)->where('status','active')->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
         foreach($diff as $system_id) {
-            $overridden_acct = Account::where('user_id',$user->id)->where('system_id',$system_id)->where('override',true)->first();
+            $overridden_acct = Account::where('identity_id',$identity->id)->where('system_id',$system_id)->where('override',true)->first();
             if (is_null($overridden_acct)) {
                 $system = System::where('id',$system_id)->first();
-                $myaccount = $user->add_account($system);
+                $myaccount = $identity->add_account($system);
                 $myaccount->sync('create');
             }
         }
 
         // Delete accounts for Former Entitlements
         $diff = $system_ids_has->diff($system_ids_needed);
-        $myaccounts_to_delete = Account::where('user_id',$user->id)->with('system')->whereIn('system_id',$diff)->get();
+        $myaccounts_to_delete = Account::where('identity_id',$identity->id)->with('system')->whereIn('system_id',$diff)->get();
         foreach($myaccounts_to_delete as $myaccount) {
             if (!$myaccount->override) {
                 if ($myaccount->system->onremove === 'delete') {
@@ -256,7 +256,7 @@ class User extends Authenticatable
         }
 
         // Sync All Accounts with current attributes and entitlements
-        $myaccounts = Account::where('user_id',$user->id)->with('system')->get();
+        $myaccounts = Account::where('identity_id',$identity->id)->with('system')->get();
         foreach($myaccounts as $myaccount) {
             $myaccount->sync('update');
         }
@@ -265,22 +265,22 @@ class User extends Authenticatable
 
     protected static function booted()
     {
-        static::created(function ($user) {
-            $user->save_actions();
-            // Create IAM ID by base36 encoding the user id
-            $user->iamid = 'IAM'.strtoupper(base_convert($user->id,10,36));
-            $user->save();
+        static::created(function ($identity) {
+            $identity->save_actions();
+            // Create IAM ID by base36 encoding the identity id
+            $identity->iamid = 'IAM'.strtoupper(base_convert($identity->id,10,36));
+            $identity->save();
         });
-        static::updated(function ($user) {
-            $user->save_actions();
+        static::updated(function ($identity) {
+            $identity->save_actions();
         });
     }
     public function is_group_admin($group_id=null){
         if (is_null($group_id)){
-            return (bool)GroupAdmin::where('user_id',$this->id)->first();
+            return (bool)GroupAdmin::where('identity_id',$this->id)->first();
         }
 
-        return (bool)GroupAdmin::where('user_id',$this->id)
+        return (bool)GroupAdmin::where('identity_id',$this->id)
             ->where('group_id',$group_id)
             ->first();
     }

@@ -2,18 +2,18 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Identity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
-class UserFactory extends Factory
+class IdentityFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = User::class;
+    protected $model = Identity::class;
 
     /**
      * Define the model's default state.

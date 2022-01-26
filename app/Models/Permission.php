@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Permission extends Model
 {
-    protected $fillable = ['user_id','permission'];
+    protected $fillable = ['identity_id','permission'];
 
-    public function user(){
-        return $this->belongsTo(User::class,'user_id');
+    public function identity(){
+        return $this->belongsTo(Identity::class,'identity_id');
     }
 }

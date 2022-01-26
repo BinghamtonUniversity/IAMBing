@@ -4,14 +4,14 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Configuration;
-use App\Models\User;
+use App\Models\Identity;
 use App\Models\Group;
 use App\Models\System;
 use App\Models\Entitlement;
 use App\Models\GroupEntitlement;
 use App\Models\Endpoint;
 use App\Models\Permission;
-use App\Models\UserUniqueID;
+use App\Models\IdentityUniqueID;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,26 +24,26 @@ class DatabaseSeeder extends Seeder
     {
         $default_username_template = new Configuration(['name'=>'default_username_template','config'=>'{{first_name.0}}{{last_name.0}}{{last_name.1}}{{last_name.2}}{{last_name.3}}{{last_name.4}}{{last_name.5}}{{last_name.6}}{{last_name.7}}{{last_name.8}}{{last_name.9}}{{last_name.10}}{{#iterator}}{{iterator}}{{/iterator}}']);
         $default_username_template->save();
-        $user_attributes = new Configuration(['name'=>'user_attributes','config'=>[['name'=>"nickname",'label'=>'Nickname'],['name'=>'binghamton_emails','label'=>'Binghamton Email','array'=>true],['name'=>'personal_emails','label'=>'Personal Email','array'=>true]]]);
-        $user_attributes->save();
-        $user_unique_ids = new Configuration(['name'=>'user_unique_ids','config'=>[['name'=>'bnumber','label'=>'BNumber']]]);
-        $user_unique_ids->save();
+        $identity_attributes = new Configuration(['name'=>'identity_attributes','config'=>[['name'=>"nickname",'label'=>'Nickname'],['name'=>'binghamton_emails','label'=>'Binghamton Email','array'=>true],['name'=>'personal_emails','label'=>'Personal Email','array'=>true]]]);
+        $identity_attributes->save();
+        $identity_unique_ids = new Configuration(['name'=>'identity_unique_ids','config'=>[['name'=>'bnumber','label'=>'BNumber']]]);
+        $identity_unique_ids->save();
         $affiliations = new Configuration(['name'=>'affiliations','config'=>['faculty','staff','student','employee','member','affiliate','alum','library-walk-in','applicant']]);
         $affiliations->save();
 
-        // Create Example Users
-        $example_user = new User(['first_name'=>'Example','last_name'=>'User','attributes'=>['nickname'=>'Dude'],'default_username'=>'euser1']);
-        $example_user->save();
-        $example_user2 = new User(['first_name'=>'Ali Kemal','last_name'=>'Tanriverdi','attributes'=>['nickname'=>'Awesome Dude'],
+        // Create Example Identities
+        $example_identity = new Identity(['first_name'=>'Example','last_name'=>'Identity','attributes'=>['nickname'=>'Dude'],'default_username'=>'eidentity1']);
+        $example_identity->save();
+        $example_identity2 = new Identity(['first_name'=>'Ali Kemal','last_name'=>'Tanriverdi','attributes'=>['nickname'=>'Awesome Dude'],
                                   'default_username'=>'atanrive','default_email'=>'atanrive@binghamton.edu'
                                 ]);
-        $example_user2->save();
+        $example_identity2->save();
 
-        // Create unique id for the user
-        $example_unique_id = new UserUniqueID(['user_id'=>2,'name'=>"bnumber",'value'=>"B00450942"]);
+        // Create unique id for the identity
+        $example_unique_id = new IdentityUniqueID(['identity_id'=>2,'name'=>"bnumber",'value'=>"B00450942"]);
         $example_unique_id->save();
-        // Give sample user the manage_user_permissions for initial tests
-        $permission = new Permission(['user_id'=>2,'permission'=>"manage_user_permissions"]);
+        // Give sample identity the manage_identity_permissions for initial tests
+        $permission = new Permission(['identity_id'=>2,'permission'=>"manage_identity_permissions"]);
         $permission->save();
   
         // Group creations
@@ -115,28 +115,28 @@ class DatabaseSeeder extends Seeder
         $system1 = new System(['name'=>'BU','default_account_id_template'=>'{{default_username}}','onremove' => 'disable','config'=>[
             'actions' => [
               [
-                'path' => '/ad/user/{{account.account_id}}',
+                'path' => '/ad/identity/{{account.account_id}}',
                 'verb' => 'PUT',
                 'action' => 'create',
                 'endpoint' => '1',
                 'response_code' => 200,
               ],
               [
-                'path' => '/ad/user/{{account.account_id}}',
+                'path' => '/ad/identity/{{account.account_id}}',
                 'verb' => 'PUT',
                 'action' => 'update',
                 'endpoint' => '1',
                 'response_code' => 200,
               ],
               [
-                'path' => '/ad/user/{{account.account_id}}',
+                'path' => '/ad/identity/{{account.account_id}}',
                 'verb' => 'DELETE',
                 'action' => 'delete',
                 'endpoint' => '1',
                 'response_code' => 200,
               ],
               [
-                'path' => '/ad/user/{{account.account_id}}',
+                'path' => '/ad/identity/{{account.account_id}}',
                 'verb' => 'GET',
                 'action' => 'info',
                 'endpoint' => '1',

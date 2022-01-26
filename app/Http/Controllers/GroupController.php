@@ -7,10 +7,10 @@ use App\Models\GroupMember;
 use App\Models\GroupAdmin;
 use App\Models\GroupEntitlement;
 use App\Models\Permission;
-use App\Models\UserEntitlement;
+use App\Models\IdentityEntitlement;
 use App\Models\Entitlement;
 use App\Models\Account;
-use App\Models\User;
+use App\Models\Identity;
 use App\Models\System;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,11 +19,11 @@ class GroupController extends Controller
 {
     public function get_all_groups(){
         // dd();
-        if(Auth::user()->user_permissions->pluck('permission')->contains('view_groups') || Auth::user()->user_permissions->pluck('permission')->contains('manage_groups')){
+        if(Auth::user()->identity_permissions->pluck('permission')->contains('view_groups') || Auth::user()->identity_permissions->pluck('permission')->contains('manage_groups')){
             return Group::get();
         }
         
-        // If user doesn't have manage_groups permissions, then only return the groups they're an admin of
+        // If identity doesn't have manage_groups permissions, then only return the groups they're an admin of
         return Group::whereIn('id',Auth::user()->admin_groups->pluck('group_id'))->get();  
     }
     public function get_group(Group $group){
@@ -54,43 +54,43 @@ class GroupController extends Controller
     }
 
     public function get_members(Request $request, Group $group){
-        return GroupMember::select('id','user_id')->where('group_id',$group->id)->with('simple_user')->get();
+        return GroupMember::select('id','identity_id')->where('group_id',$group->id)->with('simple_identity')->get();
     }
 
     public function add_member(Request $request, Group $group){
-        $user = User::where('id',$request->user_id)->first();
+        $identity = Identity::where('id',$request->identity_id)->first();
         $group_membership = new GroupMember([
            'group_id'=>$group->id,
-           'user_id'=>$user->id,
+           'identity_id'=>$identity->id,
         ]);
         $group_membership->save();
-        $user->recalculate_entitlements();
-        return GroupMember::where('id',$group_membership->id)->with('user')->first();
+        $identity->recalculate_entitlements();
+        return GroupMember::where('id',$group_membership->id)->with('identity')->first();
     }
 
-    public function delete_member(Group $group,User $user)
+    public function delete_member(Group $group,Identity $identity)
     {
-        $result = GroupMember::where('group_id','=',$group->id)->where('user_id','=',$user->id)->delete();
-        $user->recalculate_entitlements();
+        $result = GroupMember::where('group_id','=',$group->id)->where('identity_id','=',$identity->id)->delete();
+        $identity->recalculate_entitlements();
         return $result;
     }
 
     public function get_admins(Request $request, Group $group){
-        return GroupAdmin::where('group_id',$group->id)->with('user')->get();
+        return GroupAdmin::where('group_id',$group->id)->with('identity')->get();
     }
 
     public function add_admin(Request $request, Group $group){
         $group_admin = new GroupAdmin([
            'group_id'=>$group->id,
-           'user_id'=>$request->user_id,
+           'identity_id'=>$request->identity_id,
         ]);
         $group_admin->save();
-        return GroupAdmin::where('id',$group_admin->id)->with('user')->first();
+        return GroupAdmin::where('id',$group_admin->id)->with('identity')->first();
     }
 
-    public function delete_admin(Group $group,User $user)
+    public function delete_admin(Group $group,Identity $identity)
     {
-        return GroupAdmin::where('group_id','=',$group->id)->where('user_id','=',$user->id)->delete();
+        return GroupAdmin::where('group_id','=',$group->id)->where('identity_id','=',$identity->id)->delete();
     }
 
     public function get_entitlements(Request $request, Group $group){
