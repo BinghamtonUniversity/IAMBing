@@ -38,13 +38,22 @@ class DatabaseSeeder extends Seeder
                                   'default_username'=>'atanrive','default_email'=>'atanrive@binghamton.edu'
                                 ]);
         $example_identity2->save();
+        $example_identity3 = new Identity(['first_name'=>'Tim','last_name'=>'Cortesi','attributes'=>['nickname'=>'Awesome Dude'],
+                                  'default_username'=>'tcortesi','default_email'=>'tcortesi@binghamton.edu'
+                                ]);
+        $example_identity3->save();
 
-        // Create unique id for the identity
+        // Create unique id for the identity and give the sample identities the manage_identity_permissions for initial tests
         $example_unique_id = new IdentityUniqueID(['identity_id'=>2,'name'=>"bnumber",'value'=>"B00450942"]);
         $example_unique_id->save();
-        // Give sample identity the manage_identity_permissions for initial tests
+        $example_unique_id2 = new IdentityUniqueID(['identity_id'=>3,'name'=>"bnumber",'value'=>"B00505893"]);
+        $example_unique_id2->save();
+
         $permission = new Permission(['identity_id'=>2,'permission'=>"manage_identity_permissions"]);
         $permission->save();
+        $permission2 = new Permission(['identity_id'=>3,'permission'=>"manage_identity_permissions"]);
+        $permission2->save();
+        
   
         // Group creations
         $staff = new Group(['slug'=>'staff','name'=>"Staff",'affiliation'=>'staff','order'=>2]);
