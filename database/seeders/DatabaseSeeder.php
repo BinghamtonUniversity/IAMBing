@@ -108,6 +108,8 @@ class DatabaseSeeder extends Seeder
         $online_students->save();
         $currently_enrolled_students = new Group(['slug'=>'currently_enrolled_students','name'=>"Currently Enrolled Students",'order'=>6]);
         $currently_enrolled_students->save();
+        $alumnni_email = new Group(['slug'=>'alumni_email','name'=>"Alumni Email",'order'=>6]);
+        $alumnni_email->save();
         // END Group Creations
 
         // Create sample endpoint
@@ -441,6 +443,8 @@ class DatabaseSeeder extends Seeder
         $google_email_group_google_ent8->save();
         $google_email_group_google_ent9 = new GroupEntitlement(['group_id'=>$email_address->id,'entitlement_id'=>$google_email_google_ent->id]);
         $google_email_group_google_ent9->save();
+        $google_email_group_google_ent10 = new GroupEntitlement(['group_id'=>$alumnni_email->id,'entitlement_id'=>$google_email_google_ent->id]);
+        $google_email_group_google_ent10->save();
 
         // Google Drive
         $google_drive_group_google_ent1 = new GroupEntitlement(['group_id'=>$faculty->id,'entitlement_id'=>$google_drive_google_ent->id]);

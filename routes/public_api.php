@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\PublicAPIController;
+use App\Http\Controllers\IdentityController;
 
 // All Public API Routes are prepended by /api/public
 // as per the RouteServiceProvider Controller
@@ -24,4 +25,14 @@ use App\Http\Controllers\PublicAPIController;
 Route::get('/db/refresh',[ConfigurationController::class, 'refresh_db']);
 
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identities']);
+
+
+
 Route::post('/groups/{name}/members',[PublicAPIController::class, 'update_group_members']);
+// Route::get('/search/{name}/members',[PublicAPIController::class, 'update_group_members']);
+
+//The code below needs to be updated when there is a new Graphene update for the search attribute of the combobox fields
+// The search attribute of the combobox field needs to be able to use the resources
+Route::get('/identities/search/{search_string?}/{secret_key?}/{groups?}',[PublicAPIController::class,'public_search']); 
+Route::get('/identities/{identity}',[IdentityController::class,'get_identity']); // Temporary --> most probably change 
+Route::post('/groups/{name}/member',[PublicAPIController::class,'insert_group_member']); 

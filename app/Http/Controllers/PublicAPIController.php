@@ -12,6 +12,7 @@ use App\Jobs\UpdateGroupMembership;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+
 class PublicAPIController extends Controller {
     
     public function insert_update_identities(Request $request) {
@@ -74,5 +75,90 @@ class PublicAPIController extends Controller {
         }
 
         return ['success'=>'Dispatched All Jobs to Queue','counts'=>$counts];
+    }
+
+    public function public_search(Request $request, $search_string='', $secret_key='',$groups='') {
+        // return $groups;
+        //The code below needs to be updated when there is a new Graphene update for the search attribute of the combobox fields
+        // The search attribute of the combobox field needs to be able to use the resources
+        if(($request->has('secret_key') &&  $request->secret_key  == env('PUBLIC_API_SECRET_KEY') ) 
+        || (!$request->has('secret_key') && $secret_key !== env('PUBLIC_API_SECRET_KEY')) ){
+            return response('Unauthorized.', 401);
+        }
+
+        if($request->has('search_string')){
+            $search_string= $request->search_string;
+        }
+        
+        if (is_string($groups) && strlen($groups)>0) {
+            $groups = explode(',',$groups);
+        }
+        if(!is_array($groups)){
+            abort(500,'Groups requested is not an array');
+        }
+
+        $search_elements_parsed = preg_split('/[\s,]+/',strtolower($search_string));
+        $search = []; $identities = [];
+        
+        if (count($search_elements_parsed) === 1 && $search_elements_parsed[0]!='') {
+            $search[0] = $search_elements_parsed[0];
+            $query = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
+                ->where(function ($query) use ($search) {
+                    $query->where('iamid',$search[0])
+                        ->orWhere('first_name','like',$search[0].'%')
+                        ->orWhere('last_name','like',$search[0].'%')
+                        ->orWhere('default_username',$search[0])
+                        ->orWhere('default_email',$search[0])
+                        ->orWhereHas('identity_unique_ids', function($q) use ($search){
+                            $q->where('value',$search[0]);
+                        })->orWhere(function($q) use ($search) {
+                            $q->where('sponsored',true)->where('sponsor_identity_id',$search[0]);
+                        });
+                })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
+                    ->limit(25);
+        } else if (count($search_elements_parsed) > 1) {
+            $search[0] = $search_elements_parsed[0];
+            $search[1] = $search_elements_parsed[count($search_elements_parsed)-1];
+            $query = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
+                ->where(function ($query) use ($search) {
+                    $query->where(function ($query) use ($search) {
+                        $query->where('first_name','like',$search[0].'%')
+                            ->where('last_name','like',$search[1].'%');
+                    })->orWhere(function ($query) use ($search) {
+                        $query->where('first_name','like',$search[1].'%')
+                            ->where('last_name','like',$search[0].'%');
+                    });
+                })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
+                    ->limit(25);
+        }
+        
+        if ($request->has('groups') && ($groups ) ) {
+            if (is_array($request->groups)) {
+                $groups = $request->groups;
+            } else if (is_string($request->groups)) {
+                $groups = explode(',',$request->groups);
+            }
+            $query->whereHas('group_memberships', function($q) use ($groups) {
+                $q->whereIn('group_id',$groups);
+            });
+        }
+
+        $users = $query->distinct()->limit(25)->get()->toArray();
+        foreach($users as $index => $user) {
+            $users[$index] = array_intersect_key($user, array_flip(['id','iamid','first_name','last_name','default_username','default_email']));
+        }
+        return $users;
+    }
+
+    public function insert_group_member(Request $request,$name){
+        $group = Group::where('slug',$name)->first();
+        if(!$group){
+            return ["error"=>"Group does not exist"];
+        }
+        // Identity Exists, but isnt a member... add them to the group!
+            UpdateGroupMembership::dispatch([
+                'group_id' => $group->id,
+                'identity_id' => $request->user_id,
+            ]);
     }
 }
