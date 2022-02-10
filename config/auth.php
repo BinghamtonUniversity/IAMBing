@@ -6,6 +6,7 @@ return [
         'user' => env('API_USER','defaultuser'),
         'password' => env('API_PASSWORD','defaultpass'),
     ],
+    'secret_key'=> env('PUBLIC_API_SECRET_KEY','It is pretty secret!'),
 
     /*
     |--------------------------------------------------------------------------
@@ -43,6 +44,10 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
+            'provider' => 'users',
+        ],
+        'public' => [
+            'driver' => 'token',
             'provider' => 'users',
         ],
     ],

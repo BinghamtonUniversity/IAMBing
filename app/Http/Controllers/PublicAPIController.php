@@ -9,17 +9,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Jobs\BatchJobs;
 use App\Jobs\UpdateGroupMembership;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 
-class PublicAPIController extends Controller {
-    
+class PublicAPIController extends Controller {  
     public function insert_update_identities(Request $request) {
-        return ['error'=>'not implemented'];
+        $identity = Identity::where('id',$request->id)->first();
+        if($identity){
+            $identity->update($request->all());
+            $identity->recalculate_entitlements();
+        }else{
+            $identity = new Identity($request->all());
+            $identity->save();
+            $identity->recalculate_entitlements();
+        }
+        return $identity;
     }
 
-    public function update_group_members(Request $request, $name) {
+    public function bulk_update_group_members(Request $request, $name) {
         $validated = $request->validate([
             'identities' => 'required',
             'id' => 'required',
@@ -78,11 +87,10 @@ class PublicAPIController extends Controller {
     }
 
     public function public_search(Request $request, $search_string='', $secret_key='',$groups='') {
-        // return $groups;
         //The code below needs to be updated when there is a new Graphene update for the search attribute of the combobox fields
         // The search attribute of the combobox field needs to be able to use the resources
-        if(($request->has('secret_key') &&  $request->secret_key  == env('PUBLIC_API_SECRET_KEY') ) 
-        || (!$request->has('secret_key') && $secret_key !== env('PUBLIC_API_SECRET_KEY')) ){
+        if(($request->has('secret_key') &&  $request->secret_key  == config('auth.secret_key') ) 
+        || (!$request->has('secret_key') && $secret_key !== config('auth.secret_key')) ){
             return response('Unauthorized.', 401);
         }
 
@@ -161,4 +169,5 @@ class PublicAPIController extends Controller {
                 'identity_id' => $request->user_id,
             ]);
     }
+
 }
