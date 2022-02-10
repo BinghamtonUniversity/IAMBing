@@ -21,13 +21,15 @@ class EndpointPolicy
     }
 
     public function view_in_admin(Identity $identity){
-        return Permission::where('permission','manage_apis')->first();
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_apis')->first();
     }
     public function list_search(Identity $identity){
-        return Permission::where('permission','manage_apis')->orWhere('permission','manage_systems')->first();
+        return Permission::where('identity_id',$identity->id)->where(function($q){
+            $q->orWhere('permission','manage_apis')->orWhere('permission','manage_systems');
+        })->first();
     }
 
     public function manage_endpoints(Identity $identity){
-        return Permission::where('permission','manage_apis')->first();
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_apis')->first();
     }
 }

@@ -21,13 +21,17 @@ class SystemPolicy
     }
 
     public function view_in_admin(Identity $identity){
-        return Permission::where('permission','manage_systems')->first();
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_systems')->first();
     }
     public function list_search(Identity $identity){
-        return Permission::where('permission','manage_systems')->orWhere('permission','override_identity_accounts')->orWhere('permission','manage_entitlements')->first();
+        return Permission::where('identity_id',$identity->id)->where(function ($q){
+            $q->orWhere('permission','manage_systems')
+            ->orWhere('permission','override_identity_accounts')
+            ->orWhere('permission','manage_entitlements');
+        })->first();
     }
 
     public function manage_systems(Identity $identity){
-        return Permission::where('permission','manage_systems')->first();
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_systems')->first();
     }
 }

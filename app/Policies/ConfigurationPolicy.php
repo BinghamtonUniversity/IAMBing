@@ -21,11 +21,10 @@ class ConfigurationPolicy
     }
 
     public function view_in_admin(Identity $identity){
-        return Permission::where('permission','manage_systems_config')->first();
+        return  Permission::where('identity_id',$identity->id)->where('permission','manage_systems_config')->first();
     }
 
     public function list_search(Identity $identity){
-        // return true;
         return Permission::where('identity_id',$identity->id)->where(function($q){
             $q->orWhere('permission','view_identities')
             ->orWhere('permission','manage_identities')
@@ -39,6 +38,6 @@ class ConfigurationPolicy
     }
 
     public function update(Identity $identity){
-        return Permission::where('permission','manage_systems_config')->first();;
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_systems_config')->first();;
     }
 }

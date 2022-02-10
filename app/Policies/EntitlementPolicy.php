@@ -21,13 +21,13 @@ class EntitlementPolicy
     }
 
     public function view_in_admin(Identity $identity){
-        return Permission::where('permission','manage_entitlements')->first();
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_entitlements')->first();
     }
     public function list_search(Identity $identity){
-        return Permission::where('permission','manage_entitlements')->orWhere('permission','override_identity_entitlements')->first();
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_entitlements')->orWhere('permission','override_identity_entitlements')->first();
     }
 
     public function manage_entitlements(Identity $identity){
-        return Permission::where('permission','manage_entitlements')->first();
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_entitlements')->first();
     }
 }
