@@ -6,7 +6,6 @@ return [
         'user' => env('API_USER','defaultuser'),
         'password' => env('API_PASSWORD','defaultpass'),
     ],
-    'secret_key'=> env('PUBLIC_API_SECRET_KEY','It is pretty secret!'),
 
     /*
     |--------------------------------------------------------------------------

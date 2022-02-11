@@ -32,6 +32,6 @@ Route::post('/groups/{name}/member',[PublicAPIController::class,'insert_group_me
 //The code below needs to be updated when there is a new Graphene update for the search attribute of the combobox fields
 // The search attribute of the combobox field needs to be able to use the resources
 Route::get('/identities/{identity}',[IdentityController::class,'get_identity']);
-Route::get('/identities/search/{search_string?}/{secret_key?}/{groups?}',[PublicAPIController::class,'public_search']); 
+Route::get('/identities/search/{search_string?}/{groups?}',[PublicAPIController::class,'public_search']); 
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identities']);
 

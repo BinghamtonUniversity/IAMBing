@@ -86,16 +86,20 @@ class PublicAPIController extends Controller {
         return ['success'=>'Dispatched All Jobs to Queue','counts'=>$counts];
     }
 
-    public function public_search(Request $request, $search_string='', $secret_key='',$groups='') {
+    public function public_search(Request $request, $search_string='', $groups='') {
         //The code below needs to be updated when there is a new Graphene update for the search attribute of the combobox fields
         // The search attribute of the combobox field needs to be able to use the resources
-        if(($request->has('secret_key') &&  $request->secret_key  == config('auth.secret_key') ) 
-        || (!$request->has('secret_key') && $secret_key !== config('auth.secret_key')) ){
-            return response('Unauthorized.', 401);
-        }
+       
 
         if($request->has('search_string')){
             $search_string= $request->search_string;
+        }
+        if($search_string==''){
+            return "";
+        }
+       
+        if(is_string($groups)&&strlen($groups)==0){
+            return ['error'=>'No groups provided!'];
         }
         
         if (is_string($groups) && strlen($groups)>0) {
