@@ -28,6 +28,7 @@ Route::get('/db/refresh',[ConfigurationController::class, 'refresh_db']);
 Route::post('/groups/{name}/members',[PublicAPIController::class, 'bulk_update_group_members']);
 
 Route::post('/groups/{name}/member',[PublicAPIController::class,'insert_group_member']); 
+Route::delete('/groups/{name}/member',[PublicAPIController::class,'remove_group_member']); 
 
 //The code below needs to be updated when there is a new Graphene update for the search attribute of the combobox fields
 // The search attribute of the combobox field needs to be able to use the resources

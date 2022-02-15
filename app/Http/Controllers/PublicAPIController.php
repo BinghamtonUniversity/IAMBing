@@ -8,6 +8,7 @@ use App\Models\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Jobs\BatchJobs;
+use App\Jobs\RemoveGroupMembership;
 use App\Jobs\UpdateGroupMembership;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -164,14 +165,39 @@ class PublicAPIController extends Controller {
 
     public function insert_group_member(Request $request,$name){
         $group = Group::where('slug',$name)->first();
+        
         if(!$group){
             return ["error"=>"Group does not exist"];
         }
+        $is_member = GroupMember::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
+
+        if($group && $is_member){
+            return ["error"=>"User is already a member!"];
+        }
+        
         // Identity Exists, but isnt a member... add them to the group!
             UpdateGroupMembership::dispatch([
                 'group_id' => $group->id,
-                'identity_id' => $request->user_id,
+                'identity_id' => $request->identity_id,
             ]);
+        return ['success'=>"Member has been added!"];
+    }
+    public function remove_group_member(Request $request,$name){
+        $group = Group::where('slug',$name)->first();
+        if(!$group){
+            return ["error"=>"Group does not exist"];
+        } 
+        
+        $is_member = GroupMember::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
+
+        if(!$is_member){
+            return ["error"=>"User is not a member!"];
+        }
+        RemoveGroupMembership::dispatch([
+            'group_id' => $group->id,
+            'identity_id' => $request->identity_id,
+        ]);
+        return ['success'=>"Member has been removed!"];
     }
 
 }
