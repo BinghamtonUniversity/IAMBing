@@ -26,12 +26,14 @@ class UpdateGroupMembership implements ShouldQueue
     protected $unique_id;
     protected $api_identity;
     protected $identity_id;
+    protected $action;
 
     public function __construct($config) {
         $this->group_id = $config['group_id'];
         $this->unique_id = isset($config['unique_id'])?$config['unique_id']:null;
         $this->api_identity = isset($config['api_identity'])?$config['api_identity']:null;
         $this->identity_id = isset($config['identity_id'])?$config['identity_id']:null;
+        $this->action = isset($config['action'])?$config['action']:null;
     }
 
     public function middleware() {
@@ -44,6 +46,7 @@ class UpdateGroupMembership implements ShouldQueue
         $unique_id = $this->unique_id;
         $api_identity = $this->api_identity;
         $identity_id = $this->identity_id;
+        $action = $this->action;
 
         if (is_null($identity_id)) {
             $identity = Identity::whereHas('identity_unique_ids', function($q) use ($unique_id, $api_identity){
@@ -53,18 +56,27 @@ class UpdateGroupMembership implements ShouldQueue
             $identity = Identity::where('id',$identity_id)->first();
         }
 
-        if (is_null($identity)) {
+        if ($action==='add' && is_null($identity)) {
             $identity = new Identity($api_identity);
             $identity->save();
             $identity_id = $identity->id;
         } 
 
-        // Add Member to Group
         $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
-        if (is_null($group_member)) {
-            $group_member = new GroupMember(['group_id'=>$group_id,'identity_id'=>$identity->id]);
-            $group_member->save();
-            $identity->recalculate_entitlements();
+        // Add Member to Group
+        if($action==='add'){
+            if (is_null($group_member)) {
+                $group_member = new GroupMember(['group_id'=>$group_id,'identity_id'=>$identity->id]);
+                $group_member->save();
+                $identity->recalculate_entitlements();
+            }
+        }
+        // Remove member from Group
+        if($action==='remove'){
+            if (!is_null($group_member)) {
+                $group_member->delete();
+                $identity->recalculate_entitlements();
+            }
         }
     }
 

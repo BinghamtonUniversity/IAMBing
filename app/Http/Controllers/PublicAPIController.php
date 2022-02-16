@@ -8,7 +8,6 @@ use App\Models\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Jobs\BatchJobs;
-use App\Jobs\RemoveGroupMembership;
 use App\Jobs\UpdateGroupMembership;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +29,7 @@ class PublicAPIController extends Controller {
     }
 
     public function bulk_update_group_members(Request $request, $name) {
+        
         $validated = $request->validate([
             'identities' => 'required',
             'id' => 'required',
@@ -37,7 +37,7 @@ class PublicAPIController extends Controller {
         $apigroup_identities = $request->identities;
         $unique_id = $request->id;
 
-        $group = Group::where('name',$name)->first();
+        $group = Group::where('slug',$name)->first();
         if (is_null($group)) {
             return ['error'=>'Group does not exist!'];
         }
@@ -62,15 +62,17 @@ class PublicAPIController extends Controller {
         $unique_ids_which_dont_exist = $unique_ids->diff($identity_ids->pluck('unique_id'));
         $group_member_identity_ids = DB::table('group_members')->select('identity_id')->where('group_id',$group_id)->get()->pluck('identity_id');
         $identity_ids_which_arent_group_members = $identity_ids->pluck('identity_id')->diff($group_member_identity_ids);
+        $should_remove_group_membership = $group_member_identity_ids->diff($identity_ids->pluck('identity_id'));
 
-        $counts = ['created'=>0,'added'=>0];
+        $counts = ['created'=>0,'added'=>0,'removed'=>0];
         foreach($api_identities as $api_identity) {
             if ($unique_ids_which_dont_exist->contains($api_identity['ids'][$unique_id])) {
                 // Identity Doesn't exist.. create them!
                 UpdateGroupMembership::dispatch([
                     'group_id' => $group_id,
                     'api_identity' => $api_identity,
-                    'unique_id' => $unique_id
+                    'unique_id' => $unique_id,
+                    'action'=>"add"
                 ]);
                 $counts['created']++;
             }
@@ -80,8 +82,19 @@ class PublicAPIController extends Controller {
             UpdateGroupMembership::dispatch([
                 'group_id' => $group_id,
                 'identity_id' => $identity_id,
+                'action'=>"add"
             ]);
             $counts['added']++;
+        }
+
+        foreach($should_remove_group_membership as $identity_id) {
+            // Identity Exists, but isnt a member... add them to the group!
+            UpdateGroupMembership::dispatch([
+                'group_id' => $group_id,
+                'identity_id' => $identity_id,
+                'action'=>"remove"
+            ]);
+            $counts['removed']++;
         }
 
         return ['success'=>'Dispatched All Jobs to Queue','counts'=>$counts];
@@ -179,9 +192,11 @@ class PublicAPIController extends Controller {
             UpdateGroupMembership::dispatch([
                 'group_id' => $group->id,
                 'identity_id' => $request->identity_id,
+                'action'=>'add'
             ]);
         return ['success'=>"Member has been added!"];
     }
+    
     public function remove_group_member(Request $request,$name){
         $group = Group::where('slug',$name)->first();
         if(!$group){
@@ -193,9 +208,10 @@ class PublicAPIController extends Controller {
         if(!$is_member){
             return ["error"=>"User is not a member!"];
         }
-        RemoveGroupMembership::dispatch([
+        UpdateGroupMembership::dispatch([
             'group_id' => $group->id,
             'identity_id' => $request->identity_id,
+            'action'=>'remove'
         ]);
         return ['success'=>"Member has been removed!"];
     }

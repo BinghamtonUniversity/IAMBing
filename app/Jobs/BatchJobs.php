@@ -59,7 +59,8 @@ class BatchJobs implements ShouldQueue
                     UpdateGroupMembership::dispatch([
                         'group_id' => $group_id,
                         'api_identity' => $api_identity,
-                        'unique_id' => $unique_id
+                        'unique_id' => $unique_id,
+                        'action'=>'add'
                     ]);
                 }
             }
@@ -68,6 +69,7 @@ class BatchJobs implements ShouldQueue
                 UpdateGroupMembership::dispatch([
                     'group_id' => $group_id,
                     'identity_id' => $identity_id,
+                    'action'=>'add'
                 ]);
             }
         }
