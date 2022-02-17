@@ -53,12 +53,21 @@ class PublicAPIController extends Controller {
         $api_identities = $request->identities;
         $unique_id = $request->id;
         $group_id = $group->id;
+        // return $group_id;
 
         $unique_ids = collect([]);
         foreach($api_identities as $api_identity) {
             $unique_ids[] = $api_identity['ids'][$unique_id];
         }
-        $identity_ids = DB::table('identity_unique_ids')->select('value as unique_id','identity_id')->where('name',$unique_id)->whereIn('value',$unique_ids)->get();
+        // $identity_ids = DB::table('identity_unique_ids')->select('value as unique_id','identity_id')->where('name',$unique_id)->whereIn('value',$unique_ids)->get();
+
+        // Chucking the sent BNumbers
+        $identity_ids = collect([]);
+        foreach($unique_ids->chunk(50) as $chunked){
+            $res = DB::table('identity_unique_ids')->select('value as unique_id','identity_id')->where('name',$unique_id)->whereIn('value',$chunked)->get();
+            $identity_ids = $identity_ids->merge($res);
+        }
+
         $unique_ids_which_dont_exist = $unique_ids->diff($identity_ids->pluck('unique_id'));
         $group_member_identity_ids = DB::table('group_members')->select('identity_id')->where('group_id',$group_id)->get()->pluck('identity_id');
         $identity_ids_which_arent_group_members = $identity_ids->pluck('identity_id')->diff($group_member_identity_ids);
