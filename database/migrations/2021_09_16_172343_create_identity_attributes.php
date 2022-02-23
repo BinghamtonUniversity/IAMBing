@@ -16,8 +16,8 @@ class CreateIdentityAttributes extends Migration
         Schema::create('identity_attributes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('identity_id')->index();
-            $table->string('name');
-            $table->string('value')->nullable()->default(null);
+            $table->string('name')->index();
+            $table->string('value')->nullable()->default(null)->index();
             $table->boolean('array')->default(false);
             $table->timestamps();
             $table->index(['identity_id', 'name']);

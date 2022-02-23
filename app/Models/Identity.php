@@ -134,9 +134,27 @@ class Identity extends Authenticatable
     }
 
     public function save_actions() {
+        
+
+        if(!is_null($this->set_ids) || !is_null($this->set_attributes)){
+            $configs_res = Configuration::where('name','identity_attributes')
+                                        ->orWhere('name','identity_unique_ids')
+                                        ->get()->toArray();
+
+            foreach ($configs_res as $conf){
+                $config[$conf['name']] = Arr::pluck($conf['config'],'name');
+            }
+            $configs = Configuration::where('name','identity_attributes')
+                                        ->orWhere('name','identity_unique_ids')
+                                        ->get()->pluck('name');
+        }
         // Set IDS and Attributes
-        if (!is_null($this->set_ids)) {
+        if (isset($config) && sizeof($configs)>0 && !is_null($this->set_ids)) {
+            
             foreach($this->set_ids as $name => $value) {
+                if(!in_array($name,$config['identity_unique_ids'])){
+                    continue;
+                }
                 IdentityUniqueID::updateOrCreate(
                     ['identity_id'=>$this->id, 'name'=>$name],
                     ['value' => $value]
@@ -144,8 +162,11 @@ class Identity extends Authenticatable
             }
             $this->load('identity_unique_ids');
         }
-        if (!is_null($this->set_attributes)) {
+        if (isset($config) && sizeof($configs)>0 && !is_null($this->set_attributes)) {
             foreach($this->set_attributes as $name => $value) {
+                if(!in_array($name,$config['identity_attributes'])){
+                    continue;
+                }
                 IdentityAttribute::updateOrCreate(
                     ['identity_id'=>$this->id, 'name'=>$name],
                     ['value' => is_array($value)?implode(',',$value):$value,'array'=>is_array($value)]
@@ -274,6 +295,11 @@ class Identity extends Authenticatable
         static::updated(function ($identity) {
             $identity->save_actions();
         });
+        static::saved(function($identity){
+            $identity->save_actions();
+        });
+
+        
     }
     public function is_group_admin($group_id=null){
         if (is_null($group_id)){

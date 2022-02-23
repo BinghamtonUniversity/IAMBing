@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Jobs\BatchJobs;
 use App\Jobs\UpdateGroupMembership;
+use App\Jobs\UpdateIdentityAttributes;
+use App\Models\Configuration;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -225,4 +227,49 @@ class PublicAPIController extends Controller {
         return ['success'=>"Member has been removed!"];
     }
 
+    public function bulk_update_identities(Request $request){
+        $validated = $request->validate([
+            'identities' => 'required',
+            'id' => 'required',
+        ]);
+        
+        $counts = ["updated"=>0,"not_updated"=>0];
+
+        $api_identities = $request->identities;
+        foreach($api_identities as $api_identity){
+            $res = Identity::query();
+            foreach($api_identity as $api_identity_key=>$api_identity_value){
+                if($api_identity_key === 'ids'){
+                    foreach($api_identity_value as $key=>$value){
+                        $res->whereHas('identity_unique_ids', function($q) use ($key,$value){
+                            $q->where('name',$key)->where('value',$value);
+                        });
+                    }
+                }
+                elseif($api_identity_key ==='attributes'){
+                    foreach($api_identity_value as $key=>$value){
+                        $res->whereHas('identity_attributes', function($q) use ($key,$value){
+                            $q->where('name',$key)->where('value',is_array($value)?implode(',',$value):$value);
+                        });
+                    }
+                }
+                else{
+                    $res->where($api_identity_key,$api_identity_value);
+                }
+            }
+            
+            $res = $res->first();
+
+            if(!is_null($res)){
+                $counts['not_updated']++;
+            }else{
+                UpdateIdentityAttributes::dispatch([
+                   "api_identity"=>$api_identity,
+                    "unique_id"=>$request->id
+                 ]);
+                 $counts['updated']++;
+            }
+        }
+        return $counts;
+    }
 }

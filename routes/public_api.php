@@ -34,5 +34,6 @@ Route::delete('/groups/{name}/member',[PublicAPIController::class,'remove_group_
 // The search attribute of the combobox field needs to be able to use the resources
 Route::get('/identities/{identity}',[IdentityController::class,'get_identity']);
 Route::get('/identities/search/{search_string?}/{groups?}',[PublicAPIController::class,'public_search']); 
+Route::post('/identities/bulk_update',[PublicAPIController::class, 'bulk_update_identities']);
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identities']);
 

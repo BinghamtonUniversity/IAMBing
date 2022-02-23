@@ -16,7 +16,7 @@ class CreateIdentitiesTable extends Migration
         Schema::create('identities', function (Blueprint $table) {
             $table->id();
             $table->string('iamid')->nullable()->default(null)->index();
-            $table->enum('type', ['person', 'organization','service'])->nullable()->default('person');
+            $table->enum('type', ['person', 'organization','service'])->nullable()->default('person')->index();
             $table->boolean('sponsored')->default(false);
             $table->string('first_name')->nullable()->default(null)->index();
             $table->string('last_name')->nullable()->default(null)->index();
