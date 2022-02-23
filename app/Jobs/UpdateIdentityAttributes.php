@@ -44,8 +44,13 @@ class UpdateIdentityAttributes implements ShouldQueue
         
         if(!is_null($identity)){
             $identity->update($api_identity);
-            $identity->ids = $api_identity['ids'];
-            $identity->attributes = $api_identity['attributes'];
+            if(isset($api_identity['ids'])){
+                $identity->ids = $api_identity['ids'];
+            }
+            if(isset($api_identity['attributes']))
+            {
+                $identity->attributes = $api_identity['attributes'];
+            }
             $identity->save();
             $identity->recalculate_entitlements();
         }
