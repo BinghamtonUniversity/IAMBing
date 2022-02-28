@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Libraries\HTTPHelper;
+// use App\Libraries\HelperFunctions;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -130,12 +132,56 @@ class Identity extends Authenticatable
             return false;
         }
         // Do an external lookup using API Endpoints
+        $config = Configuration::where('name','username_availability')
+                                    ->first();
+        if(is_null($config)){
+            abort(500,'Undefined configuration!');
+        }
+        $config = $config->config;
+        $httpHelper = new HTTPHelper();
+        $endpoint = Endpoint::where('id',$config->endpoint)->first();
+        if(is_null($endpoint)){
+            abort(404,'Endpoint not found!');
+        }
+        $httpHelper = new HTTPHelper();
+
+        if ($endpoint->config->type == 'http_no_auth') {
+            $response = $httpHelper->http_fetch(['url'=>$endpoint->config->url, 'verb'=>$config->verb]);
+        } else if ($endpoint->config->type == 'http_basic_auth') {
+            $http_config = [
+                'url'  => $endpoint->config->url.$config->path,
+                'verb' => $config->verb,
+                'data'=>['username'=>$username],
+                'username' => $endpoint->config->username,
+                'password' => $endpoint->getSecret(),
+            ];
+            if (isset($endpoint->config->content_type) && $endpoint->config->content_type !== '') {
+                $http_config['content_type'] = $endpoint->config->content_type;
+            }
+            if (isset($endpoint->config->timeout) && $endpoint->config->timeout !== '') {
+                $http_config['timeout'] = $endpoint->config->timeout;
+            }
+            if (isset($endpoint->config->headers) && is_array($endpoint->config->headers)) {
+                $http_config['headers'] = $endpoint->config->headers;
+            }
+            $response = $httpHelper->http_fetch($http_config);
+            
+        } else {
+            abort(505,'Authentication Type Not Supported');
+        }
+
+        if($response['code'] == $config->available_response){
+            return true;
+        }else if($response['code'] == $config->not_available_response){
+            return false;
+        }else{
+            abort(500,'Unsupported response received from the server');
+        }
+
         return true;
     }
 
     public function save_actions() {
-        
-
         if(!is_null($this->set_ids) || !is_null($this->set_attributes)){
             $configs_res = Configuration::where('name','identity_attributes')
                                         ->orWhere('name','identity_unique_ids')
