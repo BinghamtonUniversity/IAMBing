@@ -62,7 +62,7 @@ class Account extends Model
                     'verb' => $action_definition->verb,
                     'data' => $myidentity,
                     'username' => $endpoint->config->username,
-                    'password' => $endpoint->config->secret,
+                    'password' => $endpoint->getSecret(),
                 ];
                 $response = $http_helper->http_fetch($payload);
                 if ($response['code'] == $action_definition->response_code) {
