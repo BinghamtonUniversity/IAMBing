@@ -29,7 +29,6 @@ class Endpoint extends Model
       }
   
       public function getSecret() {
-        // dd(json_decode($this->attributes['config']));
         $config = json_decode($this->attributes['config']);
         $secret = null;
         if (isset($config->secret)) { $secret = Crypt::decryptString($config->secret); }

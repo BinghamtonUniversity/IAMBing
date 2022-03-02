@@ -30,6 +30,15 @@ class DatabaseSeeder extends Seeder
         $identity_unique_ids->save();
         $affiliations = new Configuration(['name'=>'affiliations','config'=>['faculty','staff','student','employee','member','affiliate','alum','library-walk-in','applicant']]);
         $affiliations->save();
+        $username_availability = new Configuration(['name'=>'username_availability',
+        'config'=>[
+          'path' => '/users/username_info',
+          'verb' => 'GET',
+          'endpoint' => '1',
+          'available_response' => 404,
+          'not_available_response'=>200
+          ]]);
+        $username_availability->save();
 
         // Create Example Identities
         $example_identity = new Identity(['first_name'=>'Example','last_name'=>'Identity','attributes'=>['nickname'=>'Dude'],'default_username'=>'eidentity1']);
@@ -126,28 +135,28 @@ class DatabaseSeeder extends Seeder
         $system1 = new System(['name'=>'BU','default_account_id_template'=>'{{default_username}}','onremove' => 'disable','config'=>[
             'actions' => [
               [
-                'path' => '/ad/identity/{{account.account_id}}',
+                'path' => '/ad/user/{{account.account_id}}',
                 'verb' => 'PUT',
                 'action' => 'create',
                 'endpoint' => '1',
                 'response_code' => 200,
               ],
               [
-                'path' => '/ad/identity/{{account.account_id}}',
+                'path' => '/ad/user/{{account.account_id}}',
                 'verb' => 'PUT',
                 'action' => 'update',
                 'endpoint' => '1',
                 'response_code' => 200,
               ],
               [
-                'path' => '/ad/identity/{{account.account_id}}',
+                'path' => '/ad/user/{{account.account_id}}',
                 'verb' => 'DELETE',
                 'action' => 'delete',
                 'endpoint' => '1',
                 'response_code' => 200,
               ],
               [
-                'path' => '/ad/identity/{{account.account_id}}',
+                'path' => '/ad/user/{{account.account_id}}',
                 'verb' => 'GET',
                 'action' => 'info',
                 'endpoint' => '1',

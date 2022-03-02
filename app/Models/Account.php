@@ -56,15 +56,8 @@ class Account extends Model
                 $endpoint = Endpoint::where('id',$action_definition->endpoint)->first();
                 $myidentity['account'] = $this->only('account_id','status');
                 $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
-                $http_helper = new HTTPHelper();
-                $payload = [
-                    'url'  => $url,
-                    'verb' => $action_definition->verb,
-                    'data' => $myidentity,
-                    'username' => $endpoint->config->username,
-                    'password' => $endpoint->getSecret(),
-                ];
-                $response = $http_helper->http_fetch($payload);
+                
+                $response = http_request_maker($endpoint,$action_definition,$myidentity,$url);
                 if ($response['code'] == $action_definition->response_code) {
                     return $response['content'];
                 } else {
