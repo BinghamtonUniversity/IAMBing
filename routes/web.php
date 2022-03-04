@@ -44,7 +44,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/endpoints', [AdminController::class, 'endpoints'])->middleware('can:list_search,App\Models\Endpoint');
     Route::get('/configuration', [AdminController::class, 'configuration'])->middleware('can:update,App\Models\Configuration');
     // Route::get('/logs',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
-    Route::get('/logs/{identity}',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
+    Route::get('/identities/{identity}/logs',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
 
     Route::group(['prefix' => 'api'], function () {
         /* Identity Methods */
@@ -79,6 +79,9 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
         // Recalculate
         Route::get('/identities/{identity}/recalculate',[IdentityController::class,'recalculate'])->middleware('can:manage_identities,App\Models\Identity');
+
+        //Logs
+        Route::get('/identities/{identity}/logs',[LogController::class,'get_identity_logs'])->middleware('can:view,App\Models\Log');
 
         /* Group Methods */
         Route::get('/groups',[GroupController::class,'get_all_groups'])->middleware('can:list_search,App\Models\Group');
@@ -130,8 +133,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/configuration/{config_name}',[ConfigurationController::class,'update_configuration'])->middleware('can:update,App\Models\Configuration');
 
         /* Logs Methods */
-        Route::get('/logs',[LogController::class,'get_logs'])->middleware('can:view,App\Models\Log');
-        Route::get('/logs/{identity}',[LogController::class,'get_identity_logs'])->middleware('can:view,App\Models\Log');
+        Route::get('/logs',[LogController::class,'get_logs'])->middleware('can:view,App\Models\Log'); // Get All Logs
 
     });
 

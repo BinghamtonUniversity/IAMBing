@@ -1,4 +1,4 @@
-ajax.get('/api/logs/'+window.id,function(data) {
+ajax.get('/api/identities/'+window.id+"/logs",function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
     item_template: gform.stencils['table_row'],
     search: false,columns: false,upload:false,download:false,title:'Systems',
@@ -18,7 +18,13 @@ ajax.get('/api/logs/'+window.id,function(data) {
             ]
         },
         {type:"text", name:"actor_identity_id", label:"Actor",template:"{{attributes.actor.first_name}} {{attributes.actor.last_name}}"},
-        {type:"text", name:"data", label:"Account",required:true},
+        {type:"select", name:"type", label:"Type",
+            options:[
+                {label:"Membership",value:"membership"},
+                {label:"Account",value:"account"},
+                {label:"Entitlement",value:"entitlement"}
+        ]},
+        {type:"text", name:"type_name", label:"Name"},
         {type:"date",name:"created_at",label:"Created at"}
     ], data: data
     });

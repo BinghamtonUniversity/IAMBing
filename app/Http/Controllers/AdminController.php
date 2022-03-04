@@ -85,6 +85,11 @@ class AdminController extends Controller
             'Manage entitlements for this identity.'
         ]);
     }
+    public function identity_logs(Request $request,Identity $identity){
+        return view('default.admin',['page'=>'identity_logs','ids'=>[$identity->id],'title'=>'Identity Logs','help'=>
+            'Identity Logs'
+        ]);
+    }
 
     public function groups(Request $request, Group $group) {
         $identity = Auth::user();
@@ -187,12 +192,6 @@ class AdminController extends Controller
     public function endpoints(Request $request) {
         return view('default.admin',['page'=>'endpoints','ids'=>[],'title'=>'Manage API Endpoints','help'=>
             'Use this page to manage API endpoints.  (API Endpoints are 3rd party APIs which can be used to provision accounts, add/remove endpooints, etc)'
-        ]);
-    }
-    public function identity_logs(Request $request,Identity $identity){
-        // dd($identity);
-        return view('default.admin',['page'=>'identity_logs','ids'=>[$identity->id],'title'=>'User Logs','help'=>
-            'User Logs'
         ]);
     }
 

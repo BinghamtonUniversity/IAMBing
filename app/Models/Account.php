@@ -33,7 +33,7 @@ class Account extends Model
             'identity_id'=>$this->identity_id,
             'type'=>'account',
             'type_id'=>$this->id,
-            'data'=>$this->account_id,
+            'data'=>$this->system_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
 

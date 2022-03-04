@@ -15,7 +15,7 @@ class GroupMemberObserver
             'action'=>'add',
             'identity_id'=>$group_member->identity_id,
             'type'=>'membership',
-            'type_id'=>$group_member->id,
+            'type_id'=>$group_member->group_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
         $log->save();
@@ -32,12 +32,11 @@ class GroupMemberObserver
      */
     public function deleted(GroupMember $group_member)
     {
-        // dd($group_member);
         $log = new Log([
             'action'=>'delete',
             'identity_id'=>$group_member->identity_id,
             'type'=>'membership',
-            'type_id'=>$group_member->id,
+            'type_id'=>$group_member->group_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
         $log->save();

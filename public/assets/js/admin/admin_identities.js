@@ -354,7 +354,7 @@ var manage_identity = function(identity_id) {
                 });
             }).on('view_logs',function(form_event){
                 form_data = form_event.form.get();
-                window.location = '/logs/'+form_data.id;
+                window.location = form_data.id+"/logs";
             });
             // end
             // Edit Permissions

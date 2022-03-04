@@ -51,7 +51,7 @@ class AccountObserver
             'identity_id'=>$account->identity_id,
             'type'=>'account',
             'type_id'=>$account->id,
-            'data'=>$account->account_id,
+            'data'=>$account->system_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
         $log->save();
@@ -70,7 +70,7 @@ class AccountObserver
             'identity_id'=>$account->identity_id,
             'type'=>'account',
             'type_id'=>$account->id,
-            'data'=>$account->account_id,
+            'data'=>$account->system_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
         $log->save();
