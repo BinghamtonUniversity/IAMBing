@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class Identity extends Authenticatable
@@ -253,6 +254,15 @@ class Identity extends Authenticatable
             if (!$identity_entitlement->override) {
                 $identity_entitlement->update(['override'=>false,'override_description'=>null,'override_identity_id'=>null]);
                 if (!$calculated_entitlement_ids->contains($identity_entitlement->entitlement_id)) {
+                    $log = new Log([
+                        'action'=>'delete',
+                        'identity_id'=>$identity_entitlement->identity_id,
+                        'type'=>'entitlement',
+                        'type_id'=>$identity_entitlement->entitlement_id,
+                        'actor_identity_id'=>Auth::user()?Auth::user()->id:null
+                    ]);
+                    $log->save();
+
                     $identity_entitlement->delete();
                 }
             }
@@ -263,6 +273,15 @@ class Identity extends Authenticatable
                 $new_identity_entitlement = new IdentityEntitlement(['identity_id'=>$identity->id,'entitlement_id'=>$calculated_entitlement_id]);
                 $new_identity_entitlement->save();
             } else if ((!$entitlement->override) && $entitlement->type === 'remove') {
+                $log = new Log([
+                    'action'=>'add',
+                    'identity_id'=>$entitlement->identity_id,
+                    'type'=>'entitlement',
+                    'type_id'=>$entitlement->entitlement_id,
+                    'actor_identity_id'=>Auth::user()?Auth::user()->id:null
+                ]);
+                $log->save();
+
                 $entitlement->update(['type'=>'add','override'=>false,'override_description'=>null,'override_identity_id'=>null]);
             }
         }

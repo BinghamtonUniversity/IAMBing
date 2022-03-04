@@ -20,7 +20,7 @@ class AccountObserver
             'action'=>'add',
             'identity_id'=>$account->identity_id,
             'type'=>'account',
-            'type_id'=>$account->id,
+            'type_id'=>$account->system_id,
             'data'=>$account->account_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
@@ -50,8 +50,8 @@ class AccountObserver
             'action'=>'delete',
             'identity_id'=>$account->identity_id,
             'type'=>'account',
-            'type_id'=>$account->id,
-            'data'=>$account->system_id,
+            'type_id'=>$account->system_id,
+            'data'=>$account->account_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
         $log->save();
@@ -69,8 +69,8 @@ class AccountObserver
             'action'=>'restore',
             'identity_id'=>$account->identity_id,
             'type'=>'account',
-            'type_id'=>$account->id,
-            'data'=>$account->system_id,
+            'type_id'=>$account->system_id,
+            'data'=>$account->account_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
         $log->save();

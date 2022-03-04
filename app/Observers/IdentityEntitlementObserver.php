@@ -34,25 +34,7 @@ class IdentityEntitlementObserver
      */
     public function updated(IdentityEntitlement $identityEntitlement)
     {
-        if($identityEntitlement->type=='remove'){
-            $log = new Log([
-                'action'=>'delete',
-                'identity_id'=>$identityEntitlement->identity_id,
-                'type'=>'entitlement',
-                'type_id'=>$identityEntitlement->entitlement_id,
-                'actor_identity_id'=>Auth::user()->id
-            ]);
-            $log->save();
-        }elseif($identityEntitlement->type=='add'){
-            $log = new Log([
-                'action'=>'add',
-                'identity_id'=>$identityEntitlement->identity_id,
-                'type'=>'entitlement',
-                'type_id'=>$identityEntitlement->entitlement_id,
-                'actor_identity_id'=>Auth::user()->id
-            ]);
-            $log->save();
-        }
+        
         
     }
 

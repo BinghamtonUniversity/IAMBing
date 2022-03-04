@@ -25,6 +25,7 @@ ajax.get('/api/identities/'+window.id+"/logs",function(data) {
                 {label:"Entitlement",value:"entitlement"}
         ]},
         {type:"text", name:"type_name", label:"Name"},
+        {type:"text", name:"data", label:"Account"},
         {type:"date",name:"created_at",label:"Created at"}
     ], data: data
     });

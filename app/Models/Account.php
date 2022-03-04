@@ -32,8 +32,8 @@ class Account extends Model
             'action'=>'disable',
             'identity_id'=>$this->identity_id,
             'type'=>'account',
-            'type_id'=>$this->id,
-            'data'=>$this->system_id,
+            'type_id'=>$this->system_id,
+            'data'=>$this->account_id,
             'actor_identity_id'=>Auth::user()->id
         ]);
 

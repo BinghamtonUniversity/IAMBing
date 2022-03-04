@@ -17,6 +17,7 @@ use App\Models\Entitlement;
 use App\Models\IdentityEntitlement;
 use App\Models\IdentityAttribute;
 use App\Models\IdentityUniqueID;
+use App\Models\Log;
 
 class IdentityController extends Controller
 {
@@ -43,6 +44,7 @@ class IdentityController extends Controller
 
     public function update_identity(Request $request, Identity $identity) {
         $identity->update($request->all());
+
         $identity->recalculate_entitlements();
         return $identity;
     }
@@ -194,9 +196,31 @@ class IdentityController extends Controller
     }
 
     public function update_entitlement(Identity $identity, IdentityEntitlement $identity_entitlement, Request $request) {
+        // dd($request);
         if ($request->type === 'add' && is_null(Entitlement::where('id',$request->entitlement_id)->where('override_add',true)->first())) {
             return response(json_encode(['error'=>'You cannot "add" override entitlements of this type!']),403)->header('Content-Type', 'application/json');
         }
+
+        if($request->override && $request->type=='remove'){
+            $log = new Log([
+                'action'=>'delete',
+                'identity_id'=>$identity_entitlement->identity_id,
+                'type'=>'entitlement',
+                'type_id'=>$identity_entitlement->entitlement_id,
+                'actor_identity_id'=>Auth::user()?Auth::user()->id:null
+            ]);
+            $log->save();
+        }elseif($request->override && $request->type=='add'){
+            $log = new Log([
+                'action'=>'add',
+                'identity_id'=>$identity_entitlement->identity_id,
+                'type'=>'entitlement',
+                'type_id'=>$identity_entitlement->entitlement_id,
+                'actor_identity_id'=>Auth::user()?Auth::user()->id:null
+            ]);
+            $log->save();
+        }
+
         $identity_entitlement->update($request->all());
         $identity_entitlement->override_identity_id = Auth::user()->id;
         $identity_entitlement->identity_id = $identity->id;
