@@ -352,6 +352,9 @@ var manage_identity = function(identity_id) {
                 ajax.get('/api/identities/'+identity_id+'/recalculate',function(data) {
                     manage_identity(data.id);
                 });
+            }).on('view_logs',function(form_event){
+                form_data = form_event.form.get();
+                window.location = '/logs/'+form_data.id;
             });
             // end
             // Edit Permissions
@@ -422,6 +425,14 @@ var manage_identity = function(identity_id) {
                             {
                                 "label": "Manage Systems Config",
                                 "value": "manage_systems_config"
+                            },
+                            {
+                                "label": "View Identity Logs",
+                                "value": "view_logs"
+                            },
+                            {
+                                "label": "Manage Logs",
+                                "value": "manage_logs"
                             }
                         ]
                     }

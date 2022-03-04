@@ -70,9 +70,25 @@ class GroupController extends Controller
 
     public function delete_member(Group $group,Identity $identity)
     {
-        $result = GroupMember::where('group_id','=',$group->id)->where('identity_id','=',$identity->id)->delete();
+        $group_member = GroupMember::where('group_id','=',$group->id)->where('identity_id','=',$identity->id)->first();
+        if($group_member){
+            $group_member->delete();
+        }else{
+            return false;
+        }
+        
+        // if($result){
+        //     $log = new Log([
+        //         'action'=>'delete',
+        //         'identity_id'=>$$identity->id,
+        //         'type'=>'membership',
+        //         'type_id'=>$group->id,
+        //         'data'=>"entitlement deleted",
+        //         'actor_identity_id'=>Auth::user()->id
+        //     ]);
+        // }
         $identity->recalculate_entitlements();
-        return $result;
+        return true;
     }
 
     public function get_admins(Request $request, Group $group){

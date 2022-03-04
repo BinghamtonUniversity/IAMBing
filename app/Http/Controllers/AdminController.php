@@ -54,6 +54,9 @@ class AdminController extends Controller
         if ($identity->can('impersonate_identities','App\Identity')){
             $user_actions[] = ["type"=>"button","label"=>"Impersonate Identity","action"=>"login","modifiers"=>"btn btn-warning"];
         }
+        if($identity->can('view','App\Log')){
+            $user_actions[] = ["type"=>"button","label"=>"User Logs","action"=>"view_logs","modifiers"=>"btn btn-info"];
+        }
 
         return view('default.admin',[
             'page'=>'identities','ids'=>$ids,
@@ -184,6 +187,12 @@ class AdminController extends Controller
     public function endpoints(Request $request) {
         return view('default.admin',['page'=>'endpoints','ids'=>[],'title'=>'Manage API Endpoints','help'=>
             'Use this page to manage API endpoints.  (API Endpoints are 3rd party APIs which can be used to provision accounts, add/remove endpooints, etc)'
+        ]);
+    }
+    public function identity_logs(Request $request,Identity $identity){
+        // dd($identity);
+        return view('default.admin',['page'=>'identity_logs','ids'=>[$identity->id],'title'=>'User Logs','help'=>
+            'User Logs'
         ]);
     }
 

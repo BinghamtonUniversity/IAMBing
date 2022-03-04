@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Libraries\HTTPHelper;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 
 class Account extends Model
 {
@@ -27,6 +28,16 @@ class Account extends Model
 
     public function disable() {
         $this->status = 'disabled';
+        $log = new Log([
+            'action'=>'disable',
+            'identity_id'=>$this->identity_id,
+            'type'=>'account',
+            'type_id'=>$this->id,
+            'data'=>$this->account_id,
+            'actor_identity_id'=>Auth::user()->id
+        ]);
+
+        $log->save();
         $this->save();
     }
 

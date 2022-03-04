@@ -31,9 +31,9 @@ class Identity extends Authenticatable
     public function groups() {
         return $this->belongsToMany(Group::class,'group_members')->orderBy('order');
     }
-   public function admin_groups(){
-       return $this->hasMany(GroupAdmin::class,'identity_id');
-   }
+    public function admin_groups(){
+        return $this->hasMany(GroupAdmin::class,'identity_id');
+    }
 
     public function identity_entitlements() {
         return $this->belongsToMany(Entitlement::class,'identity_entitlements')->withPivot('type','override','override_description','override_identity_id');
@@ -128,6 +128,8 @@ class Identity extends Authenticatable
     private function username_check_available($username) {
         $accounts = Account::where('account_id',$username)->get();
         $identities = Identity::where('default_username',$username)->get();
+        $history = Log::where('data',$username)->get();
+        
         if (count($accounts) > 0 || count($identities) > 0) {
             return false;
         }

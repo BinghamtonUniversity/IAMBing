@@ -9,6 +9,7 @@ use App\Http\Controllers\EntitlementController;
 use App\Http\Controllers\EndpointController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\CASController;
+use App\Http\Controllers\LogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +43,8 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups'])->middleware('can:manage_group_entitlements,App\Models\Group');
     Route::get('/endpoints', [AdminController::class, 'endpoints'])->middleware('can:list_search,App\Models\Endpoint');
     Route::get('/configuration', [AdminController::class, 'configuration'])->middleware('can:update,App\Models\Configuration');
+    // Route::get('/logs',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
+    Route::get('/logs/{identity}',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
 
     Route::group(['prefix' => 'api'], function () {
         /* Identity Methods */
@@ -125,6 +128,13 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/configuration/refresh/db',[ConfigurationController::class, 'refresh_db'])->middleware('can:flush_job_queue,App\Models\Job');
         Route::get('/configuration/refresh/redis',[ConfigurationController::class, 'refresh_redis'])->middleware('can:flush_job_queue,App\Models\Job');
         Route::put('/configuration/{config_name}',[ConfigurationController::class,'update_configuration'])->middleware('can:update,App\Models\Configuration');
+
+        /* Logs Methods */
+        Route::get('/logs',[LogController::class,'get_logs'])->middleware('can:view,App\Models\Log');
+        Route::get('/logs/{identity}',[LogController::class,'get_identity_logs'])->middleware('can:view,App\Models\Log');
+
     });
+
+
 
 });
