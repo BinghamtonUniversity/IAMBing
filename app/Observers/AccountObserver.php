@@ -22,7 +22,7 @@ class AccountObserver
             'type'=>'account',
             'type_id'=>$account->system_id,
             'data'=>$account->account_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
     }
@@ -52,7 +52,7 @@ class AccountObserver
             'type'=>'account',
             'type_id'=>$account->system_id,
             'data'=>$account->account_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
     }
@@ -71,7 +71,7 @@ class AccountObserver
             'type'=>'account',
             'type_id'=>$account->system_id,
             'data'=>$account->account_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
     }

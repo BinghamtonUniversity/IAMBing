@@ -21,7 +21,7 @@ class IdentityEntitlementObserver
             'identity_id'=>$identityEntitlement->identity_id,
             'type'=>'entitlement',
             'type_id'=>$identityEntitlement->entitlement_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
     }
@@ -51,7 +51,7 @@ class IdentityEntitlementObserver
             'identity_id'=>$identityEntitlement->identity_id,
             'type'=>'entitlement',
             'type_id'=>$identityEntitlement->entitlement_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
     }

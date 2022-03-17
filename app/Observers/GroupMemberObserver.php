@@ -16,7 +16,7 @@ class GroupMemberObserver
             'identity_id'=>$group_member->identity_id,
             'type'=>'membership',
             'type_id'=>$group_member->group_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
         // $identity = Identity::where('id',$group_member->id);
@@ -37,7 +37,7 @@ class GroupMemberObserver
             'identity_id'=>$group_member->identity_id,
             'type'=>'membership',
             'type_id'=>$group_member->group_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
     }

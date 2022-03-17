@@ -234,41 +234,67 @@ class PublicAPIController extends Controller {
 
     public function insert_group_member(Request $request,$name){
         $group = Group::where('slug',$name)->first();
-        
+        $identity_id = isset($request->identity_id)?$request->identity_id:null;
+        $unique_id_type = isset($request->unique_id_type)?$request->unique_id_type:null;
+        $unique_id = isset($request->unique_id)?$request->unique_id:null;
+
+        if (is_null($identity_id)) {
+            $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
+                $q->where('name',$unique_id_type)->where('value',$unique_id);
+            })->first();
+        } else {
+            $identity = Identity::where('id',$identity_id)->first();
+        }
+        if(is_null($identity)){
+            $identity = new Identity($request->all());
+            $identity->save();
+        }
+
         if(!$group){
             return ["error"=>"Group does not exist"];
         }
-        $is_member = GroupMember::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
+        $is_member = GroupMember::where('group_id',$group->id)->where('identity_id',$identity->id)->first();
 
         if($group && $is_member){
             return ["error"=>"User is already a member!"];
         }
+        if (is_null($is_member)) {
+            $group_member = new GroupMember(['group_id'=>$group->id,'identity_id'=>$identity->id]);
+            $group_member->save();
+            $identity->recalculate_entitlements();
+        }
         
-        // Identity Exists, but isnt a member... add them to the group!
-            UpdateGroupMembership::dispatch([
-                'group_id' => $group->id,
-                'identity_id' => $request->identity_id,
-                'action'=>'add'
-            ]);
         return ['success'=>"Member has been added!"];
     }
     
     public function remove_group_member(Request $request,$name){
         $group = Group::where('slug',$name)->first();
+        $identity_id = isset($request->identity_id)?$request->identity_id:null;
+        $unique_id_type = isset($request->unique_id_type)?$request->unique_id_type:null;
+        $unique_id = isset($request->unique_id)?$request->unique_id:null;
+
+        if (is_null($identity_id)) {
+            $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
+                $q->where('name',$unique_id_type)->where('value',$unique_id);
+            })->first();
+        } else {
+            $identity = Identity::where('id',$identity_id)->first();
+        }
+
         if(!$group){
             return ["error"=>"Group does not exist"];
         } 
         
-        $is_member = GroupMember::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
+        $group_member = GroupMember::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
 
-        if(!$is_member){
+        if(is_null($group_member)){
             return ["error"=>"User is not a member!"];
         }
-        UpdateGroupMembership::dispatch([
-            'group_id' => $group->id,
-            'identity_id' => $request->identity_id,
-            'action'=>'remove'
-        ]);
+        if (!is_null($group_member)) {
+            $group_member->delete();
+            $identity->recalculate_entitlements();
+        }
+        
         return ['success'=>"Member has been removed!"];
     }
 

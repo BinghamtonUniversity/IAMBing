@@ -259,7 +259,7 @@ class Identity extends Authenticatable
                         'identity_id'=>$identity_entitlement->identity_id,
                         'type'=>'entitlement',
                         'type_id'=>$identity_entitlement->entitlement_id,
-                        'actor_identity_id'=>Auth::user()?Auth::user()->id:null
+                        'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
                     ]);
                     $log->save();
 
@@ -278,7 +278,7 @@ class Identity extends Authenticatable
                     'identity_id'=>$entitlement->identity_id,
                     'type'=>'entitlement',
                     'type_id'=>$entitlement->entitlement_id,
-                    'actor_identity_id'=>Auth::user()?Auth::user()->id:null
+                    'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
                 ]);
                 $log->save();
 
