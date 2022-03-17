@@ -32,6 +32,7 @@ class PublicAPIController extends Controller {
         
         $identity_account_systems = System::select('id','name')->whereIn('id',$identity->accounts->pluck('system_id'))->get();
         return [
+            'identity_id'=>$identity->id,
             'first_name' => $identity->first_name,
             'last_name' => $identity->last_name,
             'unique_ids'=>$identity->ids,
