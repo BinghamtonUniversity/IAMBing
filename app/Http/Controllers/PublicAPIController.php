@@ -53,7 +53,7 @@ class PublicAPIController extends Controller {
             'accounts'=>$identity->accounts ->map(function($q) use ($identity_account_systems){
                 return [
                 'id'=>$q->id,
-                'name'=>$q->account_id,
+                'account_id'=>$q->account_id,
                 'system_id'=>$q->system_id,
                 'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name
                 ];
