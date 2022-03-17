@@ -18,7 +18,7 @@ class Identity extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = ['active','type','sponsored','default_username', 'default_email', 'ids', 'attributes', 'first_name', 'last_name', 'sponsor_identity_id'];
-    protected $hidden = ['identity_unique_ids','identity_attributes', 'identity_permissiins', 'password', 'remember_token','created_at','updated_at'];
+    protected $hidden = ['identity_unique_ids','identity_attributes', 'identity_permissions', 'password', 'remember_token','created_at','updated_at'];
     protected $appends = ['ids','permissions','attributes','entitlements'];
     protected $with = ['identity_unique_ids','identity_attributes','identity_permissions'];
 
@@ -131,7 +131,7 @@ class Identity extends Authenticatable
         $identities = Identity::where('default_username',$username)->get();
         $history = Log::where('data',$username)->get();
         
-        if (count($accounts) > 0 || count($identities) > 0) {
+        if (count($accounts) > 0 || count($identities) > 0 || count($history)>0) {
             return false;
         }
         // Do an external lookup using API Endpoints

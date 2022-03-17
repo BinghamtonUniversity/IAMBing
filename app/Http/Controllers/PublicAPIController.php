@@ -10,13 +10,57 @@ use Illuminate\Support\Arr;
 use App\Jobs\BatchJobs;
 use App\Jobs\UpdateGroupMembership;
 use App\Jobs\UpdateIdentityAttributes;
+use App\Libraries\HTTPHelper;
 use App\Models\Configuration;
+use App\Models\System;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 
 class PublicAPIController extends Controller {  
+    
+    public function get_identity($unique_id_type,$unique_id){
+        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
+            $q->where('name',$unique_id_type)->where('value',$unique_id);
+        })->first();
+        
+        if(is_null($identity)){
+            return abort(404,'Not Found');
+        }
+        
+        $identity_account_systems = System::select('id','name')->whereIn('id',$identity->accounts->pluck('system_id'))->get();
+        return [
+            'first_name' => $identity->first_name,
+            'last_name' => $identity->last_name,
+            'unique_ids'=>$identity->ids,
+            'affiliations' => Group::select('affiliation','order')
+                                ->whereIn('id',$identity->group_memberships->pluck('group_id'))
+                                ->orderBy('order')
+                                ->get()
+                                ->pluck('affiliation')
+                                ->unique()->values(),
+            'group_memberships'=>$identity->groups->map(function($q){
+                return [
+                'id'=>$q->id,
+                'slug'=>$q->slug,
+                'name'=>$q->name
+                ];
+            }),
+            'entitlements'=>$identity->entitlements,
+            'accounts'=>$identity->accounts ->map(function($q) use ($identity_account_systems){
+                return [
+                'id'=>$q->id,
+                'name'=>$q->account_id,
+                'system_id'=>$q->system_id,
+                'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name
+                ];
+            }),
+            'attributes'=>$identity->attributes
+            ];
+    }
+
     public function insert_update_identities(Request $request) {
         $identity = Identity::where('id',$request->id)->first();
         if($identity){
