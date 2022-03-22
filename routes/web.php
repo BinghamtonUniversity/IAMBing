@@ -78,7 +78,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/identities/{identity}/entitlements/{identity_entitlement}',[IdentityController::class,'update_entitlement'])->middleware('can:override_identity_entitlements,App\Models\Identity');
 
         // Recalculate
-        Route::get('/identities/{identity}/recalculate',[IdentityController::class,'recalculate'])->middleware('can:manage_identities,App\Models\Identity');
+        Route::get('/identities/{identity}/recalculate',[IdentityController::class,'recalculate'])->middleware('can:update_identities,App\Models\Identity');
 
         //Logs
         Route::get('/identities/{identity}/logs',[LogController::class,'get_identity_logs'])->middleware('can:view,App\Models\Log');
