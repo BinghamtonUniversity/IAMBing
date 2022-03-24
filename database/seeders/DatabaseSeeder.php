@@ -67,16 +67,18 @@ class DatabaseSeeder extends Seeder
         // Group creations
         $staff = new Group(['slug'=>'staff','name'=>"Staff",'affiliation'=>'staff','order'=>2]);
         $staff->save();
-        $matriculated_students = new Group(['slug'=>'matriculated_students','name'=>"Matriculated Students",'affiliation'=>'student','order'=>3]);
-        $matriculated_students->save();
+        $students = new Group(['slug'=>'students','name'=>"Students",'affiliation'=>'student','order'=>3]);
+        $students->save();
         $faculty = new Group(['slug'=>'faculty',"name"=>"Faculty",'affiliation'=>'faculty','order'=>1]);
         $faculty->save();
-        $nonmatriculated_students = new Group(['slug'=>'nonmatriculated_students','name'=>'Nonmatriculated Students','affiliation'=>'student','order'=>4]);
-        $nonmatriculated_students->save();
+        // $nonstudents = new Group(['slug'=>'nonmatriculated_students','name'=>'Nonmatriculated Students','affiliation'=>'student','order'=>4]);
+        // $nonmatriculated_students->save();
         $applicants = new Group(['slug'=>'applicants','name'=>"Applicants",'affiliation'=>'applicant','order'=>5]);
         $applicants->save();
         $admitted_applicants = new Group(['slug'=>'admitted_applicants','name'=>"Admitted Applicants",'affiliation'=>'applicant','order'=>5]);
         $admitted_applicants->save();
+        $alumni_affiliates = new Group(['slug'=>'alumni_affiliates','name'=>"Alumni Affiliates",'affiliation'=>'applicant','order'=>5]);
+        $alumni_affiliates->save();
         $alumni = new Group(['slug'=>'alumni','name'=>"Alumni",'affiliation'=>'alum','order'=>6]);
         $alumni->save();
         $recent_alumni = new Group(['slug'=>'recent_alumni','name'=>"Recent Alumni",'affiliation'=>'alum','order'=>6]);
@@ -171,6 +173,22 @@ class DatabaseSeeder extends Seeder
                               'config'=>[]
                             ]);
         $system2->save();
+        $system3 = new System(['name'=>'Banner',
+          'default_account_id_template'=>'{{ids.bnumber}}',
+          'onremove' => 'delete',
+          'config'=>[
+            'actions'=>[
+              [
+                'path' => '',
+                'verb' => 'GET',
+                'action' => 'info',
+                'endpoint' => '1',
+                'response_code' => 200,
+              ]
+            ]
+          ]
+        ]);
+        $system3->save();
 
         // BU/ AD Entitlements
         $bu_account_ent = new Entitlement(['name'=>'BU Account','system_id'=>$system1->id]);
@@ -228,6 +246,12 @@ class DatabaseSeeder extends Seeder
         $google_addons_google_ent = new Entitlement(['name'=>'Google Addons','system_id'=>$system2->id]);
         $google_addons_google_ent->save();
 
+        // Banner System Entitlements
+        $banner_student_entitlement = new Entitlement(['name'=>'Banner Student','system_id'=>$system3->id]);
+        $banner_student_entitlement->save();
+        $banner_employee_entitlement = new Entitlement(['name'=>'Banner Employee','system_id'=>$system3->id]);
+        $banner_employee_entitlement->save();
+
       //START BU/ AD Account Entitlements Creations
 
         //BU Account Group Entitlements Definitions
@@ -237,12 +261,12 @@ class DatabaseSeeder extends Seeder
         $bu_account_group_ent2->save();
         $bu_account_group_ent3 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$bu_account_ent->id]);
         $bu_account_group_ent3->save();
-        $bu_account_group_ent4 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$bu_account_ent->id]);
+        $bu_account_group_ent4 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$bu_account_ent->id]);
         $bu_account_group_ent4->save();
         $bu_account_group_ent5 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$bu_account_ent->id]);
         $bu_account_group_ent5->save();
-        $bu_account_group_ent6 = new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$bu_account_ent->id]);
-        $bu_account_group_ent6->save();
+        // $bu_account_group_ent6 = new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$bu_account_ent->id]);
+        // $bu_account_group_ent6->save();
         $bu_account_group_ent7 = new GroupEntitlement(['group_id'=>$currently_enrolled_students->id,'entitlement_id'=>$bu_account_ent->id]);
         $bu_account_group_ent7->save();
         $bu_account_group_ent8 = new GroupEntitlement(['group_id'=>$on_campus_students->id,'entitlement_id'=>$bu_account_ent->id]);
@@ -281,12 +305,12 @@ class DatabaseSeeder extends Seeder
         $enforce_2fa_group_ent1->save();
         $enforce_2fa_group_ent2=  new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$enforce_2fa_ent->id]);
         $enforce_2fa_group_ent2->save();
-        $enforce_2fa_group_ent3=  new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$enforce_2fa_ent->id]);
+        $enforce_2fa_group_ent3=  new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$enforce_2fa_ent->id]);
         $enforce_2fa_group_ent3->save();
         $enforce_2fa_group_ent4=  new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$enforce_2fa_ent->id]);
         $enforce_2fa_group_ent4->save();
-        $enforce_2fa_group_ent5=  new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$enforce_2fa_ent->id]);
-        $enforce_2fa_group_ent5->save();
+        // $enforce_2fa_group_ent5=  new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$enforce_2fa_ent->id]);
+        // $enforce_2fa_group_ent5->save();
         $enforce_2fa_group_ent6=  new GroupEntitlement(['group_id'=>$currently_enrolled_students->id,'entitlement_id'=>$enforce_2fa_ent->id]);
         $enforce_2fa_group_ent6->save();
         $enforce_2fa_group_ent7=  new GroupEntitlement(['group_id'=>$recent_alumni->id,'entitlement_id'=>$enforce_2fa_ent->id]);
@@ -311,7 +335,7 @@ class DatabaseSeeder extends Seeder
         $enforce_2fa_group_ent16->save();
         
         // Student Wifi
-        $student_wifi_group_ent1 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$student_wifi_ent->id]);
+        $student_wifi_group_ent1 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$student_wifi_ent->id]);
         $student_wifi_group_ent1->save();
         $student_wifi_group_ent2 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$student_wifi_ent->id]);
         $student_wifi_group_ent2->save();
@@ -338,7 +362,7 @@ class DatabaseSeeder extends Seeder
         $deny_wifi_group_ent1->save();
 
         // Student VPN
-        $student_vpn_group_ent1 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$student_vpn_ent->id]);
+        $student_vpn_group_ent1 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$student_vpn_ent->id]);
         $student_vpn_group_ent1->save();
         $student_vpn_group_ent2 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$student_vpn_ent->id]);
         $student_vpn_group_ent2->save();
@@ -360,7 +384,7 @@ class DatabaseSeeder extends Seeder
         $admin_net_access_vpn_group_ent1->save();
 
         // Student Bingview
-        $student_bingview_group_ent1 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$student_bingview_ent->id]);
+        $student_bingview_group_ent1 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$student_bingview_ent->id]);
         $student_bingview_group_ent1->save();
         $student_bingview_group_ent2 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$student_bingview_ent->id]);
         $student_bingview_group_ent2->save();
@@ -390,7 +414,7 @@ class DatabaseSeeder extends Seeder
         $interactive_login_group_ent1->save();
         $interactive_login_group_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$interactive_login_ent->id]);
         $interactive_login_group_ent2->save();
-        $interactive_login_group_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$interactive_login_ent->id]);
+        $interactive_login_group_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$interactive_login_ent->id]);
         $interactive_login_group_ent3->save();
         $interactive_login_group_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$interactive_login_ent->id]);
         $interactive_login_group_ent4->save();
@@ -418,12 +442,12 @@ class DatabaseSeeder extends Seeder
         $google_account_group_google_ent2->save();
         $google_account_group_google_ent3 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_account_google_ent->id]);
         $google_account_group_google_ent3->save();
-        $google_account_group_google_ent4 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_account_google_ent->id]);
+        $google_account_group_google_ent4 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_account_google_ent->id]);
         $google_account_group_google_ent4->save();
         $google_account_group_google_ent5 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_account_google_ent->id]);
         $google_account_group_google_ent5->save();
-        $google_account_group_google_ent6 = new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$google_account_google_ent->id]);
-        $google_account_group_google_ent6->save();
+        // $google_account_group_google_ent6 = new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$google_account_google_ent->id]);
+        // $google_account_group_google_ent6->save();
         $google_account_group_google_ent7 = new GroupEntitlement(['group_id'=>$currently_enrolled_students->id,'entitlement_id'=>$google_account_google_ent->id]);
         $google_account_group_google_ent7->save();
         $google_account_group_google_ent8 = new GroupEntitlement(['group_id'=>$recent_alumni->id,'entitlement_id'=>$google_account_google_ent->id]);
@@ -438,12 +462,12 @@ class DatabaseSeeder extends Seeder
         $google_email_group_google_ent1->save();
         $google_email_group_google_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_email_google_ent->id]);
         $google_email_group_google_ent2->save();
-        $google_email_group_google_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_email_google_ent->id]);
+        $google_email_group_google_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_email_google_ent->id]);
         $google_email_group_google_ent3->save();
         $google_email_group_google_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_email_google_ent->id]);
         $google_email_group_google_ent4->save();
-        $google_email_group_google_ent5 = new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$google_email_google_ent->id]);
-        $google_email_group_google_ent5->save();
+        // $google_email_group_google_ent5 = new GroupEntitlement(['group_id'=>$nonmatriculated_students->id,'entitlement_id'=>$google_email_google_ent->id]);
+        // $google_email_group_google_ent5->save();
         $google_email_group_google_ent6 = new GroupEntitlement(['group_id'=>$currently_enrolled_students->id,'entitlement_id'=>$google_email_google_ent->id]);
         $google_email_group_google_ent6->save();
         $google_email_group_google_ent7 = new GroupEntitlement(['group_id'=>$recent_alumni->id,'entitlement_id'=>$google_email_google_ent->id]);
@@ -460,7 +484,7 @@ class DatabaseSeeder extends Seeder
         $google_drive_group_google_ent1->save();
         $google_drive_group_google_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_drive_google_ent->id]);
         $google_drive_group_google_ent2->save();
-        $google_drive_group_google_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_drive_google_ent->id]);
+        $google_drive_group_google_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_drive_google_ent->id]);
         $google_drive_group_google_ent3->save();
         $google_drive_group_google_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_drive_google_ent->id]);
         $google_drive_group_google_ent4->save();
@@ -486,7 +510,7 @@ class DatabaseSeeder extends Seeder
         $google_chat_group_google_ent1->save();
         $google_chat_group_google_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_chat_google_ent->id]);
         $google_chat_group_google_ent2->save();
-        $google_chat_group_google_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_chat_google_ent->id]);
+        $google_chat_group_google_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_chat_google_ent->id]);
         $google_chat_group_google_ent3->save();
         $google_chat_group_google_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_chat_google_ent->id]);
         $google_chat_group_google_ent4->save();
@@ -502,7 +526,7 @@ class DatabaseSeeder extends Seeder
         $google_groups_group_google_ent1->save();
         $google_groups_group_google_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_groups_google_ent->id]);
         $google_groups_group_google_ent2->save();
-        $google_groups_group_google_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_groups_google_ent->id]);
+        $google_groups_group_google_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_groups_google_ent->id]);
         $google_groups_group_google_ent3->save();
         $google_groups_group_google_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_groups_google_ent->id]);
         $google_groups_group_google_ent4->save();
@@ -518,7 +542,7 @@ class DatabaseSeeder extends Seeder
         $google_calendar_group_google_ent1->save();
         $google_calendar_group_google_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_calendar_google_ent->id]);
         $google_calendar_group_google_ent2->save();
-        $google_calendar_group_google_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_calendar_google_ent->id]);
+        $google_calendar_group_google_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_calendar_google_ent->id]);
         $google_calendar_group_google_ent3->save();
         $google_calendar_group_google_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_calendar_google_ent->id]);
         $google_calendar_group_google_ent4->save();
@@ -534,7 +558,7 @@ class DatabaseSeeder extends Seeder
         $google_classroom_group_google_ent1->save();
         $google_classroom_group_google_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_classroom_google_ent->id]);
         $google_classroom_group_google_ent2->save();
-        $google_classroom_group_google_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_classroom_google_ent->id]);
+        $google_classroom_group_google_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_classroom_google_ent->id]);
         $google_classroom_group_google_ent3->save();
         $google_classroom_group_google_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_classroom_google_ent->id]);
         $google_classroom_group_google_ent4->save();
@@ -553,7 +577,7 @@ class DatabaseSeeder extends Seeder
         $google_addons_group_google_ent1->save();
         $google_addons_group_google_ent2 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$google_addons_google_ent->id]);
         $google_addons_group_google_ent2->save();
-        $google_addons_group_google_ent3 = new GroupEntitlement(['group_id'=>$matriculated_students->id,'entitlement_id'=>$google_addons_google_ent->id]);
+        $google_addons_group_google_ent3 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$google_addons_google_ent->id]);
         $google_addons_group_google_ent3->save();
         $google_addons_group_google_ent4 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$google_addons_google_ent->id]);
         $google_addons_group_google_ent4->save();
@@ -565,5 +589,38 @@ class DatabaseSeeder extends Seeder
         $google_addons_group_google_ent7->save();
 
         // END Google Group Entitlements//
+
+        // Banner Entitlements //
+
+        // Banner Student Entitlements
+        $banner_students_ent1 = new GroupEntitlement(['group_id'=>$students->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent1->save();
+        $banner_students_ent2 = new GroupEntitlement(['group_id'=>$online_students->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent2->save();
+        $banner_students_ent3 = new GroupEntitlement(['group_id'=>$currently_enrolled_students->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent3->save();
+        $banner_students_ent4 = new GroupEntitlement(['group_id'=>$on_campus_students->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent4->save();
+        $banner_students_ent5 = new GroupEntitlement(['group_id'=>$admitted_applicants->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent5->save();
+        $banner_students_ent6 = new GroupEntitlement(['group_id'=>$alumni_affiliates->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent6->save();
+        $banner_students_ent7 = new GroupEntitlement(['group_id'=>$alumni->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent7->save();
+        $banner_students_ent8 = new GroupEntitlement(['group_id'=>$recent_alumni->id,'entitlement_id'=>$banner_student_entitlement->id]);
+        $banner_students_ent8->save();
+
+        //Banner Employee Entitlements
+        $banner_employee_ent1 = new GroupEntitlement(['group_id'=>$staff->id,'entitlement_id'=>$banner_employee_entitlement->id]);
+        $banner_employee_ent1->save();
+        $banner_employee_ent2 = new GroupEntitlement(['group_id'=>$faculty->id,'entitlement_id'=>$banner_employee_entitlement->id]);
+        $banner_employee_ent2->save();
+        $banner_employee_ent3 = new GroupEntitlement(['group_id'=>$recent_faculty->id,'entitlement_id'=>$banner_employee_entitlement->id]);
+        $banner_employee_ent3->save();
+        $banner_employee_ent4 = new GroupEntitlement(['group_id'=>$rf_staff->id,'entitlement_id'=>$banner_employee_entitlement->id]);
+        $banner_employee_ent4->save();
+        $banner_employee_ent5 = new GroupEntitlement(['group_id'=>$retirees->id,'entitlement_id'=>$banner_employee_entitlement->id]);
+        $banner_employee_ent5->save();
+
     }
 }
