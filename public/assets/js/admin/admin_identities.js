@@ -177,13 +177,13 @@ identity_entitlements_template = `
         {{#pivot.type === 'remove'}}
             <div class="label label-danger">
                 {{name}}
-                <div class="tinytext">(Manually Removed)</div>
+                <div class="tinytext">(Manually Removed Until: {{pivot.override_expiration}})</div>
             </div>
         {{/}}
         {{#pivot.type === 'add'}}
             <div class="label label-success">
                 {{name}}
-                <div class="tinytext">(Manually Added)</div>
+                <div class="tinytext">(Manually Added Until: {{pivot.override_expiration}})</div>
             </div>
         {{/}}
     {{/}}

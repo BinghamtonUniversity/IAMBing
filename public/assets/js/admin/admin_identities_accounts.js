@@ -30,6 +30,7 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
             ],
         },
         {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this identity\'s calculated entitlements!'},
+        {name:"override_expiration",required:true, "label":"Manual Override Expiration",type:"date", show:[{type:'matches',name:'override',value:true}],format:{input: "YYYY-MM-DD"},help:'This manual override will be enforced until the date specified, at which point it will be updated or deleted by this user\'s calculated entitlements'},
         {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},
         {type:"text", name:"override_identity_id", label:"Override Identity", show:false, parse:false,template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}"},    
     ], data: data
