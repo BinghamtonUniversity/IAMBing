@@ -327,6 +327,43 @@ class Identity extends Authenticatable
 
     }
 
+    public function get_api_identity(){
+        $affiliations = Group::select('affiliation','order')
+        ->whereIn('id',$this->group_memberships->pluck('group_id'))
+        ->orderBy('order')
+        ->get()
+        ->pluck('affiliation')
+        ->unique()->values();
+        $identity_account_systems = System::select('id','name')->whereIn('id',$this->accounts->pluck('system_id'))->get();
+        return [
+            'id'=>$this->id,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'ids'=>$this->ids,
+            'default_email'=>$this->default_email,
+            "default_username"=>$this->default_username,
+            'affiliations' => $affiliations,
+            'group_memberships'=>$this->groups->map(function($q){
+                return [
+                'id'=>$q->id,
+                'slug'=>$q->slug,
+                'name'=>$q->name
+                ];
+            }),
+            'primary_affiliation' => isset($myidentity['affiliations'][0])?$myidentity['affiliations'][0]:null,
+            'entitlements'=>$this->entitlements,
+            'accounts'=>$this->accounts ->map(function($q) use ($identity_account_systems){
+                return [
+                'id'=>$q->id,
+                'account_id'=>$q->account_id,
+                'system_id'=>$q->system_id,
+                'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name
+                ];
+            }),
+            'attributes'=>$this->attributes
+            ];
+    }
+
     protected static function booted()
     {
         static::created(function ($identity) {

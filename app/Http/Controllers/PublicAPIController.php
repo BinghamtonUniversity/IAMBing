@@ -27,39 +27,9 @@ class PublicAPIController extends Controller {
         })->first();
         
         if(is_null($identity)){
-            return abort(404,'Not Found');
+            return abort(404,'Identity Not Found');
         }
-        
-        $identity_account_systems = System::select('id','name')->whereIn('id',$identity->accounts->pluck('system_id'))->get();
-        return [
-            'identity_id'=>$identity->id,
-            'first_name' => $identity->first_name,
-            'last_name' => $identity->last_name,
-            'unique_ids'=>$identity->ids,
-            'affiliations' => Group::select('affiliation','order')
-                                ->whereIn('id',$identity->group_memberships->pluck('group_id'))
-                                ->orderBy('order')
-                                ->get()
-                                ->pluck('affiliation')
-                                ->unique()->values(),
-            'group_memberships'=>$identity->groups->map(function($q){
-                return [
-                'id'=>$q->id,
-                'slug'=>$q->slug,
-                'name'=>$q->name
-                ];
-            }),
-            'entitlements'=>$identity->entitlements,
-            'accounts'=>$identity->accounts ->map(function($q) use ($identity_account_systems){
-                return [
-                'id'=>$q->id,
-                'account_id'=>$q->account_id,
-                'system_id'=>$q->system_id,
-                'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name
-                ];
-            }),
-            'attributes'=>$identity->attributes
-            ];
+        return $identity->get_api_identity();
     }
 
     public function insert_update_identities(Request $request) {
@@ -100,13 +70,12 @@ class PublicAPIController extends Controller {
         $api_identities = $request->identities;
         $unique_id = $request->id;
         $group_id = $group->id;
-        // return $group_id;
+
 
         $unique_ids = collect([]);
         foreach($api_identities as $api_identity) {
             $unique_ids[] = $api_identity['ids'][$unique_id];
         }
-        // $identity_ids = DB::table('identity_unique_ids')->select('value as unique_id','identity_id')->where('name',$unique_id)->whereIn('value',$unique_ids)->get();
 
         // Chucking the sent BNumbers
         $identity_ids = collect([]);

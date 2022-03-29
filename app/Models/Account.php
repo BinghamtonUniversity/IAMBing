@@ -45,18 +45,20 @@ class Account extends Model
         $this->info = $this->sync('info');
     }
 
-    private function build_sync_identity() {
-        $myidentity = Identity::where('id',$this->identity_id)->with('identity_entitlements')->first()->only([
-            'first_name','last_name','attributes','entitlements','ids','default_username','default_email','id'
-        ]);
-        $group_ids = GroupMember::select('group_id')->where('identity_id',$myidentity['id'])->get()->pluck('group_id');
-        $myidentity['affiliations'] = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values()->toArray();
-        $myidentity['primary_affiliation'] = isset($myidentity['affiliations'][0])?$myidentity['affiliations'][0]:null;
-        return $myidentity;
-    }
+    // private function build_sync_identity() {
+    //     $myidentity = Identity::where('id',$this->identity_id)->with('identity_entitlements')->first()->only([
+    //         'first_name','last_name','attributes','entitlements','ids','default_username','default_email','id'
+    //     ]);
+    //     $group_ids = GroupMember::select('group_id')->where('identity_id',$myidentity['id'])->get()->pluck('group_id');
+    //     $myidentity['affiliations'] = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values()->toArray();
+    //     $myidentity['primary_affiliation'] = isset($myidentity['affiliations'][0])?$myidentity['affiliations'][0]:null;
+    //     return $myidentity;
+    // }
 
     public function sync($action) {
-        $myidentity = $this->build_sync_identity();
+        $identity = Identity::where('id',$this->identity_id)->first();
+        $myidentity = $identity->get_api_identity();
+
         $m = new \Mustache_Engine;
         $mysystem = System::where('id',$this->system_id)->first();
         if (isset($mysystem->config->actions) && is_array($mysystem->config->actions)) {
@@ -69,6 +71,9 @@ class Account extends Model
                 $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
                 
                 $response = http_request_maker($endpoint,$action_definition,$myidentity,$url);
+                if($mysystem->id =1){
+                    dd($response);
+                }
                 if ($response['code'] == $action_definition->response_code) {
                     return $response['content'];
                 } else {
