@@ -2,8 +2,7 @@
 
 namespace App\Models;
 
-use App\Libraries\HTTPHelper;
-// use App\Libraries\HelperFunctions;
+use App\Libraries\EndpointHelper;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -37,7 +36,7 @@ class Identity extends Authenticatable
     }
 
     public function identity_entitlements() {
-        return $this->belongsToMany(Entitlement::class,'identity_entitlements')->withPivot('type','override','override_description','override_expiration','override_identity_id');
+        return $this->belongsToMany(Entitlement::class,'identity_entitlements')->withPivot('type','override','description','expire','expiration_date','sponsor_id');
     }
 
     public function identity_permissions(){
@@ -147,7 +146,7 @@ class Identity extends Authenticatable
             abort(404,'Endpoint not found!');
         }
         $url = $endpoint->config->url.$config->path;
-        $response = http_request_maker($endpoint,$config,['username'=>$username],$url);
+        $response = EndpointHelper::http_request_maker($endpoint,$config,['username'=>$username],$url);
         
         if($response['code'] == $config->available_response){
             return true;
@@ -251,8 +250,8 @@ class Identity extends Authenticatable
         // Check to see if calculated entitlements match enforced entitlements
         $existing_identity_entitlements = IdentityEntitlement::where('identity_id',$identity->id)->get();
         foreach($existing_identity_entitlements as $identity_entitlement) {
-            if (!$identity_entitlement->override || $identity_entitlement->override_expiration->isPast()) {
-                $identity_entitlement->update(['override'=>false,'override_expiration'=>null,'override_description'=>null,'override_identity_id'=>null]);
+            if (!$identity_entitlement->override || ($identity_entitlement->expire === true && $identity_entitlement->expiration_date->isPast())) {
+                $identity_entitlement->update(['override'=>false,'exipration_date'=>null,'description'=>null,'override_identity_id'=>null]);
                 if (!$calculated_entitlement_ids->contains($identity_entitlement->entitlement_id)) {
                     $log = new Log([
                         'action'=>'delete',
@@ -272,7 +271,7 @@ class Identity extends Authenticatable
             if (is_null($entitlement)) {
                 $new_identity_entitlement = new IdentityEntitlement(['identity_id'=>$identity->id,'entitlement_id'=>$calculated_entitlement_id]);
                 $new_identity_entitlement->save();
-            } else if ((!$entitlement->override || $entitlement->override_expiration->isPast()) && $entitlement->type === 'remove') {
+            } else if ((!$entitlement->override || ($identity_entitlement->expire === true && $entitlement->expiration_date->isPast())) && $entitlement->type === 'remove') {
                 $log = new Log([
                     'action'=>'add',
                     'identity_id'=>$entitlement->identity_id,
@@ -282,7 +281,7 @@ class Identity extends Authenticatable
                 ]);
                 $log->save();
 
-                $entitlement->update(['type'=>'add','override'=>false,'override_expiration'=>null,'override_description'=>null,'override_identity_id'=>null]);
+                $entitlement->update(['type'=>'add','override'=>false,'expiration_date'=>null,'description'=>null,'override_identity_id'=>null]);
             }
         }
         $this->sync_accounts();

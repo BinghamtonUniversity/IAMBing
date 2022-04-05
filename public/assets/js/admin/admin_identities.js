@@ -183,7 +183,10 @@ identity_entitlements_template = `
         {{#pivot.type === 'add'}}
             <div class="label label-success">
                 {{name}}
-                <div class="tinytext">(Manually Added Until: {{pivot.override_expiration}})</div>
+                <div class="tinytext">
+                    {{#pivot.expire}}(Manually Added Until: {{pivot.expiration_date}}){{/}}
+                    {{^pivot.expire}}(Manually Added: No Expiration){{/}}
+                </div>
             </div>
         {{/}}
     {{/}}

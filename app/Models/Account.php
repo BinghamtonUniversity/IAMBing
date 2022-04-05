@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Libraries\HTTPHelper;
+use App\Libraries\EndpointHelper;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
@@ -69,8 +69,7 @@ class Account extends Model
                 $endpoint = Endpoint::where('id',$action_definition->endpoint)->first();
                 $myidentity['account'] = $this->only('account_id','status');
                 $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
-                
-                $response = http_request_maker($endpoint,$action_definition,$myidentity,$url);
+                $response = EndpointHelper::http_request_maker($endpoint,$action_definition,$myidentity,$url);
                 if ($response['code'] == $action_definition->response_code) {
                     return $response['content'];
                 } else {

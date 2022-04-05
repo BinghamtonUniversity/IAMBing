@@ -179,7 +179,7 @@ class IdentityController extends Controller
     }
 
     public function get_entitlements(Identity $identity) {
-        $identity_entitlements = IdentityEntitlement::where('identity_id',$identity->id)->with('override_identity');
+        $identity_entitlements = IdentityEntitlement::where('identity_id',$identity->id)->with('override_identity')->with('sponsor');
         return $identity_entitlements->get();
     }
 
@@ -192,7 +192,7 @@ class IdentityController extends Controller
         $identity_entitlement->identity_id = $identity->id;
         $identity_entitlement->save();
         $identity->recalculate_entitlements();
-        return IdentityEntitlement::where('id',$identity_entitlement->id)->first();
+        return IdentityEntitlement::where('id',$identity_entitlement->id)->with('override_identity')->with('sponsor')->first();
     }
 
     public function update_entitlement(Identity $identity, IdentityEntitlement $identity_entitlement, Request $request) {
@@ -226,7 +226,7 @@ class IdentityController extends Controller
         $identity_entitlement->identity_id = $identity->id;
         $identity_entitlement->save();
         $identity->recalculate_entitlements();
-        return IdentityEntitlement::where('id',$identity_entitlement->id)->with('override_identity')->first();
+        return IdentityEntitlement::where('id',$identity_entitlement->id)->with('override_identity')->with('sponsor')->first();
     }
 
 }
