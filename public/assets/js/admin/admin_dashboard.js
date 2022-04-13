@@ -18,7 +18,7 @@ dashboard_template = `
             <div class="panel-body">
                 <ul>
                     {{#systems}}
-                        <li>{{pivot.username}} ({{name}})</li>
+                        <li>{{pivot.account_id}} ({{name}})</li>
                     {{/systems}}
                 </ul>
                 {{^systems}}
@@ -39,17 +39,19 @@ dashboard_template = `
                                 <tr>
                                     <th scope='col' class='text-center'>Name</th>
                                     <th scope='col' class='text-center'>Sponsor</th>
+                                    <th scope='col' class='text-center'>Sponsor Email</th>
                                     <th scope='col' class='text-center'>Expiration Date</th>
                                 </tr>
                             </thead>
                             <tbody class='text-center'>
-                                {{#identity_entitlements}}
+                                {{#identity_entitlements_with_sponsors}}
                                     <tr scope='row'>
-                                        <td>{{name}}</td>
-                                        <td>{{pivot.sponsor_id}}</td>
-                                        <td>{{pivot.expiration_date}}</td>
+                                        <td>{{description}}</td>
+                                        <td>{{sponsor.first_name}} {{sponsor.last_name}}</td>
+                                        <td>{{sponsor.default_email}}</td>
+                                        <td>{{expiration_date}}</td>
                                     </tr>
-                                {{/identity_entitlements}}
+                                {{/identity_entitlements_with_sponsors}}
                             </tbody>
                         </table>
                     </div>
@@ -100,10 +102,10 @@ dashboard_template = `
     </div>
 </div>
 `;
-
-ajax.get('/api/identities/'+id,function(data) {
-    window.dashboard_data = data;
-    $('#adminDataGrid').html(gform.m(dashboard_template,window.dashboard_data));
+var dashboard_data = {}
+ajax.get('/api/identities/'+id+"/dashboard",function(data) {
+    dashboard_data = data;
+    $('#adminDataGrid').html(gform.m(dashboard_template,dashboard_data));
 });
 
 function renewFunc(e){
@@ -112,15 +114,14 @@ function renewFunc(e){
         toastr.error("Please select a user to renew!");
     }else{
         ajax.post("/api/entitlements/renew",{entitlements:renew_ids},function(resp){
-            window.dashboard_data.sponsored_entitlements = window.dashboard_data.sponsored_entitlements.map(c => {
+            dashboard_data.sponsored_entitlements = dashboard_data.sponsored_entitlements.map(c => {
                 temp = resp.find(d => d.id ==c.id);
                 if (temp){
                     return temp;
                 }
                 return c;
             });
-            // debugger;
-            $('#adminDataGrid').html(gform.m(dashboard_template,window.dashboard_data));
+            $('#adminDataGrid').html(gform.m(dashboard_template,dashboard_data));
             toastr.success("Renewal Successfull!");
         });
         
