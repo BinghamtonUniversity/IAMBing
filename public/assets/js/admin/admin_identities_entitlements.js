@@ -16,10 +16,14 @@ ajax.get('/api/identities/'+id+'/entitlements',function(data) {
         {type:"switch", label: "Expire?",name: "expire",value:false,options:[{value:false,label:'No Expiration'},{value:true,label:'Set Expiration Date'}],show:[{type:'matches',name:'override',value:true}]},
         {name:"expiration_date",required:true, "label":"Expiration Date",type:"date", show:[{type:'matches',name:'override',value:true},{type:'matches',name:'expire',value:true}],format:{input: "YYYY-MM-DD"},help:'This manual override will be enforced until the date specified, at which point it will be updated or deleted by this user\'s calculated entitlements'},
         {name:"description", required:true, "label":"Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:512},
-        {type:"user", name:"sponsor_id", label:"Sponsor", show:true, parse:true,show:[{type:'matches',name:'override',value:true},{type:'matches',name:'type',value:'add'}],template:"{{attributes.sponsor.first_name}} {{attributes.sponsor.last_name}}",required:'show'},    
+        {type:"identity", name:"sponsor_id", label:"Sponsor", show:true, parse:true,
+                        show:[{type:'matches',name:'override',value:true},
+                                {type:'matches',name:'type',value:'add'}],
+                        template:"{{attributes.sponsor.first_name}} {{attributes.sponsor.last_name}}",
+                        required:'show'},
         {type:"switch", label: "Renew?",name: "sponsor_renew_allow",value:false,options:[{value:false,label:'No Renew'},{value:true,label:'Allow Renew'},{type:'matches',name:'type',value:'add'}],show:[{type:'matches',name:'override',value:true},{type:'matches',name:'expire',value:true}]},
         {type:"text", name:"sponsor_renew_days", label:"Renewal Days", show:true, parse:true,show:[{type:'matches',name:'sponsor_renew_allow',value:true},{type:'matches',name:'override',value:true},{type:'matches',name:'type',value:'add'},{type:'matches',name:'expire',value:true}],required:'show'},    
-        {type:"user", name:"override_identity_id", label:"Updated By", show:true, parse:true,show:[{type:'matches',name:'override',value:true}],template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}",show:false},    
+        {type:"identity", name:"override_identity_id", label:"Updated By", show:true, parse:true,show:[{type:'matches',name:'override',value:true}],template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}",show:false},    
     ], data: data
     }).on("add",function(grid_event) {
         new gform({
@@ -32,10 +36,17 @@ ajax.get('/api/identities/'+id+'/entitlements',function(data) {
                 {type:"switch", label: "Expire?",name: "expire",value:false,options:[{value:false,label:'No Expiration'},{value:true,label:'Set Expiration Date'}],show:[{type:'matches',name:'override',value:true}]},
                 {name:"expiration_date",required:true, "label":"Expiration Date",type:"date", show:[{type:'matches',name:'override',value:true},{type:'matches',name:'expire',value:true}],format:{input: "YYYY-MM-DD"},help:'This manual override will be enforced until the date specified, at which point it will be updated or deleted by this user\'s calculated entitlements'},
                 {name:"description", required:true, "label":"Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:512},
-                {type:"user", name:"sponsor_id", label:"Sponsor", show:true, parse:true,show:[{type:'matches',name:'override',value:true},{type:'matches',name:'type',value:'add'}],template:"{{attributes.sponsor.first_name}} {{attributes.sponsor.last_name}}",required:'show'},    
+                {type:"identity", name:"sponsor_id", 
+                    label:"Sponsor", 
+                    show:true, 
+                    parse:true,
+                    show:[{type:'matches',name:'override',value:true},
+                            {type:'matches',name:'type',value:'add'}],
+                            template:"{{attributes.sponsor.first_name}} {{attributes.sponsor.last_name}}",
+                            required:'show'},
                 {type:"switch", label: "Renew?",name: "sponsor_renew_allow",value:false,options:[{value:false,label:'No Renew'},{value:true,label:'Allow Renew'}],show:[{type:'matches',name:'override',value:true},{type:'matches',name:'type',value:'add'},{type:'matches',name:'expire',value:true}]},
                 {type:"text", name:"sponsor_renew_days", label:"Renewal Days", show:true, parse:true,show:[{type:'matches',name:'sponsor_renew_allow',value:true},{type:'matches',name:'override',value:true},{type:'matches',name:'type',value:'add'},{type:'matches',name:'expire',value:true}],required:'show'},    
-                {type:"user", name:"override_identity_id", label:"Updated By", show:true, parse:true,show:[{type:'matches',name:'override',value:true}],template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}",show:false},    
+                {type:"identity", name:"override_identity_id", label:"Updated By", show:true, parse:true,show:[{type:'matches',name:'override',value:true}],template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}",show:false},    
             ]
         }).on('save',function(form_event){
             toastr.info('Processing... Please Wait')

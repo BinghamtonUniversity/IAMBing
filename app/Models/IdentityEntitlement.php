@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use DateTimeInterface;
 
 class IdentityEntitlement extends Model
 {
@@ -24,6 +25,11 @@ class IdentityEntitlement extends Model
 
     public function entitlement(){
         return $this->belongsTo(Entitlement::class);
+    }
+    
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s a');
     }
 
 }

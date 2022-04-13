@@ -84,7 +84,7 @@ gform.types['identity']= _.extend({}, gform.types['smallcombo'], {
         if(typeof this.combo !== 'undefined'){
           return '<dt>'+this.label+'</dt> <dd>'+(this.combo.value||'(empty)')+'</dd><hr>'
         }else{
-            console.log(this.get());
+            // console.log(this.get());
           return '<dt>'+this.label+'</dt> <dd>'+(this.get()||'(empty)')+'</dd><hr>'
         }
       }else{

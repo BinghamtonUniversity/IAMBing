@@ -32,6 +32,7 @@ class IdentityController extends Controller
         $identity->calculated_entitlements = Entitlement::whereIn('id',$calculated_entitlement_ids)->get();
         $identity->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values();
         $identity->primary_affiliation = isset($identity->affiliations[0])?$identity->affiliations[0]:null;
+        $identity->sponsored_entitlements = IdentityEntitlement::where('sponsor_id',$identity->id)->with('identity')->get();
         return $identity;
     }
 
@@ -196,7 +197,6 @@ class IdentityController extends Controller
     }
 
     public function update_entitlement(Identity $identity, IdentityEntitlement $identity_entitlement, Request $request) {
-        // dd($request);
         if ($request->type === 'add' && is_null(Entitlement::where('id',$request->entitlement_id)->where('override_add',true)->first())) {
             return response(json_encode(['error'=>'You cannot "add" override entitlements of this type!']),403)->header('Content-Type', 'application/json');
         }
@@ -227,6 +227,15 @@ class IdentityController extends Controller
         $identity_entitlement->save();
         $identity->recalculate_entitlements();
         return IdentityEntitlement::where('id',$identity_entitlement->id)->with('override_identity')->with('sponsor')->first();
+    }
+
+    public function renew_entitlements(Request $request){
+        $identity_entitlements = IdentityEntitlement::whereIn('id',$request->entitlements)->with('identity')->get();
+        foreach($identity_entitlements as $ent){
+            $ent->expiration_date = $ent->expiration_date->addDays($ent->sponsor_renew_days);
+            $ent->update();
+        }
+        return $identity_entitlements;
     }
 
 }

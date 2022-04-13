@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Permission;
 use App\Models\Identity;
+use App\Models\IdentityEntitlement;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class IdentityPolicy
@@ -81,6 +82,15 @@ class IdentityPolicy
     }
     public function override_identity_entitlements(Identity $identity){
         return Permission::where('identity_id',$identity->id)->where('permission','override_identity_entitlements')->first();
+    }
+    public function renew_identity_entitlements(Identity $identity){
+        $permissions = Permission::where('identity_id',$identity->id)->where('permission','override_identity_entitlements')->first();
+        $identity_ents = IdentityEntitlement::where("sponsor_id",$identity->id)->first();
+        // dd($identity_sponsored_entitlements);
+        if(!is_null($permissions) || $identity_ents){
+            return true;    
+        }
+        return false;
     }
     public function impersonate_identities(Identity $identity){
         return Permission::where('identity_id',$identity->id)->where('permission','impersonate_identities')->first();
