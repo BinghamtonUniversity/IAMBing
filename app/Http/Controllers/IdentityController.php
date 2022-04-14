@@ -32,14 +32,8 @@ class IdentityController extends Controller
         $identity->calculated_entitlements = Entitlement::whereIn('id',$calculated_entitlement_ids)->get();
         $identity->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values();
         $identity->primary_affiliation = isset($identity->affiliations[0])?$identity->affiliations[0]:null;
-        $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->get();
-        $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->with('sponsor')->get();
-        return $identity;
-    }
-    public function get_dashboard_identity(Request $request, Identity $identity){
-        $identity = Identity::where('id',$identity->id)->with('groups')->with('systems')->first();
-        $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->get();
-        $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->with('sponsor')->get();
+        $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->with('entitlement')->get();
+        $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->whereNotNull('sponsor_id')->with('sponsor')->with('entitlement')->get();
         return $identity;
     }
 
@@ -237,10 +231,11 @@ class IdentityController extends Controller
     }
 
     public function renew_entitlements(Request $request){
-        $identity_entitlements = IdentityEntitlement::whereIn('id',$request->entitlements)->with('identity')->get();
+        $identity_entitlements = IdentityEntitlement::whereIn('id',$request->entitlements)->with('identity')->with('entitlement')->get();
         foreach($identity_entitlements as $ent){
-            if($ent->sponsor_renew_allow){
+            if($ent->sponsor_renew_allow && $ent->sponsor_id == Auth::user()->id){
                 $ent->expiration_date = $ent->expiration_date->addDays($ent->sponsor_renew_days);
+                $ent->override_identity_id = Auth::user()->id;
                 $ent->update();
             }
             

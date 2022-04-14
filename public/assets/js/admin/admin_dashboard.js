@@ -13,6 +13,8 @@ dashboard_template = `
                 {{/groups}}
             </div>
         </div>
+    </div>
+    <div class='col-sm-6'>
         <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">My Accounts</h3></div>
             <div class="panel-body">
@@ -27,11 +29,28 @@ dashboard_template = `
             </div>
         </div>
     </div>
+    <div class='col-sm-6'>
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">My Non-Sponsored Entitlements</h3></div>
+            <div class="panel-body">
+                <ul>
+                    <div class='row'>
+                        {{#identity_entitlements}}
+                            {{^pivot.sponsor_id}}<div class='col-sm-6'><li>{{name}}</li></div>{{/pivot.sponsor_id}}
+                        {{/identity_entitlements}}
+                    </div>
+                </ul>
+                {{^identity_entitlements}}
+                    <div class="alert alert-warning">No Accounts</div>
+                {{/identity_entitlements}}
+            </div>
+        </div>
+    </div>
     <div class="col-sm-12">
         <div class='row'>
         <div class='col-sm-6'>
             <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title">My Entitlements</h3></div>
+                <div class="panel-heading"><h3 class="panel-title">My Entitlements with Sponsors</h3></div>
                 <div class="panel-body">
                     <div class='table table-responsive'>
                         <table class='table table-bordered'>
@@ -46,7 +65,7 @@ dashboard_template = `
                             <tbody class='text-center'>
                                 {{#identity_entitlements_with_sponsors}}
                                     <tr scope='row'>
-                                        <td>{{description}}</td>
+                                        <td>{{entitlement.name}}</td>
                                         <td>{{sponsor.first_name}} {{sponsor.last_name}}</td>
                                         <td>{{sponsor.default_email}}</td>
                                         <td>{{expiration_date}}</td>
@@ -55,7 +74,6 @@ dashboard_template = `
                             </tbody>
                         </table>
                     </div>
-                    
                     {{^identity_entitlements}}
                         <div class="alert alert-warning">No Entitlements</div>
                     {{/identity_entitlements}}
@@ -71,10 +89,10 @@ dashboard_template = `
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th scope='col' class='text-center'>Description</th>
-                                    <th scope='col' class='text-center'>Identity Name</th>
-                                    <th scope='col' class='text-center'>Identity Default Email</th>
-                                    <th scope='col' class='text-center'>Allowed Renewal Days</th>
+                                    <th scope='col' class='text-center'>Entitlement</th>
+                                    <th scope='col' class='text-center'>Name</th>
+                                    <th scope='col' class='text-center'>Email</th>
+                                    <th scope='col' class='text-center'>Renewal Days</th>
                                     <th scope='col' class='text-center'>Expiration Date</th>
                                     <th scope='col' class='text-center'>Renewal Allowed</th>
                                 </tr>
@@ -82,13 +100,15 @@ dashboard_template = `
                             <tbody class='text-center'>
                                 {{#sponsored_entitlements}}
                                     <tr scope='row'>
-                                        <td><input type="checkbox" class="form-check-input" name="ent_id" data-id="{{id}}"></td>
-                                        <td>{{description}}</td>
+                                        <td>{{#sponsor_renew_allow}}
+                                        <input type="checkbox" class="form-check-input" name="ent_id" data-id="{{id}}">
+                                        {{/sponsor_renew_allow}}</td>
+                                        <td>{{entitlement.name}}</td>
                                         <td>{{identity.first_name}} {{identity.last_name}}</td>
                                         <td>{{identity.default_email}}</td>
                                         <td>{{sponsor_renew_days}}</td>
                                         <td>{{expiration_date}}</td>
-                                        <td>{{sponsor_renew_allow}}</td>
+                                        <td>{{#sponsor_renew_allow}}Allowed{{/sponsor_renew_allow}}{{^sponsor_renew_allow}}Not Allowed{{/sponsor_renew_allow}}</td>
                                     </tr>
                                 {{/sponsored_entitlements}}
                             </tbody>
@@ -103,7 +123,7 @@ dashboard_template = `
 </div>
 `;
 var dashboard_data = {}
-ajax.get('/api/identities/'+id+"/dashboard",function(data) {
+ajax.get('/api/identities/'+id,function(data) {
     dashboard_data = data;
     $('#adminDataGrid').html(gform.m(dashboard_template,dashboard_data));
 });
