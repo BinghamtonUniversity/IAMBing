@@ -21,7 +21,7 @@ class SponsoredIdentityEntitlementExpirationReminder extends Mailable
     public function __construct($identityEntitlements)
     {
         $user_message['reminder']="
-        You have the following identity entitlements due in less than a week:
+        You have the following identity sponsored entitlements expiring soon:
         <ul>
             {{#identity_entitlements}}
               <li>

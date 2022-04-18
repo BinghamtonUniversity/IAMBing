@@ -50,7 +50,7 @@ dashboard_template = `
         <div class='row'>
         <div class='col-sm-6'>
             <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title">My Entitlements with Sponsors</h3></div>
+                <div class="panel-heading"><h3 class="panel-title">My Sponsored Entitlements</h3></div>
                 <div class="panel-body">
                     <div class='table table-responsive'>
                         <table class='table table-bordered'>

@@ -238,7 +238,7 @@ class IdentityController extends Controller
         $identity_entitlements = IdentityEntitlement::whereIn('id',$request->entitlements)->with('identity')->with('entitlement')->get();
         foreach($identity_entitlements as $ent){
             if($ent->sponsor_renew_allow && $ent->sponsor_id == Auth::user()->id){
-                $ent->expiration_date = $ent->expiration_date->addDays($ent->sponsor_renew_days);
+                $ent->expiration_date = Carbon::now()->addDays($ent->sponsor_renew_days)->format('Y-m-d');
                 $ent->override_identity_id = Auth::user()->id;
                 $ent->update();
             }
