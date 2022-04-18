@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SponsoredIdentityEntitlementExpirationReminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -18,6 +19,7 @@ use App\Models\IdentityEntitlement;
 use App\Models\IdentityAttribute;
 use App\Models\IdentityUniqueID;
 use App\Models\Log;
+use Illuminate\Support\Facades\Mail;
 
 class IdentityController extends Controller
 {
@@ -26,6 +28,7 @@ class IdentityController extends Controller
     }
 
     public function get_identity(Request $request, Identity $identity) {
+        
         $identity = Identity::where('id',$identity->id)->with('groups')->with('accounts')->with('systems')->with('identity_entitlements')->with('sponsored_identities')->first();
         $group_ids = GroupMember::select('group_id')->where('identity_id',$identity->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
@@ -35,6 +38,7 @@ class IdentityController extends Controller
         $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->with('entitlement')->get();
         $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->whereNotNull('sponsor_id')->with('sponsor')->with('entitlement')->get();
         return $identity;
+
     }
 
     public function add_identity(Request $request) {

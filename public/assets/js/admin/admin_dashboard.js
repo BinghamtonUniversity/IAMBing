@@ -82,7 +82,7 @@ dashboard_template = `
         </div>
         <div class='col-sm-6'>
             <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title">Sponsored Entitlements</h3></div>
+                <div class="panel-heading"><h3 class="panel-title">Identity Entitlements Sponsored by Me</h3></div>
                 <div class="panel-body">
                     <div class='table table-responsive'>
                         <table class='table table-bordered'>
