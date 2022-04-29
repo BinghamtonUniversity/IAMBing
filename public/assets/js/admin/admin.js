@@ -77,6 +77,7 @@ window.ajax.delete = function(url,data,callback_success,callback_error) {
     });
 }
 
+gform.prototype.options.autoFocus = false;
 gform.types['identity']= _.extend({}, gform.types['combobox'], {
 
     toString: function(name,display){
