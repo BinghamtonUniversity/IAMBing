@@ -77,7 +77,7 @@ window.ajax.delete = function(url,data,callback_success,callback_error) {
     });
 }
 
-gform.types['identity']= _.extend({}, gform.types['smallcombo'], {
+gform.types['identity']= _.extend({}, gform.types['combobox'], {
 
     toString: function(name,display){
       if(!display){
