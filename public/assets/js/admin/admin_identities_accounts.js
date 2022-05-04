@@ -13,7 +13,7 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
     schema:[
         {type:"hidden", name:"id"},
         {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{label:"{{name}}", value:"{{id}}"}},
-        {type:"text", name:"account_id", label:"Account ID", show:[{type:'matches',name:'use_default_account_id',value:false}], required:'show',help:'This is the unique identifier which will be used for this account.  It may be a username or some other unique id.'},    
+        {type:"text", name:"account_id", label:"Account ID", show:false},
         {
             "type": "select",
             "label": "Status",
@@ -41,7 +41,11 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
             "fields": [
                 {type:"hidden", name:"id"},
                 {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{label:"{{name}}", value:"{{id}}"}},
-                {type:"text", name:"account_id", label:"Account ID", show:[{type:'matches',name:'use_default_account_id',value:false}], required:'show',help:'This is the unique identifier which will be used for this account.  It may be a username or some other unique id.'},    
+                {type:"switch", label: "Use custom account ID",name: "use_default_account_id",value:false,options:[
+                    {value:false,label:'Use Defaults (No Manual Override)'},
+                        {value:true,label:'Manual Override'}]},
+                {type:"text", name:"account_id", label:"Account ID", show:[
+                    {type:'matches',name:'use_default_account_id',value:false}], required:'show',help:'This is the unique identifier which will be used for this account.  It may be a username or some other unique id.'},    
                 {
                     "type": "select",
                     "label": "Status",
@@ -59,7 +63,8 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
                 },
                 {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this identity\'s calculated entitlements!'},
                 {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},
-                {type:"text", name:"override_identity_id", label:"Override Identity", show:false, parse:false,template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}"},    
+                {type:"text", name:"override_identity_id", label:"Override Identity", show:false, parse:false,template:"{{attributes.override_identity.first_name}} {{attributes.override_identity.last_name}}"},
+
             ]
         }).on('save',function(form_event){
             toastr.info('Processing... Please Wait')

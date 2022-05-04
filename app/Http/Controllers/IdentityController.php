@@ -246,5 +246,71 @@ class IdentityController extends Controller
         }
         return $identity_entitlements;
     }
+    public function merge_identity(Request $request, Identity $source_identity, Identity $target_identity){
+        $source_entitlements = IdentityEntitlement::where('identity_id',$source_identity->id)->get();
+        $source_group_memberships = GroupMember::where('identity_id',$source_identity->id)->get();
+        $source_accounts = Account::where('identity_id',$source_identity->id)->get();
+        $source_sponsored_identities = Identity::where('sponsor_identity_id',$source_identity->id)->get();
+        $source_permissions = Permission::where('identity_id',$source_identity->id)->get();
+
+        $target_entitlements = IdentityEntitlement::where('identity_id',$target_identity->id)->get();
+        $target_group_memberships = GroupMember::where('identity_id',$target_identity->id)->get();
+        $target_accounts = Account::where('identity_id',$target_identity->id)->get();
+        $target_permissions = Permission::where('identity_id',$target_identity->id)->get();
+
+        foreach ($source_entitlements as $ent){
+            if ($target_entitlements->where('entitlement_id',$ent->entitlement_id)->where('identity_id',$target_identity->id)->first()){
+                $ent->delete();
+            }
+
+            if (!$target_entitlements->where('entitlement_id',$ent->entitlement_id)->where('identity_id',$target_identity->id)->first()){
+                $ent->identity_id = $target_identity->id;
+                $ent->override_identity_id = isset(Auth::user()->id)? Auth::user()->id: null;
+                $ent->save();
+            }
+        }
+
+        foreach($source_group_memberships as $membership){
+            if ($target_group_memberships->where('group_id',$membership->group_id)->where('identity_id',$target_identity->id)->first()){
+                $membership->delete();
+            }
+            if (!$target_group_memberships->where('group_id',$membership->group_id)->where('identity_id',$target_identity->id)->first()){
+                $membership->identity_id = $target_identity->id;
+                $membership->save();
+            }
+        }
+        foreach($source_accounts as $account){
+            if ($target_accounts->where('account_id',$account->account_id)->where('identity_id',$target_identity->id)->first()){
+                $account->delete();
+            }
+            if (!$target_accounts->where('account_id',$account->account_id)->where('identity_id',$target_identity->id)->first()){
+                $account->identity_id = $target_identity->id;
+                $account->save();
+            }
+        }
+        foreach ($source_sponsored_identities as $identity){
+            $identity->sponsor_identity_id = $target_identity->id;
+            $identity->save();
+        }
+
+        foreach ($source_permissions as $permission){
+            if ($target_permissions->where('permission',$permission->permission)->where('identity_id',$target_identity->id)->first()){
+                $permission->delete();
+            }
+            if (!$target_permissions->where('permission',$permission->permission)->where('identity_id',$target_identity->id)->first()){
+                $permission->identity_id = $target_identity->id;
+                $permission->save();
+            }
+        }
+
+        $source_identity->recalculate_entitlements();
+        $target_identity->recalculate_entitlements();
+
+        if($request->delete){
+            $source_identity->delete();
+        }
+
+        return $target_identity;
+    }
 
 }

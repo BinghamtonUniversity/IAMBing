@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('type_id')->index();
             $table->string('data',255)->nullable()->index();
             // $table->foreign('actor_identity_id')->references('id')->on('identities');
-            $table->foreign('identity_id')->references('id')->on('identities');
+//            $table->foreign('identity_id')->references('id')->on('identities');
             $table->timestamps();
         });
     }

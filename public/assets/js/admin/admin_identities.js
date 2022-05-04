@@ -301,26 +301,30 @@ var manage_identity = function(identity_id) {
                 }
             }).on('merge_identity',function(form_event) {
                 form_data = form_event.form.get();
-                source_identity = form_data.id;
+
+                target_identity = form_data.id;
                 new gform(
                     {"fields":[{
                         "type": "identity",
-                        "label": "Target Identity",
-                        "name": "target_identity",
+                        "label": "Source Identity",
+                        "name": "source_identity",
                         "required":true,
                     },{type:"checkbox", name:"delete", label:"Delete Source Identity", value:false,help:"By checking this box, the `source` identity will be irretrievably deleted from IAMBing."},
                     {type:"output",parse:false,value:'<div class="alert alert-danger">This action will migrate/transfer all assignments from the source identity to the specified target identity.  This is a permanent and "undoable" action.</div>'}],
-                    "title":"Merge Into",
+                    "title":"Merge Identity",
                     "actions":[
                         {"type":"cancel"},
                         {"type":"button","label":"Commit Merge","action":"save","modifiers":"btn btn-danger"},
                     ]}
                 ).modal().on('save',function(merge_form_event) {
                     var merge_form_data = merge_form_event.form.get();
-                    if(form_event.form.validate() && merge_form_data.target_identity !== '')
+
+                    if(form_event.form.validate() && merge_form_data.source_identity !== '')
                     {
                         if (confirm("Are you sure you want to merge these identities?  This action cannot be undone!")) {
-                            ajax.put('/api/identities/'+source_identity+'/merge_into/'+merge_form_data.target_identity, {delete:merge_form_data.delete}, function (data) {
+                            ajax.put('/api/identities/'+merge_form_data.source_identity+'/merge_into/'+target_identity,
+                                { delete:merge_form_data.delete},
+                                function (data) {
                                 merge_form_event.form.trigger('close');
                                 if (_.has(data,'errors')) {
                                     toastr.error('One or more errors occurred.')

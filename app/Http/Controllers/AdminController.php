@@ -49,7 +49,7 @@ class AdminController extends Controller
             $user_actions[] = ["type"=>"button","label"=>"Recalculate","action"=>"recalculate","modifiers"=>"btn btn-warning"];
         }
         if ($identity->can('merge_identities','App\Identity')){
-            $user_actions[] = ["type"=>"button","label"=>"Merge Into","action"=>"merge_identity","modifiers"=>"btn btn-danger"];
+            $user_actions[] = ["type"=>"button","label"=>"Merge","action"=>"merge_identity","modifiers"=>"btn btn-danger"];
         }
         if ($identity->can('impersonate_identities','App\Identity')){
             $user_actions[] = ["type"=>"button","label"=>"Impersonate Identity","action"=>"login","modifiers"=>"btn btn-warning"];

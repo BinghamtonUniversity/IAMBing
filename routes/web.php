@@ -58,7 +58,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/identities/{identity}/permissions',[IdentityController::class,'set_permissions'])->middleware('can:manage_identity_permissions,App\Models\Identity');
         Route::get('/identities/{identity}/permissions',[IdentityController::class,'get_permissions'])->middleware('can:manage_identity_permissions,App\Models\Identity');
         //Merge Identity
-        Route::put('/identities/{source_identity}/merge_into/{target_identity}','IdentityController@merge_identity')->middleware('can:merge_identities,App\Models\Identity');
+        Route::put('/identities/{source_identity}/merge_into/{target_identity}',[IdentityController::class,'merge_identity'])->middleware('can:merge_identities,App\Models\Identity');
         //Impersonate
         Route::post('/login/{identity}',[IdentityController::class,'login_identity'])->middleware('can:impersonate_identities,App\Models\Identity');
 
