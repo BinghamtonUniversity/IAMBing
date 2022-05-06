@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Jobs\DeleteExpiredEntitlements;
 use App\Mail\SponsoredIdentityEntitlementExpirationReminder;
 use App\Models\IdentityEntitlement;
 use Carbon\Carbon;
@@ -50,8 +51,20 @@ class Kernel extends ConsoleKernel
                 }
             }
         })->name('sponsored_identity_expiration_reminder')->dailyAt(config('app.sponsored_identity_ent_exp_reminder'))->timezone('America/New_York')
-        ->onOneServer()
-        ;
+        ->onOneServer();
+
+        $schedule->call(function(){
+            $identity_entitlements = IdentityEntitlement::where('type','add')->where('expiration_date',"<",Carbon::now())->get();
+    
+            //Checks all of the assignment due dates to send emails to users
+            foreach($identity_entitlements as $ent){
+                DeleteExpiredEntitlements::dispatch([
+                    'identity_entitlement_id' => $ent->id,
+                    'identity_id' => $ent->entitlement_id
+                ]);
+            }
+        })->name('delete_expired_identity_entitlements')->dailyAt(config('app.delete_expired_identity_entitlements'))->timezone('America/New_York')
+        ->onOneServer();
     }
 
     /**

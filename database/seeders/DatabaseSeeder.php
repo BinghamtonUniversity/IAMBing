@@ -170,7 +170,31 @@ class DatabaseSeeder extends Seeder
         $system2 = new System(['name'=>'Google Workspace',
                               'default_account_id_template'=>'{{default_username}}@binghamton.edu',
                               'onremove' => 'delete',
-                              'config'=>[]
+                              'config'=>[
+                                  'actions'=>[
+                                      [
+                                          'path' => '/google/user/{{account.account_id}}@binghamton.edu',
+                                          'verb' => 'GET',
+                                          'action' => 'info',
+                                          'endpoint' => '1',
+                                          'response_code' => 200,
+                                      ],
+                                      [
+                                          'path' => '/google/user/{{account.account_id}}@binghamton.edu',
+                                          'verb' => 'PUT',
+                                          'action' => 'update',
+                                          'endpoint' => '1',
+                                          'response_code' => 200,
+                                      ],
+                                      [
+                                          'path' => '/google/user/{{account.account_id}}@binghamton.edu',
+                                          'verb' => 'PUT',
+                                          'action' => 'create',
+                                          'endpoint' => '1',
+                                          'response_code' => 200,
+                                      ],
+                                  ]
+                              ]
                             ]);
         $system2->save();
         $system3 = new System(['name'=>'Banner',
@@ -178,13 +202,27 @@ class DatabaseSeeder extends Seeder
           'onremove' => 'delete',
           'config'=>[
             'actions'=>[
-              [
-                'path' => '',
+                [
+                'path' => '/banner/goremal/{{default_username}}',
                 'verb' => 'GET',
                 'action' => 'info',
                 'endpoint' => '1',
                 'response_code' => 200,
-              ]
+                ],
+                [
+                    'path' => '/banner/goremal',
+                    'verb' => 'POST',
+                    'action' => 'create',
+                    'endpoint' => '1',
+                    'response_code' => 200,
+                ],
+                [
+                    'path' => '/banner/goremal',
+                    'verb' => 'PUT',
+                    'action' => 'update',
+                    'endpoint' => '1',
+                    'response_code' => 200,
+                ]
             ]
           ]
         ]);
