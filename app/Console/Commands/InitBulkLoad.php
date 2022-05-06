@@ -10,137 +10,189 @@ use App\Models\Account;
 use App\Models\IdentityUniqueID;
 use App\Models\GroupMember;
 use App\Models\Group;
+use App\Models\IdentityEntitlement;
+use App\Models\Entitlement;
 
 class InitBulkLoad extends Command
 {
     protected $name = 'initbulkload';
     protected $description = 'Load the Initial Bulk Load File from Accounts Management / AD';
 
-    private function default_username($current_default, $new_username) {
-        if (!is_null($current_default)) {
-            // Establish Default username
-            if (is_numeric(substr($current_default, -1, 1)) && !is_numeric(substr($new_username, -1, 1))) {
-                $current_default = $new_username;
-            } else if (is_numeric(substr($current_default, -1, 1)) && is_numeric(substr($new_username, -1, 1))) {
-                if (substr($new_username, -1, 1) < substr($current_default, -1, 1)) {
-                    $current_default = $new_username;
+    private function get_default_username($source_identity) {
+        $usernames = [
+            'matches' => ['numeric'=>[],'non_numeric'=>[]],
+            'not_matches' => ['numeric'=>[],'non_numeric'=>[]]
+        ];
+        $derived_username_substr = 
+            strtolower(
+                (isset($source_identity['first_name'][0])?$source_identity['first_name'][0]:'').
+                (isset($source_identity['last_name'][0])?$source_identity['last_name'][0]:'').
+                (isset($source_identity['last_name'][1])?$source_identity['last_name'][1]:'')
+            );
+
+        foreach($source_identity['accounts'] as $username => $account) {
+            if ($account['am_primary'] === true) {
+                if (str_starts_with($username,$derived_username_substr)) { $matches_index = 'matches'; } 
+                else { $matches_index = 'not_matches'; }
+                if (is_numeric(substr($username, -1, 1))) {
+                    $usernames[$matches_index]['numeric'][] = $username;
+                } else {
+                    $usernames[$matches_index]['non_numeric'][] = $username;
                 }
+            /* Handle situations where a person only has one account */
+            } else if (count($source_identity['accounts']) == 1) {
+                $numeric_usernames[] = $username;
+                break;
             }
-        } else {
-            $current_default = $new_username;
         }
-        return $current_default;
+        sort($usernames['matches']['numeric']); sort($usernames['matches']['non_numeric']);
+        sort($usernames['not_matches']['numeric']); sort($usernames['not_matches']['non_numeric']);
+
+        if (count($usernames['matches']['non_numeric'])>0) {
+            $default_username = $usernames['matches']['non_numeric'][0];
+        } else if (count($usernames['not_matches']['non_numeric'])>0) {
+            $default_username = $usernames['not_matches']['non_numeric'][0];
+        } else if (count($usernames['matches']['numeric'])>0) {
+            $default_username = $usernames['matches']['numeric'][0];
+        } else if (count($usernames['not_matches']['numeric'])>0) {
+            $default_username = $usernames['not_matches']['numeric'][0];
+        } else {
+            $default_username = 'ERROR';
+        }
+        return $default_username;
     }
 
     public function handle() {
         ini_set('memory_limit','1024M');
-        if ($this->confirm('Are you sure you want to load this data?  This action can not be undone')) {
-            $filename = $this->ask('What is the filename/filepath for the default JSON Bulk Load?');
+        if (!$this->confirm('Are you sure you want to load this data?  This action can not be undone')) {
+            $this->error("Exiting");
+            return;
+        }
+        $filename = $this->ask('What is the filename/filepath for the default JSON Bulk Load?');
 
-            $this->info("Attempting to load the data...");
-            $data_raw = file_get_contents($filename);
-            $data = json_decode($data_raw,true);
+        $this->info("Attempting to load the data...");
+        $source_identities = json_decode(file_get_contents($filename),true);
 
-            $bu_sys = System::where('name','BU')->first();
-            $google_sys = System::where('name','Google Workspace')->first();
-            $bulk_loaded_identities_group = Group::where('name','Bulk Loaded Identities')->first();
+        $bu_sys = System::where('name','BU')->first();
+        $google_sys = System::where('name','Google Workspace')->first();
+        $all_groups = Group::select('id','slug')->get();
+        $alumni_email_group = Group::where('name','Alumni Email')->first();
+        $ad_entitlement_mappings = [
+            'Wireless-AdminNetAccess' => Entitlement::where('name','AdminNetAccess Wifi')->first(),
+            'VPN-AdminNetAccess' => Entitlement::where('name','AdminNetAccess VPN')->first(),
+            'VDI-Other' => Entitlement::where('name','Other Bingview')->first(),
+            'VPN-rdp' => Entitlement::where('name','RDP Access')->first(),
+            'Wireless-Deny' => Entitlement::where('name','Deny Wifi')->first(),
+        ]; 
 
-            // Create All PRIMARY Account Identities and Accounts
-            foreach($data['identities'] as $identity) {
-                $new_identity = new Identity([
-                    'first_name'=>$identity['firstName'],
-                    'last_name'=>$identity['lastName'],
-                    'ids' => ['bnumber'=>$identity['uniqueId']],
-                ]);
-                $new_identity->save();  
-                GroupMember::updateOrCreate(['group_id'=>$bulk_loaded_identities_group->id,'identity_id'=>$new_identity->id],[]);                            
-                $default_username = null;
-                $default_email = null;
-                foreach($identity['accounts'] as $account) {
-                    if ($account['affiliation'] === 'Primary Account' || $account['affiliation'] === 'Non-Active Account') {
-                        if ($account['system'] === 'PODS') {
-                            if ($account['affiliation'] === 'Primary Account') {
-                                $new_account = new Account([
-                                    'identity_id'=>$new_identity->id,
-                                    'system_id'=>$bu_sys->id,
-                                    'account_id'=>strtolower($account['username'])
-                                ]);
-                                $new_account->save();
-                            }
-                            $default_username = $this->default_username($default_username, $account['username']);
-                        } else if ($account['system'] === 'Google') {
-                            if ($account['affiliation'] === 'Primary Account') {
-                                $new_account = new Account([
-                                    'identity_id'=>$new_identity->id,
-                                    'system_id'=>$google_sys->id,
-                                    'account_id'=>strtolower($account['email'])
-                                ]);
-                                $new_account->save();
-                            }
-                            $default_email = $this->default_username($default_email,explode('@',$account['email'])[0]);
-                        }
-                    }
-                } 
-                $new_identity->default_username = strtolower($default_username);
-                $new_identity->default_email = strtolower($default_email).'@binghamton.edu';
-                $new_identity->save();     
+        // Create All PRIMARY Account Identities and Accounts
+        foreach($source_identities as $source_identity) {
+            // Decide if we want to continue with this person (they might be an orphan)
+            $skip_identity = true;
+            foreach($source_identity['accounts'] as $username => $account) {
+                if (count($source_identity['affiliations']) > 0 || $account['vanity_alumni'] == true) {
+                    $skip_identity = false;
+                    break;
+                }
+            }
+            if ($skip_identity == true) {
+                continue;
             }
             
-            $sponsored_bu_group = Group::where('name','Sponsored Accounts in BU')->first();
-            $sponsored_google_group = Group::where('name','Sponsored Accounts in Google')->first();
+            // Set Default metadata
+            $new_identity_ids = [];
+            if (!is_null($source_identity['bnumber'])) {
+                $new_identity_ids['bnumber'] = $source_identity['bnumber'];
+            }
+            if (!is_null($source_identity['millennium_id'])) {
+                $new_identity_ids['unique_ids']['millennium_id'] = $source_identity['millennium_id'];
+            }
+            if (!is_null($source_identity['suny_id'])) {
+                $new_identity_ids['unique_ids']['suny_id'] = $source_identity['suny_id'];
+            }
+            $default_username = $this->get_default_username($source_identity);
+            $new_identity = new Identity([
+                'first_name'=>$source_identity['first_name'],
+                'last_name'=>$source_identity['last_name'],
+                'ids' => $new_identity_ids,
+                'type' => 'person',
+                'sponsored' => false,
+                'default_username' => $default_username,
+                'default_email' => $default_username.'@binghamton.edu',
+            ]);
+            $new_identity->save();
 
-            // Create all SECONDARY/SPONSORED Account Identities and Accounts
-            foreach($data['identities'] as $identity) {
-                $sponsor_identity = IdentityUniqueId::where('name','bnumber')->where('value',$identity['uniqueId'])->first();
-                foreach($identity['accounts'] as $account) {
-                    if ($account['affiliation'] === 'Secondary Account') {
-                        if ($account['system'] === 'PODS') {
-                            $new_identity = Identity::where('default_email',strtolower($account['username']).'@binghamton.edu')->orWhere('default_username',strtolower($account['username']))->first();
-                            if (is_null($new_identity)) {
-                                $new_identity = new Identity([
-                                    'first_name' => strtolower($account['username']),
-                                    'sponsored' => true,
-                                    'sponsor_identity_id' => $sponsor_identity->identity_id,
+            // Create all groups
+            foreach($source_identity['affiliations'] as $group_slug) {
+                $this_group = $all_groups->firstWhere('slug',$group_slug);
+                // Make sure all groups exist in IAMBing!
+                if (!is_null($this_group)) {
+                    $new_group_membership = new GroupMember([
+                        'group_id' => $this_group->id,
+                        'identity_id' => $new_identity->id
+                    ]);
+                    $new_group_membership->save();
+                }
+            }
+            $new_identity['groups'] = $source_identity['affiliations'];
+            /* If you have a vanilty alumni email, or you have an active email account and you are
+            a recognized alumni, add you to the "alumni_email" group */
+            foreach($source_identity['accounts'] as $username => $account) {
+                if ($account['am_primary'] === true && $account['google'] == true) {
+                    if ($account['vanity_alumni'] == true || 
+                        (in_array('alumni',$source_identity['affiliations']) && 
+                        !in_array('staff',$source_identity['affiliations']) && 
+                        !in_array('faculty',$source_identity['affiliations']))
+                    ) {
+                        GroupMember::updateOrCreate(['group_id'=>$alumni_email_group->id,'identity_id'=>$new_identity->id],[]);
+                        break;
+                    }
+                }
+            }
+
+            // Create all accounts
+            foreach($source_identity['accounts'] as $username => $account) {
+                if ($account['am_primary'] === true) {
+                    if($account['ad'] == true) {
+                        $ad_account = new Account([
+                            'identity_id'=>$new_identity->id,
+                            'system_id'=>$bu_sys->id,
+                            'account_id'=>strtolower($default_username)
+                        ]);
+                        $ad_account->save();
+                    }
+                    if($account['google'] == true) {
+                        $google_account = new Account([
+                            'identity_id'=>$new_identity->id,
+                            'system_id'=>$google_sys->id,
+                            'account_id'=>strtolower($default_username.'@binghamton.edu')
+                        ]);
+                        $google_account->save();
+                    }
+                }
+            }
+
+            // Add Entitlement Overrides
+            foreach($source_identity['accounts'] as $username => $account) {
+                if ($account['am_primary'] === true) {
+                    if($account['ad'] == true) {
+                        foreach($ad_entitlement_mappings as $ad_group => $iam_entitlement) {
+                            if (in_array($ad_group,$account['ad_groups'])) {
+                                $new_identity_entitlement = new IdentityEntitlement([
+                                    'identity_id' => $new_identity->id,
+                                    'entitlement_id' => $iam_entitlement->id,
+                                    'type' => 'add',
+                                    'override' => true,
+                                    'expire' => false,
+                                    'description' => 'Imported from BU AD based on Existing Groups ('.date('m/d/Y').')',
                                 ]);
-                                $new_identity->save();
+                                $new_identity_entitlement->save();
                             }
-                            $new_identity->default_username = strtolower($account['username']);
-                            $new_identity->save();
-                            $new_account = new Account([
-                                'identity_id'=>$new_identity->id,
-                                'system_id'=>$bu_sys->id,
-                                'account_id'=>strtolower($account['username']),
-                                'default_username' => strtolower($account['username']),
-                                'default_email' => strtolower($account['username']).'@binghamton.edu',
-                            ]);
-                            $new_account->save();
-                            GroupMember::updateOrCreate(['group_id' => $sponsored_bu_group->id, 'identity_id' => $new_identity->id],[]);                            
-                        } else if ($account['system'] === 'Google') {
-                            $derived_username = strtolower(explode('@',$account['email'])[0]);
-                            $new_identity = Identity::where('default_email',strtolower($account['email']))->orWhere('default_username',$derived_username)->first();
-                            if (is_null($new_identity)) {
-                                $new_identity = new Identity([
-                                    'first_name' => $derived_username,
-                                    'sponsored' => true,
-                                    'sponsor_identity_id' => $sponsor_identity->identity_id,
-                                    'default_username' => $derived_username,
-                                    'default_email' => strtolower($account['email']),
-                                ]);
-                                $new_identity->save();
-                            }
-                            $new_identity->default_email = strtolower($account['email']);
-                            $new_identity->save();
-                            $new_account = new Account([
-                                'identity_id'=>$new_identity->id,
-                                'system_id'=>$google_sys->id,
-                                'account_id'=>strtolower($account['email'])
-                            ]);
-                            $new_account->save();
-                            GroupMember::updateOrCreate(['group_id' => $sponsored_google_group->id, 'identity_id' => $new_identity->id],[]);                            
                         }
                     }
-                } 
+                }
             }
+            $new_identity->recalculate_entitlements();
         }
     }
 }
