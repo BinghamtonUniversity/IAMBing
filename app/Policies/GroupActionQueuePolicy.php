@@ -6,7 +6,7 @@ use App\Models\Permission;
 use App\Models\Identity;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class GroupConfirmationQueuePolicy
+class GroupActionQueuePolicy
 {
     use HandlesAuthorization;
 
@@ -20,8 +20,8 @@ class GroupConfirmationQueuePolicy
 
     public function view_in_admin(Identity $identity){
         return Permission::where('identity_id',$identity->id)
-            ->where('permission','view_group_confirmation_queue')
-            ->orWhere('permission','manage_group_confirmation_queue')
+            ->where('permission','view_group_action_queue')
+            ->orWhere('permission','manage_group_action_queue')
             ->first();
     }
 }

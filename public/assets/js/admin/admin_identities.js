@@ -442,12 +442,12 @@ var manage_identity = function(identity_id) {
                                 "value": "manage_logs"
                             },
                             {
-                                "label": "View Group Confirmation Queue",
-                                "value": "view_group_confirmation_queue"
+                                "label": "View Group Action Queue",
+                                "value": "view_group_action_queue"
                             },
                             {
-                                "label": "Manage Group Confirmation Queue",
-                                "value": "manage_group_confirmation_queue"
+                                "label": "Manage Group Action Queue",
+                                "value": "manage_group_action_queue"
                             }
 
                         ]

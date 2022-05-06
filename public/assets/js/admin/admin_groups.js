@@ -6,7 +6,9 @@ ajax.get('/api/configuration/',function(app_config) {
         {type:"text", name:"slug", label:"Slug",required:true},
         {type:"textarea", name:"description", label:"Description",required:false},
         {type:"select",label: "Affiliation",name:"affiliation",options:affiliate_options},
-        {name:"type","label":"Type",type:"select",options:[{label:'Manually Managed',value:'manual'},{label:'Automatically Managed',value:'auto'}]},
+        {name:"type",label:"Type",type:"select",options:[{label:'Manually Managed',value:'manual'},{label:'Automatically Managed',value:'auto'}]},
+        {name:"manual_confirmation_add",label:"Confirm Add",type:"switch",options:[{label:'Disabled',value:false},{label:'Enabled',value:false}],show:[{type:'matches',name:'type',value:'auto'}],parse:'show',help:'Enable this option if you want to manually confirm whenever a user is ADDED to this group.  (Will be added to "Action Queue")'},
+        {name:"manual_confirmation_remove",label:"Confirm Remove",type:"switch",options:[{label:'Disabled',value:false},{label:'Enabled',value:false}],show:[{type:'matches',name:'type',value:'auto'}],parse:'show',help:'Enable this option if you want to manually confirm whenever a user is REMOVED from this group.  (Will be added to "Action Queue")'},
     ];
 
     ajax.get('/api/groups',function(data) {

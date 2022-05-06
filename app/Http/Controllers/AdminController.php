@@ -195,10 +195,10 @@ class AdminController extends Controller
         ]);
     }
 
-    public function group_confirmation_queue(Request $request) {
+    public function group_action_queue(Request $request) {
         return view('default.admin',
-            ['page'=>'group_confirmation_queue','ids'=>[],'title'=>'Confirm Group Add / Remove Actions','help'=>
-                'Use this page to confirm and manually trigger group add / remove actions which are pending in the group confirmation queue.',
+            ['page'=>'group_action_queue','ids'=>[],'title'=>'Group Action Queue','help'=>
+                'Use this page to confirm and manually execute group add / remove actions which are pending in the group action queue.',
                 'actions' => [
                     ["name"=>"execute","label"=>"Execute Actions"],
                     ["name"=>"delete","label"=>"Delete Action from Queue"]

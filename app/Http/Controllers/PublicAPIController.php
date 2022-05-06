@@ -57,20 +57,10 @@ class PublicAPIController extends Controller {
         if (is_null($group)) {
             return ['error'=>'Group does not exist!'];
         }
-        // BatchJobs::dispatch([
-        //     'job_type' => 'update_group_memberships',
-        //     'payload' => [
-        //         'api_identities' => $request->identities,
-        //         'unique_id' => $request->id,
-        //         'group_id' => $group->id,
-        //     ]
-        // ]);
 
         $api_identities = $request->identities;
         $unique_id = $request->id;
         $group_id = $group->id;
-
-
         $unique_ids = collect([]);
         foreach($api_identities as $api_identity) {
             $unique_ids[] = $api_identity['ids'][$unique_id];
@@ -112,7 +102,7 @@ class PublicAPIController extends Controller {
         }
 
         foreach($should_remove_group_membership as $identity_id) {
-            // Identity Exists, but isnt a member... add them to the group!
+            // Identity Exists, but shouldn't be a member... remove them from the group!
             UpdateGroupMembership::dispatch([
                 'group_id' => $group_id,
                 'identity_id' => $identity_id,

@@ -10,7 +10,7 @@ use App\Http\Controllers\EndpointController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\CASController;
 use App\Http\Controllers\LogController;
-use App\Http\Controllers\GroupConfirmationQueueController;
+use App\Http\Controllers\GroupActionQueueController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,7 +45,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/endpoints', [AdminController::class, 'endpoints'])->middleware('can:list_search,App\Models\Endpoint');
     Route::get('/configuration', [AdminController::class, 'configuration'])->middleware('can:update,App\Models\Configuration');
     Route::get('/identities/{identity}/logs',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
-    Route::get('/group_confirmation_queue', [AdminController::class, 'group_confirmation_queue'])->middleware('can:view_in_admin,App\Models\GroupConfirmationQueue');
+    Route::get('/group_action_queue', [AdminController::class, 'group_action_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
 
     Route::group(['prefix' => 'api'], function () {
         /* Identity Methods */
@@ -137,7 +137,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         /* Logs Methods */
         Route::get('/logs',[LogController::class,'get_logs'])->middleware('can:view,App\Models\Log'); // Get All Logs
 
-        Route::get('/group_confirmation_queue',[GroupConfirmationQueueController::class,'get_queue'])->middleware('can:view_in_admin,App\Models\GroupConfirmationQueue');
+        Route::get('/group_action_queue',[GroupActionQueueController::class,'get_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
     });
 
 

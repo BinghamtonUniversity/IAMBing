@@ -102,8 +102,8 @@
               @can('view_in_admin',App\Models\Configuration::class)
                   <li class="visible-xs-block @if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
               @endcan
-              @can('view_in_admin',App\Models\GroupConfirmationQueue::class)
-                  <li class="visible-xs-block @if($page=="group_confirmation_queue") active @endif"><a href="/group_confirmation_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
+              @can('view_in_admin',App\Models\GroupActionQueue::class)
+                  <li class="visible-xs-block @if($page=="group_action_queue") active @endif"><a href="/group_action_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
               @endcan
               @can('view_in_admin',App\Models\Job::class)
               <li class="visible-xs-block"><a href="/horizon" target="_blank"><i class="fa fa-chart-line fa-fw"></i>&nbsp; Jobs (Horizon)</a></li>
@@ -137,8 +137,8 @@
             @can('view_in_admin',App\Models\Configuration::class)
                 <li class="@if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
             @endcan
-            @can('view_in_admin',App\Models\GroupConfirmationQueue::class)
-                <li class="@if($page=="group_confirmation_queue") active @endif"><a href="/group_confirmation_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
+            @can('view_in_admin',App\Models\GroupActionQueue::class)
+                <li class="@if($page=="group_action_queue") active @endif"><a href="/group_action_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
             @endcan
             @can('view_in_admin',App\Models\Job::class)
             <li><a href="/horizon" target="_blank"><i class="fa fa-fw fa-chart-line"></i>&nbsp; Jobs (Horizon)</a></li>

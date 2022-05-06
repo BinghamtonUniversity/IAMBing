@@ -18,14 +18,13 @@ use Illuminate\Support\Facades\Auth;
 class GroupController extends Controller
 {
     public function get_all_groups(){
-        // dd();
         if(Auth::user()->identity_permissions->pluck('permission')->contains('view_groups') || Auth::user()->identity_permissions->pluck('permission')->contains('manage_groups')){
             return Group::get();
         }
-        
         // If identity doesn't have manage_groups permissions, then only return the groups they're an admin of
         return Group::whereIn('id',Auth::user()->admin_groups->pluck('group_id'))->get();  
     }
+    
     public function get_group(Group $group){
         return Group::where('id',$group->id);
     }

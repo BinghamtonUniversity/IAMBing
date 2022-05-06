@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('group_confirmation_queue', function (Blueprint $table) {
+        Schema::create('group_action_queue', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('identity_id')->index();
             $table->unsignedBigInteger('group_id')->index();
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('group_confirmation_queue');
+        Schema::dropIfExists('group_action_queue');
     }
 };
