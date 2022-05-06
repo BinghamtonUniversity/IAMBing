@@ -33,7 +33,9 @@ class CreatePermissionsTable extends Migration
                 "manage_jobs",
                 "manage_systems_config",
                 "view_logs",
-                "manage_logs"
+                "manage_logs",
+                "view_group_confirmation_queue",
+                "manage_group_confirmation_queue"
             ]);
             $table->foreign('identity_id')->references('id')->on('identities');
             $table->timestamps();

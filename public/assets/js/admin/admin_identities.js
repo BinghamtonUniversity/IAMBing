@@ -440,7 +440,16 @@ var manage_identity = function(identity_id) {
                             {
                                 "label": "Manage Logs",
                                 "value": "manage_logs"
+                            },
+                            {
+                                "label": "View Group Confirmation Queue",
+                                "value": "view_group_confirmation_queue"
+                            },
+                            {
+                                "label": "Manage Group Confirmation Queue",
+                                "value": "manage_group_confirmation_queue"
                             }
+
                         ]
                     }
                 ],

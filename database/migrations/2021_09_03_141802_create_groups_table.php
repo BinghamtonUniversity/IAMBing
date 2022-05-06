@@ -21,8 +21,8 @@ class CreateGroupsTable extends Migration
             $table->string('affiliation')->nullable()->default(null);
             $table->unsignedInteger('order')->default(4294967295);
             $table->enum('type',['manual','auto'])->default('auto');
-            // Delete identity if they are removed from this group (and are not a member of any other groups)
-            $table->boolean('purge_identity_on_remove')->default(false);
+            $table->boolean('manual_confirmation_add')->default(false);
+            $table->boolean('manual_confirmation_remove')->default(false);
             $table->timestamps();
         });
     }
