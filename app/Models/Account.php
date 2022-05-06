@@ -34,7 +34,7 @@ class Account extends Model
             'type'=>'account',
             'type_id'=>$this->system_id,
             'data'=>$this->account_id,
-            'actor_identity_id'=>Auth::user()->id
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
 
         $log->save();
