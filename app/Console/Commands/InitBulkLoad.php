@@ -161,7 +161,7 @@ class InitBulkLoad extends Command
                         $ad_account = new Account([
                             'identity_id'=>$new_identity->id,
                             'system_id'=>$bu_sys->id,
-                            'account_id'=>strtolower($default_username)
+                            'account_id'=>strtolower($username)
                         ]);
                         $ad_account->save();
                     }
@@ -169,7 +169,7 @@ class InitBulkLoad extends Command
                         $google_account = new Account([
                             'identity_id'=>$new_identity->id,
                             'system_id'=>$google_sys->id,
-                            'account_id'=>strtolower($default_username.'@binghamton.edu')
+                            'account_id'=>strtolower($username.'@binghamton.edu')
                         ]);
                         $google_account->save();
                     }
