@@ -95,6 +95,10 @@ class InitBulkLoad extends Command
                     break;
                 }
             }
+            // Skip Tim and Ali Kemal
+            if ($source_identity['bnumber'] == 'B00450942' || $source_identity['bnumber'] == 'B00505893') {
+                $skip_identity = true;
+            }
             if ($skip_identity == true) {
                 continue;
             }
