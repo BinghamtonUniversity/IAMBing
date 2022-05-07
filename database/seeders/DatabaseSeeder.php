@@ -24,9 +24,9 @@ class DatabaseSeeder extends Seeder
     {
         $default_username_template = new Configuration(['name'=>'default_username_template','config'=>'{{first_name.0}}{{last_name.0}}{{last_name.1}}{{last_name.2}}{{last_name.3}}{{last_name.4}}{{last_name.5}}{{last_name.6}}{{last_name.7}}{{last_name.8}}{{last_name.9}}{{last_name.10}}{{#iterator}}{{iterator}}{{/iterator}}']);
         $default_username_template->save();
-        $identity_attributes = new Configuration(['name'=>'identity_attributes','config'=>[['name'=>"nickname",'label'=>'Nickname'],['name'=>'binghamton_emails','label'=>'Binghamton Email','array'=>true],['name'=>'personal_emails','label'=>'Personal Email','array'=>true]]]);
+        $identity_attributes = new Configuration(['name'=>'identity_attributes','config'=>[]]);
         $identity_attributes->save();
-        $identity_unique_ids = new Configuration(['name'=>'identity_unique_ids','config'=>[['name'=>'bnumber','label'=>'BNumber']]]);
+        $identity_unique_ids = new Configuration(['name'=>'identity_unique_ids','config'=>[['name'=>'bnumber','label'=>'BNumber'],['name'=>'suny_id','label'=>'SUNY ID'],['name'=>'millennium_id','label'=>'Millennium ID']]]);
         $identity_unique_ids->save();
         $affiliations = new Configuration(['name'=>'affiliations','config'=>['faculty','staff','student','employee','member','affiliate','alum','library-walk-in','applicant']]);
         $affiliations->save();
@@ -41,13 +41,13 @@ class DatabaseSeeder extends Seeder
         $username_availability->save();
 
         // Create Example Identities
-        $example_identity = new Identity(['first_name'=>'Example','last_name'=>'Identity','attributes'=>['nickname'=>'Dude'],'default_username'=>'eidentity1']);
+        $example_identity = new Identity(['first_name'=>'Example','last_name'=>'Identity','attributes'=>[],'default_username'=>'eidentity1']);
         $example_identity->save();
-        $example_identity2 = new Identity(['first_name'=>'Ali Kemal','last_name'=>'Tanriverdi','attributes'=>['nickname'=>'Awesome Dude'],
+        $example_identity2 = new Identity(['first_name'=>'Ali Kemal','last_name'=>'Tanriverdi','attributes'=>[],
                                   'default_username'=>'atanrive','default_email'=>'atanrive@binghamton.edu'
                                 ]);
         $example_identity2->save();
-        $example_identity3 = new Identity(['first_name'=>'Tim','last_name'=>'Cortesi','attributes'=>['nickname'=>'Awesome Dude'],
+        $example_identity3 = new Identity(['first_name'=>'Tim','last_name'=>'Cortesi','attributes'=>[],
                                   'default_username'=>'tcortesi','default_email'=>'tcortesi@binghamton.edu'
                                 ]);
         $example_identity3->save();
@@ -134,7 +134,7 @@ class DatabaseSeeder extends Seeder
         $endpoint1->save();
         
         // Create sample systems
-        $system1 = new System(['name'=>'BU','default_account_id_template'=>'{{default_username}}','onremove' => 'disable','config'=>[
+        $system1 = new System(['name'=>'BU','default_account_id_template'=>'{{default_username}}','onremove' => 'delete','config'=>[
             'actions' => [
               [
                 'path' => '/ad/user/{{account.account_id}}',
