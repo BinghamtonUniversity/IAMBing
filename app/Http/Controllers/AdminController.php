@@ -165,7 +165,7 @@ class AdminController extends Controller
         $user_actions[]= ["name"=>"create","label"=>"New Entitlement"];
         $user_actions[]= [''];
         $user_actions[] = ["name"=>"edit","label"=>"Update Entitlement"];
-
+        $user_actions[] = ["name"=>"overrides","min"=>1,"max"=>1,"label"=>"Entitlement Overrides"];
         if ($identity->can('manage_group_entitlements','App\Group')){
             $user_actions[] = ["label"=>"Manage Groups","name"=>"manage_groups","min"=>1,"max"=>1,"type"=>"default"];
         }
@@ -185,6 +185,11 @@ class AdminController extends Controller
 
     public function entitlement_groups(Request $request, Entitlement $entitlement) {
         return view('default.admin',['page'=>'entitlements_groups','ids'=>[$entitlement->id],'title'=>'Manage "'.$entitlement->name.'" Entitlement Groups','help'=>
+            'Use this page to manage groups for the current entitlement.  (Identities who are members of any groups listed here will automatically be granted this entitlement)'
+        ]);
+    }
+    public function entitlement_overrides(Request $request, Entitlement $entitlement){
+        return view('default.admin',['page'=>'entitlement_overrides','ids'=>[$entitlement->id],'title'=>'View "'.$entitlement->name.'" Entitlement Override','help'=>
             'Use this page to manage groups for the current entitlement.  (Identities who are members of any groups listed here will automatically be granted this entitlement)'
         ]);
     }

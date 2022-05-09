@@ -6,6 +6,7 @@ use App\Models\Entitlement;
 use App\Models\Identity;
 use App\Models\GroupEntitlement;
 use App\Models\Group;
+use App\Models\IdentityEntitlement;
 use Illuminate\Http\Request;
 
 class EntitlementController extends Controller
@@ -53,6 +54,13 @@ class EntitlementController extends Controller
         $group_entitlement = GroupEntitlement::where('entitlement_id','=',$entitlement->id)->where('group_id','=',$group->id)->first();
         $group_entitlement->delete();
         return 1;
+    }
+    public function get_entitlement_overrides(Request $request, Entitlement $entitlement){
+        return IdentityEntitlement::where('entitlement_id','=',$entitlement->id)
+            ->where('override',1)
+            ->with('sponsor')
+            ->with('identity')
+            ->get();
     }
 
 }

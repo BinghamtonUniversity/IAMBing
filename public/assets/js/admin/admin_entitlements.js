@@ -32,6 +32,11 @@ ajax.get('/api/entitlements',function(data) {
         ajax.delete('/api/entitlements/'+grid_event.model.attributes.id,{},function(data) {},function(data) {
             grid_event.model.undo();
         });
+    }).on('model:overrides',function(grid_event){
+        ajax.get('/api/entitlements/'+grid_event.model.attributes.id+"/overrides",function(data) {
+            window.location = '/entitlements/'+grid_event.model.attributes.id+'/overrides';
+        },function(data) {});
     });
+
 });
 
