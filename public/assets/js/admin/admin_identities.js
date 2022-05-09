@@ -122,8 +122,10 @@ identityinfo_column_template = `
 </div>
 
 <div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">Permissions</h3></div>
-<div class="panel-body identity-site-permissions"></div>
+<div class="panel-heading">
+    <h3 class="panel-title">Permissions<a class="btn btn-primary btn-xs pull-right" data-toggle="collapse" href=".identity-site-permissions">Manage Permissions</a></h3>
+</div>
+    <div class="panel-body identity-site-permissions panel-collapse collapse"></div>
 </div>
 `;
 
