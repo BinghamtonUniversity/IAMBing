@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Permission;
+use App\Policies\JobPolicy;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\Horizon;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
@@ -33,10 +36,11 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
      */
     protected function gate()
     {
-        Gate::define('viewHorizon', function ($identity) {
-            return in_array($identity->email, [
-                //
-            ]);
+        Gate::define('viewHorizon', function ($user) {
+            return Permission::where('identity_id',$user->id)->where(function ($q){
+                $q->orWhere('permission','view_jobs')
+                    ->orWhere('permission','manage_jobs');
+            })->first();
         });
     }
 }
