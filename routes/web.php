@@ -49,6 +49,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
     Route::group(['prefix' => 'api'], function () {
         /* Identity Methods */
+        Route::get('/identities/{identity}/dashboard', [IdentityController::class,'get_identity'])->middleware('can:view_identity_dashboard,App\Models\Identity');
         Route::get('/identities','IdentityController@get_all_identities')->middleware('can:view_in_admin,App\Models\Identity');
         Route::get('/identities/search/{search_string?}',[IdentityController::class,'search'])->middleware('can:list_search,App\Models\Identity');
         Route::get('/identities/{identity}',[IdentityController::class,'get_identity'])->middleware('can:view_identity_info,App\Models\Identity');

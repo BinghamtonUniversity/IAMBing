@@ -123,7 +123,7 @@ dashboard_template = `
 </div>
 `;
 var dashboard_data = {}
-ajax.get('/api/identities/'+id,function(data) {
+ajax.get('/api/identities/'+id+'/dashboard',function(data) {
     dashboard_data = data;
     $('#adminDataGrid').html(gform.m(dashboard_template,dashboard_data));
 });

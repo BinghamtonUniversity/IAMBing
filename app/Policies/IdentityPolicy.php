@@ -6,6 +6,7 @@ use App\Models\Permission;
 use App\Models\Identity;
 use App\Models\IdentityEntitlement;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Facades\Auth;
 
 class IdentityPolicy
 {
@@ -20,7 +21,9 @@ class IdentityPolicy
     {
         //
     }
-
+    public function view_identity_dashboard(Identity $identity){
+        return $identity->id == Auth::user()->id;
+    }
     public function view_in_admin(Identity $identity){
         $permission = Permission::where('identity_id',$identity->id);
         return $permission->where(function ($q){
