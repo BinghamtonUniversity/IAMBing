@@ -214,22 +214,36 @@ identity_entitlements_template = `
 identity_accounts_template = `
 <div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
 <div style="font-size:20px;">
-    {{#systems}}
+    {{#systems_with_accounts_history}}
         {{#if pivot.override === 1}}
-            <div class="label {{#pivot.status === 'active'}}label-success{{/}}{{#pivot.status === 'disabled'}}label-danger{{/}}">
+            <div class="label {{#if pivot.status === 'active'}}
+                                    label-success
+                                    {{elseif pivot.status === 'disabled'}}label-warning
+                                {{else}}
+                                    label-danger
+                                {{/if}}">
                 <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i>
                 {{name}} / {{pivot.account_id}}
                 {{#pivot.status === 'active'}}<div class="tinytext">(Enabled via Manual Override)</div>{{/}}
                 {{#pivot.status === 'disabled'}}<div class="tinytext">(Disabled via Manual Override)</div>{{/}}
+                {{#pivot.status === 'deleted'}}<div class="tinytext">(Deleted via Manual Override)</div>{{/}}
             </div>
         {{else}}
-            <div class="label {{#pivot.status === 'active'}}label-default{{/}}{{#pivot.status === 'disabled'}}label-warning{{/}}">
+            <div class="label {{#if pivot.status === 'active'}}
+                                    label-success
+                                {{elseif pivot.status === 'disabled'}}
+                                    label-warning
+                                {{else}}
+                                    label-danger
+                                {{/if}}">
                 <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i>
                 {{name}} / {{pivot.account_id}}
+                {{#pivot.status === 'active'}}<div class="tinytext">(Active)</div>{{/}}
                 {{#pivot.status === 'disabled'}}<div class="tinytext">(Automatically Disabled)</div>{{/}}
+                {{#pivot.status === 'deleted'}}<div class="tinytext">(Automatically Deleted)</div>{{/}}
             </div>
         {{/if}}
-    {{/systems}}
+    {{/systems_with_accounts_history}}
 </div>
 {{^systems}}
     <div class="alert alert-warning">No Accounts</div>

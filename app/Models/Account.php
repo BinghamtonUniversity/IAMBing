@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Libraries\EndpointHelper;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use DateTimeInterface;
 
 class Account extends Model
 {
@@ -77,5 +78,10 @@ class Account extends Model
                 }
             }
         }
+    }
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s a');
     }
 }

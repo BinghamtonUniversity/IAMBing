@@ -8,7 +8,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use App\Models\Group;
 use App\Models\Identity;
 
-class InitBulkLoad extends Command
+class RecalculateIdentities extends Command
 {
     protected $name = 'recalculate';
     protected $description = 'Recalculate Identities in the specified group';

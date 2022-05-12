@@ -76,6 +76,11 @@ class AccountObserver
         $log->save();
     }
 
+    public function deleting(Account $account){
+        $account->status = "deleted";
+        $account->save();
+    }
+
     /**
      * Handle the Account "force deleted" event.
      *

@@ -55,6 +55,10 @@ class Identity extends Authenticatable
         return $this->belongsToMany(System::class,'accounts')->orderBy('name')->whereNull('deleted_at')->withPivot('id','account_id','status','override');
     }
 
+    public function systems_with_accounts_history() {
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('id','account_id','status','override','deleted_at');
+    }
+
     public function identity_unique_ids() {
         return $this->hasMany(IdentityUniqueID::class,'identity_id');
     }
