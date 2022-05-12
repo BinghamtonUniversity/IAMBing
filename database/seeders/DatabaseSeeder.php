@@ -130,6 +130,5 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
-        dd($group_entitlements);
     }
 }
