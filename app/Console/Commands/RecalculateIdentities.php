@@ -2,8 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 
+use Illuminate\Console\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use App\Models\Group;
 use App\Models\Identity;
 
@@ -34,10 +35,15 @@ class InitBulkLoad extends Command
         })->get();
 
         $num_members = count($target_identities);
+
+        $bar = $this->output->createProgressBar($num_members);
+        // ProgressBar::setFormatDefinition('custom', ' %current%/%max% -- %message%');
+        // $bar->setFormat('custom');
         foreach($target_identities as $index => $target_identity) {
             $percent_complete = floor(($index / $num_members)*100).'%';
-            $this->line($percent_complete.' - '.$target_identity->first_name.' '.$target_identity->last_name);
+            $bar->setMessage($target_identity->first_name.' '.$target_identity->last_name);
             $target_identity->recalculate_entitlements();
+            $bar->advance();
         }
     }
 }
