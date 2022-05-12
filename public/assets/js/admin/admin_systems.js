@@ -53,17 +53,8 @@ ajax.get('/api/systems',function(data) {
 					"label": "Actions",
 					"name": "actions",
 					"array": {
-						"min": null,
-						"max": null,
-						"duplicate": {
-							"enable": "auto",
-							"label": "",
-							"clone": false
-						},
-						"remove": {
-							"enable": "auto",
-							"label": ""
-						}
+						"min": 0,
+						"max": 10
 					},
 					"fields": [
 						{
