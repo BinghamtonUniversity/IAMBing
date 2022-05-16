@@ -31,10 +31,10 @@ ajax.get('/api/systems',function(data) {
                     "label": "Delete Account",
                     "value": "delete"
                 },
-                {
-                    "label": "Disable Account",
-                    "value": "disable"
-                },
+                // {
+                //     "label": "Disable Account",
+                //     "value": "disable"
+                // },
                 {
                     "label": "No Action",
                     "value": "none"
@@ -89,10 +89,10 @@ ajax.get('/api/systems',function(data) {
 											"label": "Delete Account",
 											"value": "delete"
 										},
-										{
-											"label": "Deactivate Account",
-											"value": "deactivate"
-										}
+										// {
+										// 	"label": "Deactivate Account",
+										// 	"value": "deactivate"
+										// }
 									]
 								}
 							]
