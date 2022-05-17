@@ -42,7 +42,6 @@ ajax.get('/api/systems',function(data) {
             ],
             "help":"When an account in this system is automatically removed (due to a lost entitlement), what should happen to the account?"
         },
-		{type:"switch", label: "Allow Manual Activation of Accounts",name: "override_active",value:false,options:[{value:false,label:'Disabled'},{value:true,label:'Enabled'}]},
         {
 			"type": "fieldset",
 			"label": "Configuration",

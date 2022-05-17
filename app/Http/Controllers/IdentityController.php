@@ -137,48 +137,39 @@ class IdentityController extends Controller
     }
 
     public function get_accounts(Identity $identity) {
-        return Account::where('identity_id',$identity->id)->with('override_identity')->get();
+        return Account::where('identity_id',$identity->id)->withTrashed()->get();
     }
 
-    public function get_account(Identity $identity, Account $account) {
+    public function get_account(Identity $identity, $account_id) {
+        $account = Account::where('id',$account_id)->withTrashed()->first();
         $account->get_info();
         return $account;
     }
 
     public function add_account(Identity $identity, Request $request) {
-        if ($request->status === 'active' && is_null(System::where('id',$request->system_id)->where('override_active',true)->first())) {
-            return response(json_encode(['error'=>'You cannot manually activate accounts within this system!']),403)->header('Content-Type', 'application/json');
-        }
         $system = System::where('id',$request->system_id)->first();
         $account = $identity->add_account($system, $request->account_id);
-        if ($request->override) {
-            $account->override_identity_id = Auth::user()->id;
-        }
         $account->update($request->all());
         $identity->recalculate_entitlements();
-        return Account::where('id',$account->id)->with('override_identity')->first();
+        return Account::where('id',$account->id)->first();
     }
 
     public function delete_account(Identity $identity, Account $account) {
+        $account_id = $account->id;
         $account->sync('delete');
         $account->delete();
         $identity->recalculate_entitlements();
-        return "1";
+        return Account::where('id',$account_id)->withTrashed()->first();
     }
 
-    public function update_account(Request $request, Identity $identity, Account $account) {
-        if ($request->status === 'active' && is_null(System::where('id',$request->system_id)->where('override_active',true)->first())) {
-            return response(json_encode(['error'=>'You cannot manually activate accounts within this system!']),403)->header('Content-Type', 'application/json');
-        }
-        if ($request->override) {
-            $account->override_identity_id = Auth::user()->id;
-        } else {
-            $account->override_description = null;
-            $account->override_identity_id = null;
-        }
-        $account->update($request->all());
+    public function restore_account(Identity $identity, $account_id) {
+        $account = Account::where('id',$account_id)->withTrashed()->first();
+        $account->restore();
+        $account->status = 'active';
+        $account->save();
+        $account->sync('update');
         $identity->recalculate_entitlements();
-        return Account::where('id',$account->id)->with('override_identity')->first();
+        return $account;
     }
 
     public function get_groups(Identity $identity) {

@@ -18,3 +18,6 @@ yarn-error.log
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+new_data.json
+orphaned_accounts.csv
+secondary_accounts.csv

@@ -80,8 +80,8 @@ identityinfo_column_template = `
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
     {{#auth_user_perms}}
-        {{#if . == "override_identity_accounts"}}
-            <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/accounts">Override Accounts</a>
+        {{#if . == "manage_identity_accounts"}}
+            <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/accounts">Manage Accounts</a>
         {{/if}}
     {{/auth_user_perms}}
     Systems / Accounts
@@ -215,34 +215,12 @@ identity_accounts_template = `
 <div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
 <div style="font-size:20px;">
     {{#systems_with_accounts_history}}
-        {{#if pivot.override === 1}}
-            <div class="label {{#if pivot.status === 'active'}}
-                                    label-success
-                                    {{elseif pivot.status === 'disabled'}}label-warning
-                                {{else}}
-                                    label-danger
-                                {{/if}}">
+            <div class="label {{#if pivot.status === 'active'}}label-default{{elseif pivot.status === 'disabled'}}label-warning{{else}}label-danger{{/if}}">
                 <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i>
                 {{name}} / {{pivot.account_id}}
-                {{#pivot.status === 'active'}}<div class="tinytext">(Enabled via Manual Override)</div>{{/}}
-                {{#pivot.status === 'disabled'}}<div class="tinytext">(Disabled via Manual Override)</div>{{/}}
-                {{#pivot.status === 'deleted'}}<div class="tinytext">(Deleted via Manual Override)</div>{{/}}
+                {{#pivot.status === 'disabled'}}<div class="tinytext">(Disabled)</div>{{/}}
+                {{#pivot.status === 'deleted'}}<div class="tinytext">(Deleted)</div>{{/}}
             </div>
-        {{else}}
-            <div class="label {{#if pivot.status === 'active'}}
-                                    label-success
-                                {{elseif pivot.status === 'disabled'}}
-                                    label-warning
-                                {{else}}
-                                    label-danger
-                                {{/if}}">
-                <i class="fa fa-info-circle pull-right account-info-btn" data-id="{{pivot.id}}" style="cursor:pointer;"></i>
-                {{name}} / {{pivot.account_id}}
-                {{#pivot.status === 'active'}}<div class="tinytext">(Active)</div>{{/}}
-                {{#pivot.status === 'disabled'}}<div class="tinytext">(Automatically Disabled)</div>{{/}}
-                {{#pivot.status === 'deleted'}}<div class="tinytext">(Automatically Deleted)</div>{{/}}
-            </div>
-        {{/if}}
     {{/systems_with_accounts_history}}
 </div>
 {{^systems}}
@@ -406,8 +384,8 @@ var manage_identity = function(identity_id) {
                                 "value": "merge_identities"
                             },
                             {
-                                "label": "Override Identity Accounts",
-                                "value": "override_identity_accounts"
+                                "label": "Manage Accounts",
+                                "value": "manage_identity_accounts"
                             },
                             {
                                 "label": "Override Identity Entitlements",

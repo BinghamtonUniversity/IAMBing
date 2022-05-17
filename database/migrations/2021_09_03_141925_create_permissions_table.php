@@ -21,7 +21,7 @@ class CreatePermissionsTable extends Migration
                 "manage_identities",
                 "manage_identity_permissions",
                 "merge_identities",
-                "override_identity_accounts",
+                "manage_identity_accounts",
                 "override_identity_entitlements",
                 "impersonate_identities",
                 "view_groups",

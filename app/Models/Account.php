@@ -12,8 +12,8 @@ use DateTimeInterface;
 class Account extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['identity_id','system_id','account_id','status','override','override_description','override_identity_id'];
-    protected $casts = ['override'=>'boolean','system_id'=>'string'];
+    protected $fillable = ['identity_id','system_id','account_id','status'];
+    protected $casts = ['system_id'=>'string'];
 
     public function system(){
         return $this->belongsTo(System::class);
@@ -21,10 +21,6 @@ class Account extends Model
 
     public function identity(){
         return $this->belongsTo(Identity::class);
-    }
-
-    public function override_identity(){
-        return $this->belongsTo(SimpleIdentity::class,'override_identity_id');
     }
 
     public function disable() {

@@ -31,7 +31,7 @@ class IdentityPolicy
                 ->orWhere('permission','manage_identities')
                 ->orWhere('permission','manage_identity_permissions')
                 ->orWhere('permission','merge_identity')
-                ->orWhere('permission','override_identity_accounts')
+                ->orWhere('permission','manage_identity_accounts')
                 ->orWhere('permission','override_identity_entitlements')
                 ->orWhere('permission','impersonate_identities');
         })->first();
@@ -44,7 +44,7 @@ class IdentityPolicy
                 ->orWhere('permission','manage_identities')
                 ->orWhere('permission','manage_identity_permissions')
                 ->orWhere('permission','merge_identity')
-                ->orWhere('permission','override_identity_accounts')
+                ->orWhere('permission','manage_identity_accounts')
                 ->orWhere('permission','override_identity_entitlements')
                 ->orWhere('permission','impersonate_identities');
         })->first();
@@ -58,7 +58,7 @@ class IdentityPolicy
                 ->orWhere('permission','manage_identities')
                 ->orWhere('permission','manage_identity_permissions')
                 ->orWhere('permission','merge_identities')
-                ->orWhere('permission','override_identity_accounts')
+                ->orWhere('permission','manage_identity_accounts')
                 ->orWhere('permission','override_identity_entitlements')
                 ->orWhere('permission','impersonate_identities');
         })->first();
@@ -80,8 +80,8 @@ class IdentityPolicy
         return Permission::where('identity_id',$identity->id)->where('permission','merge_identities')->first();
     }
 
-    public function override_identity_accounts(Identity $identity){
-        return Permission::where('identity_id',$identity->id)->where('permission','override_identity_accounts')->first();
+    public function manage_identity_accounts(Identity $identity){
+        return Permission::where('identity_id',$identity->id)->where('permission','manage_identity_accounts')->first();
     }
     public function override_identity_entitlements(Identity $identity){
         return Permission::where('identity_id',$identity->id)->where('permission','override_identity_entitlements')->first();

@@ -21,7 +21,6 @@ class CreateSystemsTable extends Migration
                 'disable',
                 'delete',
             ])->default('disable');
-            $table->boolean('override_active')->default(true);
             $table->json('config');
             $table->timestamps();
         });

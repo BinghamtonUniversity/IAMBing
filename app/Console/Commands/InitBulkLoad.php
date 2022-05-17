@@ -12,6 +12,7 @@ use App\Models\GroupMember;
 use App\Models\Group;
 use App\Models\IdentityEntitlement;
 use App\Models\Entitlement;
+use App\Models\ReservedUsername;
 
 class InitBulkLoad extends Command
 {
@@ -255,6 +256,19 @@ class InitBulkLoad extends Command
         file_put_contents('secondary_accounts.csv',$this->array_to_csv($secondary_accounts));
 
         // SAVE EVERYTHING to Database!
+        // Populate Reserved Usernames:
+        $this->info("Populating Reserved Usernames ...");
+        $bar = $this->output->createProgressBar(count($source_identities));
+        foreach($source_identities as $source_identity) {
+            foreach($source_identity['accounts'] as $username => $account) {
+                ReservedUsername::updateOrCreate([
+                    'username' => $username
+                ],[]);
+            }
+            $bar->advance();
+        }
+        $this->info("\n");
+
         // Create All PRIMARY Account Identities and Accounts
         $this->info("Saving the Data to the Database ...");
         $bar = $this->output->createProgressBar(count($new_identities));
@@ -321,5 +335,7 @@ class InitBulkLoad extends Command
             $new_identity->recalculate_entitlements();
             $bar->advance();
         }
+        $this->info("\n");
+        $this->info("Loading Complete!");
     }
 }

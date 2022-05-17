@@ -52,11 +52,11 @@ class Identity extends Authenticatable
     }
 
     public function systems() {
-        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->whereNull('deleted_at')->withPivot('id','account_id','status','override');
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->whereNull('deleted_at')->withPivot('id','account_id','status');
     }
 
     public function systems_with_accounts_history() {
-        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('id','account_id','status','override','deleted_at');
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('id','account_id','status','deleted_at');
     }
 
     public function identity_unique_ids() {
@@ -130,36 +130,32 @@ class Identity extends Authenticatable
     }
 
     private function username_check_available($username) {
-        $accounts = Account::where('account_id',$username)->get();
+        $accounts = Account::where('account_id',$username)->withTrashed()->get();
         $identities = Identity::where('default_username',$username)->get();
         $history = Log::where('data',$username)->get();
-        
-        if (count($accounts) > 0 || count($identities) > 0 || count($history)>0) {
+        $reserved_usernames = ReservedUsername::where('username',$username)->get();
+        if (count($accounts) > 0 || count($identities) > 0 || count($history) > 0 || count($reserved_usernames) > 0) {
             return false;
         }
         // Do an external lookup using API Endpoints
-        $config = Configuration::where('name','username_availability')
-                                    ->first();
-        if(is_null($config)){
-            abort(500,'Undefined configuration!');
+        $config = Configuration::where('name','username_availability')->first();
+        if(is_null($config)) {
+            // Not Configured -- Skip Check and Continue
+            return true;
         }
         $config = $config->config;
         $endpoint = Endpoint::where('id',$config->endpoint)->first();
-
         if(is_null($endpoint)){
-            abort(404,'Endpoint not found!');
+            // Endpoint Not Exists -- Skip Check and Continue
+            return true;
         }
         $url = $endpoint->config->url.$config->path;
         $response = EndpointHelper::http_request_maker($endpoint,$config,['username'=>$username],$url);
-        
-        if($response['code'] == $config->available_response){
+        if($response['code'] == $config->available_response) {
             return true;
-        }else if($response['code'] == $config->not_available_response){
+        } else if($response['code'] == $config->not_available_response) {
             return false;
-        }else{
-            abort(500,'Unsupported response received from the server');
         }
-
         return true;
     }
 
@@ -299,26 +295,21 @@ class Identity extends Authenticatable
         $system_ids_has = Account::select('system_id')->where('identity_id',$identity->id)->where('status','active')->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
         foreach($diff as $system_id) {
-            $overridden_acct = Account::where('identity_id',$identity->id)->where('system_id',$system_id)->where('override',true)->first();
-            if (is_null($overridden_acct)) {
-                $system = System::where('id',$system_id)->first();
-                $myaccount = $identity->add_account($system);
-                $myaccount->sync('create');
-            }
+            $system = System::where('id',$system_id)->first();
+            $myaccount = $identity->add_account($system);
+            $myaccount->sync('create');
         }
 
         // Delete accounts for Former Entitlements
         $diff = $system_ids_has->diff($system_ids_needed);
         $myaccounts_to_delete = Account::where('identity_id',$identity->id)->with('system')->whereIn('system_id',$diff)->get();
         foreach($myaccounts_to_delete as $myaccount) {
-            if (!$myaccount->override) {
-                if ($myaccount->system->onremove === 'delete') {
-                    $myaccount->sync('delete');
-                    $myaccount->delete();
-                } else if ($myaccount->system->onremove === 'disable') {
-                    $myaccount->sync('disable');
-                    $myaccount->disable();
-                }
+            if ($myaccount->system->onremove === 'delete') {
+                $myaccount->sync('delete');
+                $myaccount->delete();
+            } else if ($myaccount->system->onremove === 'disable') {
+                $myaccount->sync('disable');
+                $myaccount->disable();
             }
         }
 

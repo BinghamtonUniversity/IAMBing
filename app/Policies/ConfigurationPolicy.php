@@ -29,7 +29,7 @@ class ConfigurationPolicy
             $q->orWhere('permission','view_identities')
             ->orWhere('permission','manage_identities')
             ->orWhere('permission','manage_identity_permissions')
-            ->orWhere('permission','override_identity_accounts')
+            ->orWhere('permission','manage_identity_accounts')
             ->orWhere('permission','merge_identities')
             ->orWhere('permission','impersonate_identities')
             ->orWhere('permission','view_groups')
