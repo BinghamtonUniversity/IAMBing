@@ -261,14 +261,18 @@ class InitBulkLoad extends Command
         $bar = $this->output->createProgressBar(count($source_identities));
         foreach($source_identities as $source_identity) {
             foreach($source_identity['accounts'] as $username => $account) {
-                ReservedUsername::updateOrCreate([
-                    'username' => $username
-                ],[]);
+                try {
+                    ReservedUsername::create([
+                        'username' => $username
+                    ],[]);
+                } catch (\Exception $e) { /* Do Nothing */ }
                 if (is_array($account['google_aliases'])) {
                     foreach($account['google_aliases'] as $google_alias) {
-                        ReservedUsername::updateOrCreate([
-                            'username' => str_replace('@binghamton.edu','',$google_alias)
-                        ],[]);
+                        try {
+                            ReservedUsername::create([
+                                'username' => str_replace('@binghamton.edu','',$google_alias)
+                            ],[]);
+                        } catch (\Exception $e) { /* Do Nothing */ }
                     }
                 }
             }
@@ -313,30 +317,36 @@ class InitBulkLoad extends Command
             }
             // Create all groups
             foreach($new_identity_arr['groups'] as $group) {
-                GroupMember::updateOrCreate([
-                    'group_id'=>$group['group_id'],
-                    'identity_id'=>$new_identity->id
-                ],[]);
+                try {
+                    GroupMember::create([
+                        'group_id'=>$group['group_id'],
+                        'identity_id'=>$new_identity->id
+                    ],[]);
+                } catch (\Exception $e) { /* Do Nothing */ }
             }
             // Create all accounts
             foreach($new_identity_arr['accounts'] as $account) {
-                Account::updateOrCreate([
-                    'identity_id'=>$new_identity->id,
-                    'system_id'=>$account['system_id'],
-                    'account_id'=>$account['account_id']
-                ],[]);
+                try {
+                    Account::create([
+                        'identity_id'=>$new_identity->id,
+                        'system_id'=>$account['system_id'],
+                        'account_id'=>$account['account_id']
+                    ],[]);
+                } catch (\Exception $e) { /* Do Nothing */ }
+
             }
             // Create all entitlements
             foreach($new_identity_arr['entitlements'] as $entitlement) {
-                IdentityEntitlement::updateOrCreate([
-                    'identity_id' => $new_identity->id,
-                    'entitlement_id' => $entitlement['entitlement_id'],
-                ],[
-                    'type' => $entitlement['type'],
-                    'override' => $entitlement['override'],
-                    'expire' => $entitlement['expire'],
-                    'description' => $entitlement['description'],
-                ]);
+                try {
+                    IdentityEntitlement::create([
+                        'identity_id' => $new_identity->id,
+                        'entitlement_id' => $entitlement['entitlement_id'],
+                        'type' => $entitlement['type'],
+                        'override' => $entitlement['override'],
+                        'expire' => $entitlement['expire'],
+                        'description' => $entitlement['description'],
+                    ]);
+                } catch (\Exception $e) { /* Do Nothing */ }
             }
             // Recalculate Entitlements
             $new_identity->recalculate_entitlements();
