@@ -118,8 +118,8 @@ class Identity extends Authenticatable
     public function username_generate($template, $iterator = 0) {
         // Derive username
         $obj = [
-            'first_name' => str_split(strtolower($this->first_name), 1),
-            'last_name' => str_split(strtolower($this->last_name), 1),
+            'first_name' => str_split(preg_replace("/[^a-z]/",'',strtolower($this->first_name)), 1),
+            'last_name' => str_split(preg_replace("/[^a-z]/",'',strtolower($this->last_name)), 1),
             'iterator' => $iterator,
             'default_username' => $this->default_username,
             'ids'=>$this->ids,
