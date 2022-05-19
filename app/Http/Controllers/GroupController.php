@@ -57,6 +57,9 @@ class GroupController extends Controller
     }
 
     public function add_member(Request $request, Group $group){
+        if ($group->type != 'manual') {
+            abort(405, 'You cannot add a member to the group "'.$group->name.'" with type "'.$group->type.'"');
+        }
         $identity = Identity::where('id',$request->identity_id)->first();
         $group_membership = new GroupMember([
            'group_id'=>$group->id,
@@ -69,23 +72,15 @@ class GroupController extends Controller
 
     public function delete_member(Group $group,Identity $identity)
     {
+        if ($group->type != 'manual') {
+            abort(405, 'You cannot remove a member from the group "'.$group->name.'" with type "'.$group->type.'"');
+        }
         $group_member = GroupMember::where('group_id','=',$group->id)->where('identity_id','=',$identity->id)->first();
-        if($group_member){
+        if ($group_member){
             $group_member->delete();
-        }else{
+        } else {
             return false;
         }
-        
-        // if($result){
-        //     $log = new Log([
-        //         'action'=>'delete',
-        //         'identity_id'=>$$identity->id,
-        //         'type'=>'membership',
-        //         'type_id'=>$group->id,
-        //         'data'=>"entitlement deleted",
-        //         'actor_identity_id'=>Auth::user()->id
-        //     ]);
-        // }
         $identity->recalculate_entitlements();
         return true;
     }
