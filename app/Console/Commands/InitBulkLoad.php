@@ -264,6 +264,13 @@ class InitBulkLoad extends Command
                 ReservedUsername::updateOrCreate([
                     'username' => $username
                 ],[]);
+                if (is_array($account['google_aliases'])) {
+                    foreach($account['google_aliases'] as $google_alias) {
+                        ReservedUsername::updateOrCreate([
+                            'username' => str_replace('@binghamton.edu','',$google_alias)
+                        ],[]);
+                    }
+                }
             }
             $bar->advance();
         }
