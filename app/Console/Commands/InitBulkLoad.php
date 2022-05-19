@@ -260,18 +260,20 @@ class InitBulkLoad extends Command
         $this->info("Populating Reserved Usernames ...");
         $bar = $this->output->createProgressBar(count($source_identities));
         foreach($source_identities as $source_identity) {
+            $upsert_arr = [];
             foreach($source_identity['accounts'] as $username => $account) {
-                ReservedUsername::updateOrCreate([
+                $upsert_arr[] = [
                     'username' => $username
-                ],[]);
+                ];
                 if (is_array($account['google_aliases'])) {
                     foreach($account['google_aliases'] as $google_alias) {
-                        ReservedUsername::updateOrCreate([
+                        $upsert_arr[] = [
                             'username' => str_replace('@binghamton.edu','',$google_alias)
-                        ],[]);
+                        ];
                     }
                 }
             }
+            ReservedUsername::upsert($upsert_arr,'username');
             $bar->advance();
         }
         $this->info("\n");
@@ -312,34 +314,42 @@ class InitBulkLoad extends Command
                 ]);
             }
             // Create all groups
+            $upsert_arr = [];
             foreach($new_identity_arr['groups'] as $group) {
-                GroupMember::updateOrCreate([
+                $upsert_arr[] = [
                     'group_id'=>$group['group_id'],
                     'identity_id'=>$new_identity->id
-                ],[]);
+                ];
             }
+            GroupMember::upsert($upsert_arr,['group_id','identity_id']);
+
             // Create all accounts
+            $upsert_arr = [];
             foreach($new_identity_arr['accounts'] as $account) {
-                Account::updateOrCreate([
+                $upsert_arr[] = [
                     'identity_id'=>$new_identity->id,
                     'system_id'=>$account['system_id'],
                     'account_id'=>$account['account_id']
-                ],[]);
+                ];
             }
+            Account::upsert($upsert_arr,['identity_id','system_id','account_id']);
+
             // Create all entitlements
+            $upsert_arr = [];
             foreach($new_identity_arr['entitlements'] as $entitlement) {
-                IdentityEntitlement::updateOrCreate([
+                $upsert_arr[] = [
                     'identity_id' => $new_identity->id,
                     'entitlement_id' => $entitlement['entitlement_id'],
-                ],[
                     'type' => $entitlement['type'],
                     'override' => $entitlement['override'],
                     'expire' => $entitlement['expire'],
                     'description' => $entitlement['description'],
-                ]);
+                ];
             }
+            IdentityEntitlement::upsert($upsert_arr,['identity_id','entitlement_id'],['type','override','expire','description']);
+
             // Recalculate Entitlements
-            $new_identity->recalculate_entitlements();
+            // $new_identity->recalculate_entitlements();
             $bar->advance();
         }
         $this->info("\n");
