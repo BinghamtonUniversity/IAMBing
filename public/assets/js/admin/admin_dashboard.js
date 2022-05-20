@@ -2,19 +2,8 @@ dashboard_template = `
 <h1>Welcome {{first_name}} {{last_name}}</h1>
 <div class="row">
     <div class="col-sm-6">
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3 class="panel-title">My Groups</h3></div>
-            <div class="panel-body">
-                {{#groups}}
-                    <li>{{name}}</li>
-                {{/groups}}
-                {{^groups}}
-                    <div class="alert alert-warning">No Group Memberships</div>
-                {{/groups}}
-            </div>
-        </div>
-    </div>
-    <div class='col-sm-6'>
+        <!-- Start Column 1 -->
+        <!-- My Accounts -->
         <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">My Accounts</h3></div>
             <div class="panel-body">
@@ -28,8 +17,35 @@ dashboard_template = `
                 {{/systems}}
             </div>
         </div>
+        <!-- My Affiliations -->
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">My Affiliations</h3></div>
+            <div class="panel-body">
+                {{#affiliations}}
+                    <li>{{.}}</li>
+                {{/affiliations}}
+                {{^affiliations}}
+                    <div class="alert alert-warning">No Affiliations</div>
+                {{/affiliations}}
+            </div>
+        </div>
+        <!-- My Groups -->
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">My Groups</h3></div>
+            <div class="panel-body">
+                {{#groups}}
+                    <li>{{name}}</li>
+                {{/groups}}
+                {{^groups}}
+                    <div class="alert alert-warning">No Group Memberships</div>
+                {{/groups}}
+            </div>
+        </div>
+        <!-- End Column 1 -->
     </div>
     <div class='col-sm-6'>
+        <!-- Start Column 2 -->
+        <!-- My Normal Entitlements -->
         <div class="panel panel-default">
             <div class="panel-heading"><h3 class="panel-title">My Non-Sponsored Entitlements</h3></div>
             <div class="panel-body">
@@ -45,12 +61,10 @@ dashboard_template = `
                 {{/identity_entitlements}}
             </div>
         </div>
-    </div>
-    <div class="col-sm-12">
-        <div class='row'>
-        <div class='col-sm-6'>
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title">My Sponsored Entitlements</h3></div>
+
+        <!-- My Sponsored Entitlements -->
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">My Sponsored Entitlements</h3></div>
                 <div class="panel-body">
                     <div class='table table-responsive'>
                         <table class='table table-bordered'>
@@ -78,47 +92,46 @@ dashboard_template = `
                         <div class="alert alert-warning">No Entitlements</div>
                     {{/identity_entitlements}}
                 </div>
-        </div>
-        </div>
-        <div class='col-sm-6'>
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 class="panel-title">Identity Entitlements Sponsored by Me</h3></div>
-                <div class="panel-body">
-                    <div class='table table-responsive'>
-                        <table class='table table-bordered'>
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th scope='col' class='text-center'>Entitlement</th>
-                                    <th scope='col' class='text-center'>Name</th>
-                                    <th scope='col' class='text-center'>Email</th>
-                                    <th scope='col' class='text-center'>Renewal Days</th>
-                                    <th scope='col' class='text-center'>Expiration Date</th>
-                                    <th scope='col' class='text-center'>Renewal Allowed</th>
+            </div>
+
+        <!-- Entitlements I Sponsor -->
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3 class="panel-title">Identity Entitlements Sponsored by Me</h3></div>
+            <div class="panel-body">
+                <div class='table table-responsive'>
+                    <table class='table table-bordered'>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th scope='col' class='text-center'>Entitlement</th>
+                                <th scope='col' class='text-center'>Name</th>
+                                <th scope='col' class='text-center'>Email</th>
+                                <th scope='col' class='text-center'>Renewal Days</th>
+                                <th scope='col' class='text-center'>Expiration Date</th>
+                                <th scope='col' class='text-center'>Renewal Allowed</th>
+                            </tr>
+                        </thead>
+                        <tbody class='text-center'>
+                            {{#sponsored_entitlements}}
+                                <tr scope='row'>
+                                    <td>{{#sponsor_renew_allow}}
+                                    <input type="checkbox" class="form-check-input" name="ent_id" data-id="{{id}}">
+                                    {{/sponsor_renew_allow}}</td>
+                                    <td>{{entitlement.name}}</td>
+                                    <td>{{identity.first_name}} {{identity.last_name}}</td>
+                                    <td>{{identity.default_email}}</td>
+                                    <td>{{sponsor_renew_days}}</td>
+                                    <td>{{expiration_date}}</td>
+                                    <td>{{#sponsor_renew_allow}}Allowed{{/sponsor_renew_allow}}{{^sponsor_renew_allow}}Not Allowed{{/sponsor_renew_allow}}</td>
                                 </tr>
-                            </thead>
-                            <tbody class='text-center'>
-                                {{#sponsored_entitlements}}
-                                    <tr scope='row'>
-                                        <td>{{#sponsor_renew_allow}}
-                                        <input type="checkbox" class="form-check-input" name="ent_id" data-id="{{id}}">
-                                        {{/sponsor_renew_allow}}</td>
-                                        <td>{{entitlement.name}}</td>
-                                        <td>{{identity.first_name}} {{identity.last_name}}</td>
-                                        <td>{{identity.default_email}}</td>
-                                        <td>{{sponsor_renew_days}}</td>
-                                        <td>{{expiration_date}}</td>
-                                        <td>{{#sponsor_renew_allow}}Allowed{{/sponsor_renew_allow}}{{^sponsor_renew_allow}}Not Allowed{{/sponsor_renew_allow}}</td>
-                                    </tr>
-                                {{/sponsored_entitlements}}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="renewButton" onclick="renewFunc()" class="btn btn-primary">Renew</div>
+                            {{/sponsored_entitlements}}
+                        </tbody>
+                    </table>
                 </div>
+                <div id="renewButton" onclick="renewFunc()" class="btn btn-primary">Renew</div>
             </div>
         </div>
-        </div>
+        <!-- End Column 2 -->
     </div>
 </div>
 `;

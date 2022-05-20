@@ -8,7 +8,7 @@ $('#adminDataGrid').html(`
         </div>
         <div class="default_username_template"></div>
         </div>
-        <div class='col-xs-6'>
+        <div class='col-xs-12'>
         <h3>Identity Username Availability Check</h3>
         <div class="usernames"></div>
         </div>

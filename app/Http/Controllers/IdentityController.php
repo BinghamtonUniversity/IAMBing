@@ -91,6 +91,8 @@ class IdentityController extends Controller
                         ->orWhere('default_email',$search[0])
                         ->orWhereHas('identity_unique_ids', function($q) use ($search){
                             $q->where('value',$search[0]);
+                        })->orWhereHas('accounts', function($q) use ($search){
+                            $q->where('account_id',$search[0]);
                         })->orWhere(function($q) use ($search) {
                             $q->where('sponsored',true)->where('sponsor_identity_id',$search[0]);
                         });
