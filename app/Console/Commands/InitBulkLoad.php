@@ -164,11 +164,7 @@ class InitBulkLoad extends Command
             a recognized alumni, add you to the "alumni_email" group */
             foreach($source_identity['accounts'] as $username => $account) {
                 if ($account['google'] == true) {
-                    if ($account['vanity_alumni'] == true || 
-                        (in_array('alumni',$source_identity['affiliations']) && 
-                        !in_array('staff',$source_identity['affiliations']) && 
-                        !in_array('faculty',$source_identity['affiliations']))
-                    ) {
+                    if ($account['vanity_alumni'] == true || in_array('alumni',$source_identity['affiliations'])) {
                         $new_identity['groups'][] = ['group_id'=>$alumni_email_group->id,'name'=>$alumni_email_group->name];
                         break;
                     }
