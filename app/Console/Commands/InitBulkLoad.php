@@ -129,7 +129,7 @@ class InitBulkLoad extends Command
             
             // Set Default metadata
             $new_identity_ids = [];
-            if (!is_null($source_identity['bnumber'])) {
+            if (!is_null($source_identity['bnumber']) && $source_identity['bnumber'] != 'B00000000') {
                 $new_identity_ids['bnumber'] = $source_identity['bnumber'];
             }
             if (!is_null($source_identity['millennium_id'])) {
