@@ -167,7 +167,8 @@ class InitBulkLoad extends Command
                 if ($account['google'] == true) {
                     if ($account['vanity_alumni'] == true || 
                         in_array('alumni',$source_identity['affiliations']) || 
-                        (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1)) {
+                        (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1) || 
+                        (in_array('alumni_associates',$source_identity['affiliations']) && in_array('applicants',$source_identity['affiliations']))) {
                         $new_identity['groups'][] = ['group_id'=>$alumni_email_group->id,'name'=>$alumni_email_group->name];
                         break;
                     }
