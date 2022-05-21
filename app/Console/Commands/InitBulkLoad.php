@@ -49,10 +49,6 @@ class InitBulkLoad extends Command
                 } else {
                     $usernames[$matches_index]['non_numeric'][] = $username;
                 }
-            /* Handle situations where a person only has one account */
-            } else if (count($source_identity['accounts']) == 1) {
-                $usernames['matches']['non_numeric'][] = $username;
-                break;
             }
         }
         sort($usernames['matches']['numeric']); sort($usernames['matches']['non_numeric']);
@@ -164,7 +160,7 @@ class InitBulkLoad extends Command
             /* If you have a vanilty alumni email, or you have an active email account and you are
             a recognized alumni, add you to the "alumni_email" group */
             foreach($source_identity['accounts'] as $username => $account) {
-                if ($account['google'] == true) {
+                if ($account['google'] == true && $account['primary'] == true) {
                     if ($account['vanity_alumni'] == true || 
                         in_array('alumni',$source_identity['affiliations']) || 
                         (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1) || 
