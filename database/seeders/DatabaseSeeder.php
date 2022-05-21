@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         // Use This tool to convert the entitlement spreadsheet into a PHP Array: https://t.yctin.com/en/excel/to-php-array/
         // Entitlement Spreadsheet: https://docs.google.com/spreadsheets/d/1yD-TTZ8B8hRXI7JX8wAf-9Hu_nJWfXfxyYbDTRCW6WA/edit#gid=0
         return array(
-            0 => array('', '', 'faculty', 'faculty', 'staff', 'student', 'student', 'student', 'staff', 'alum', 'alum', 'applicant', 'applicant', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'afffiliate', 'affiliate', 'affiliate'),
+            0 => array('', '', 'faculty', 'faculty', 'staff', 'student', 'student', 'student', 'staff', 'alum', 'alum', 'applicant', 'applicant', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate'),
             1 => array('System', 'Entitlement', 'Faculty', 'Recent Faculty', 'Staff', 'Students', 'Online Students', 'Currently Enrolled Students', 'Student Staff', 'Alumni', 'Recent Alumni', 'Applicants', 'Admitted Applicants', 'Rf Staff', 'Retirees', 'Volunteers', 'Live On Campus', 'Visiting Scholars Professionals', 'Alumni Associates', 'Alumni Email'),
             2 => array('BU', 'BU Account', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x'),
             3 => array('BU', 'Enforce 2FA', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', 'x', 'x', '', 'x'),
@@ -32,25 +32,24 @@ class DatabaseSeeder extends Seeder
             9 => array('BU', 'VPN-Students', '', '', '', 'x', 'x', 'x', '', '', 'x', '', '', '', '', '', '', '', '', ''),
             10 => array('BU', 'VDI-Students', '', '', '', 'x', 'x', 'x', '', '', '', '', '', '', '', '', '', '', '', ''),
             11 => array('BU', 'Interactive-Login', 'x', '', 'x', 'x', 'x', 'x', '', '', '', '', '', 'x', '', 'x', '', 'x', '', ''),
-            12 => array('BU', 'Spectrum Access', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'x', '', '', ''),
-            13 => array('BU', 'Wireless-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            14 => array('BU', 'VPN-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            15 => array('BU', 'VDI-Other', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            16 => array('BU', 'VPN-rdp', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            17 => array('BU', 'Wireless-Deny', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            18 => array('Google Workspace', 'Google Account', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x'),
-            19 => array('Google Workspace', 'Google TwoStep', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x'),
-            20 => array('Google Workspace', 'Google Email', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x'),
-            21 => array('Google Workspace', 'Google Drive', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
-            22 => array('Google Workspace', 'Google Sites', 'x', '', 'x', '', '', '', '', '', '', '', '', 'x', '', 'x', '', 'x', '', ''),
-            23 => array('Google Workspace', 'Google Chat', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
-            24 => array('Google Workspace', 'Google Groups', 'x', '', 'x', 'x', '', 'x', '', '', '', '', '', 'x', '', 'x', '', 'x', '', ''),
-            25 => array('Google Workspace', 'Google Calendar', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
-            26 => array('Google Workspace', 'Google Classroom', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
-            27 => array('Google Workspace', 'Google Addons', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
-            28 => array('Google Workspace', 'Google Vault', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            29 => array('Banner', 'UNIV Email', '', '', '', 'x', 'x', 'x', '', '', 'x', '', 'x', '', '', '', 'x', '', '', 'x'),
-            30 => array('Banner', 'EMPL Email', 'x', 'x', 'x', '', '', '', '', '', '', '', '', 'x', 'x', 'x', '', 'x', '', ''),
+            12 => array('BU', 'Wireless-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            13 => array('BU', 'VPN-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            14 => array('BU', 'VDI-Other', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            15 => array('BU', 'VPN-rdp', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            16 => array('BU', 'Wireless-Deny', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            17 => array('Google Workspace', 'Google Account', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x'),
+            18 => array('Google Workspace', 'Google TwoStep', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x'),
+            19 => array('Google Workspace', 'Google Email', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x'),
+            20 => array('Google Workspace', 'Google Drive', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
+            21 => array('Google Workspace', 'Google Sites', 'x', '', 'x', '', '', '', '', '', '', '', '', 'x', '', 'x', '', 'x', '', ''),
+            22 => array('Google Workspace', 'Google Chat', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
+            23 => array('Google Workspace', 'Google Groups', 'x', '', 'x', 'x', '', 'x', '', '', '', '', '', 'x', '', 'x', '', 'x', '', ''),
+            24 => array('Google Workspace', 'Google Calendar', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
+            25 => array('Google Workspace', 'Google Classroom', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
+            26 => array('Google Workspace', 'Google Addons', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', ''),
+            27 => array('Google Workspace', 'Google Vault', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            28 => array('Banner', 'UNIV Email', '', '', '', 'x', 'x', 'x', '', '', 'x', '', '', '', '', '', '', '', '', ''),
+            29 => array('Banner', 'EMPL Email', 'x', 'x', 'x', '', '', '', '', '', '', '', '', 'x', '', 'x', '', 'x', '', ''),
         );
     }
 
@@ -88,11 +87,26 @@ class DatabaseSeeder extends Seeder
 
         // Create Seed Systems
         $systems = [];
-        $systems['BU'] = new System(['name' => 'BU', 'default_account_id_template' => '{{default_username}}', 'onremove' => 'delete', 'config' => ['actions' => [['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ], ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200, ], ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => '1', 'response_code' => 200, ], ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ]]]]);
+        $systems['BU'] = new System(['name' => 'BU', 'default_account_id_template' => '{{default_username}}', 'onremove' => 'delete', 'config' => ['actions' => [
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ],
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ], 
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200, ], 
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => '1', 'response_code' => 200, ]
+        ]]]);
         $systems['BU']->save();
-        $systems['Google Workspace'] = new System(['name' => 'Google Workspace', 'default_account_id_template' => '{{default_username}}@binghamton.edu', 'onremove' => 'delete', 'config' => ['actions' => [['path' => '/google/user/{{account.account_id}}@binghamton.edu', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ], ['path' => '/google/user/{{account.account_id}}@binghamton.edu', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200, ], ['path' => '/google/user/{{account.account_id}}@binghamton.edu', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ], ]]]);
+        $systems['Google Workspace'] = new System(['name' => 'Google Workspace', 'default_account_id_template' => '{{default_username}}@binghamton.edu', 'onremove' => 'delete', 'config' => ['actions' => [
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ], 
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ],
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200, ], 
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => '1', 'response_code' => 200 ]
+        ]]]);
         $systems['Google Workspace']->save();
-        $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['actions' => [['path' => '/banner/goremal/{{default_username}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ], ['path' => '/banner/goremal', 'verb' => 'POST', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ], ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200, ]]]]);
+        $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['actions' => [
+            ['path' => '/banner/goremal/{{default_username}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ], 
+            ['path' => '/banner/goremal', 'verb' => 'POST', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ], 
+            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200], 
+            ['path' => '/banner/goremal', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => '1', 'response_code' => 200]
+        ]]]);
         $systems['Banner']->save();
 
         $spreadsheet_config = $this->get_spreadsheet_config();
