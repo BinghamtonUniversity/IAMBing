@@ -83,6 +83,7 @@ class InitBulkLoad extends Command
         $google_sys = System::where('name','Google Workspace')->first();
         $all_groups = Group::select('name','id','slug')->get();
         $alumni_email_group = Group::where('name','Alumni Email')->first();
+        $alumni_ad_group = Group::where('name','Alumni AD')->first();
         $ad_entitlement_mappings = [
             'Wireless-AdminNetAccess' => Entitlement::where('name','Wireless-AdminNetAccess')->first(),
             'VPN-AdminNetAccess' => Entitlement::where('name','VPN-AdminNetAccess')->first(),
@@ -157,8 +158,8 @@ class InitBulkLoad extends Command
                     $new_identity['groups'][] = ['group_id' => $this_group->id,'name'=>$this_group->name];
                 }
             }
-            /* If you have a vanilty alumni email, or you have an active email account and you are
-            a recognized alumni, add you to the "alumni_email" group */
+            /* Handle Alumni with an existing Google Account ==> Add to Alumni Email Group */
+            /* Handle Alumni with an existing AD Account ==> Add to Alumni AD Group */
             foreach($source_identity['accounts'] as $username => $account) {
                 if ($account['google'] == true && $account['primary'] == true) {
                     if ($account['vanity_alumni'] == true || 
@@ -166,6 +167,13 @@ class InitBulkLoad extends Command
                         (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1) || 
                         (in_array('alumni_associates',$source_identity['affiliations']) && in_array('applicants',$source_identity['affiliations']))) {
                         $new_identity['groups'][] = ['group_id'=>$alumni_email_group->id,'name'=>$alumni_email_group->name];
+                        break;
+                    }
+                }
+                if ($account['ad'] == true && $account['primary'] == true) {
+                    if (in_array('alumni',$source_identity['affiliations']) || 
+                        (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1)) {
+                        $new_identity['groups'][] = ['group_id'=>$alumni_ad_group->id,'name'=>$alumni_ad_group->name];
                         break;
                     }
                 }
