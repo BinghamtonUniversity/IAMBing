@@ -122,9 +122,10 @@ class InitBulkLoad extends Command
             $source_identity['is_orphan'] = $is_orphan;
             
             // Check to see if we should include this person in IAMBing
-            if ((is_null($source_identity['bnumber']) && is_null($source_identity['millennium_id']) && is_null($source_identity['suny_id'])) ||
+            if (((is_null($source_identity['bnumber']) || $source_identity['bnumber'] == 'B00000000') && is_null($source_identity['millennium_id']) && is_null($source_identity['suny_id'])) ||
                 (is_null($source_identity['first_name']) || is_null($source_identity['last_name']))) {
                 $source_identity['skip_identity'] = true;
+                $source_identity['is_orphan'] = true;
             }
             
             // Set Default metadata
