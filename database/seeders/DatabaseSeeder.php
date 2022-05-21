@@ -88,24 +88,25 @@ class DatabaseSeeder extends Seeder
         // Create Seed Systems
         $systems = [];
         $systems['BU'] = new System(['name' => 'BU', 'default_account_id_template' => '{{default_username}}', 'onremove' => 'delete', 'config' => ['actions' => [
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ],
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ], 
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200, ], 
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => '1', 'response_code' => 200, ]
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => $endpoint1->id, 'response_code' => 200, ],
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => $endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => $endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => $endpoint1->id, 'response_code' => 200, ]
         ]]]);
         $systems['BU']->save();
         $systems['Google Workspace'] = new System(['name' => 'Google Workspace', 'default_account_id_template' => '{{default_username}}@binghamton.edu', 'onremove' => 'delete', 'config' => ['actions' => [
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ], 
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ],
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200, ], 
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => '1', 'response_code' => 200 ]
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => $endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => $endpoint1->id, 'response_code' => 200, ],
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => $endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => $endpoint1->id, 'response_code' => 200 ]
         ]]]);
         $systems['Google Workspace']->save();
         $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['actions' => [
-            ['path' => '/banner/goremal/{{default_username}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => '1', 'response_code' => 200, ], 
-            ['path' => '/banner/goremal', 'verb' => 'POST', 'action' => 'create', 'endpoint' => '1', 'response_code' => 200, ], 
-            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => '1', 'response_code' => 200], 
-            ['path' => '/banner/goremal', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => '1', 'response_code' => 200]
+            ['path' => '/banner/goremal', 'verb' => 'GET', 'action' => 'info', 'endpoint' => $endpoint1->id, 'response_code' => 200, ], 
+            // @alikemaltanriverdi -- Please confirm the correct "create" route.  Is it POST or PUT?
+            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => $endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => $endpoint1->id, 'response_code' => 200], 
+            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'delete', 'endpoint' => $endpoint1->id, 'response_code' => 200]
         ]]]);
         $systems['Banner']->save();
 
