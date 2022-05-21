@@ -160,21 +160,20 @@ class InitBulkLoad extends Command
             }
             /* Handle Alumni with an existing Google Account ==> Add to Alumni Email Group */
             /* Handle Alumni with an existing AD Account ==> Add to Alumni AD Group */
+            $alumni_google = false; $alumni_ad = false;
             foreach($source_identity['accounts'] as $username => $account) {
-                if ($account['google'] == true && $account['primary'] == true) {
+                if ($account['google'] == true && $account['primary'] == true && !$alumni_google) {
                     if ($account['vanity_alumni'] == true || 
                         in_array('alumni',$source_identity['affiliations']) || 
                         (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1) || 
                         (in_array('alumni_associates',$source_identity['affiliations']) && in_array('applicants',$source_identity['affiliations']))) {
                         $new_identity['groups'][] = ['group_id'=>$alumni_email_group->id,'name'=>$alumni_email_group->name];
-                        break;
                     }
                 }
-                if ($account['ad'] == true && $account['primary'] == true) {
+                if ($account['ad'] == true && $account['primary'] == true && !$alumni_ad) {
                     if (in_array('alumni',$source_identity['affiliations']) || 
                         (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1)) {
                         $new_identity['groups'][] = ['group_id'=>$alumni_ad_group->id,'name'=>$alumni_ad_group->name];
-                        break;
                     }
                 }
             }
