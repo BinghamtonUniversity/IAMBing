@@ -51,7 +51,7 @@ class UpdateIdentityAttributes implements ShouldQueue
                 $identity->attributes = $api_identity['attributes'];
             }
             $identity->save();
-            if (!$identity->recalculate_entitlements()) {
+            if ($identity->recalculate_entitlements() !== true) {
                 throw new Exception('Recalculate Entitlements Failed');
             }
         }

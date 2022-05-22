@@ -37,32 +37,6 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
         }).on('cancel',function(form_event){
             form_event.form.trigger('close');
         }).modal()
-    // }).on("model:modify",function(grid_event) {
-    //     if (grid_event.model.attributes.status === 'deleted') {
-    //         window.alert("You cannot modify an account which has been deleted.  It must be restored firsst!");
-    //         return;
-    //     }
-    //     new gform({
-    //         "legend":"Update Account",
-    //         "name": "update_account",
-    //         "fields": [
-    //             {name:"id", type:"hidden"},
-    //             {type:"switch", label: "Manually Override This Account",name: "override",value:false,options:[{value:false,label:'Use Defaults (No Manual Override)'},{value:true,label:'Manual Override'}],help:'If "Manual Override" is not selected, this account may be updated or deleted by this identity\'s calculated entitlements!'},
-    //             {name:"override_description", required:true, "label":"Manual Override Description",type:"textarea", show:[{type:'matches',name:'override',value:true}],limit:100},        
-    //         ]
-    //     }).on('save',function(form_event){
-    //         toastr.info('Processing... Please Wait')
-    //         form_event.form.trigger('close');
-
-    //         ajax.put('/api/identities/'+id+'/accounts/'+grid_event.model.attributes.id,form_event.form.get(),function(data) {
-    //             grid_event.model.update(data)
-    //         },function(data) {
-    //             grid_event.model.undo();
-    //         }); 
-    
-    //     }).on('cancel',function(form_event){
-    //         form_event.form.trigger('close');
-    //     }).modal().set(grid_event.model.attributes)
     }).on("model:softdelete",function(grid_event) {
         if (grid_event.model.attributes.status === 'deleted') {
             toastr.error("You cannot delete an account which has already been deleted!");

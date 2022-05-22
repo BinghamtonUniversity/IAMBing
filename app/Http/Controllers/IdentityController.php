@@ -73,7 +73,7 @@ class IdentityController extends Controller
     }
 
     public function recalculate(Request $request, Identity $identity) {
-        $identity->recalculate_entitlements();
+        $identity->sync_errors = $identity->recalculate_entitlements();
         return $identity;
     }
 

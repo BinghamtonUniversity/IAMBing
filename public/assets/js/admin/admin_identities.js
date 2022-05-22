@@ -1,3 +1,11 @@
+var mymodal = new gform(
+    {"fields":[
+        {name:'output',value:'',type:'output',label:''}
+    ],
+    "title":"Account Info",
+    "actions":[]}
+);
+
 gform.options = {autoFocus:false};
 identity_form_attributes = [
     {type:"hidden", name:"id", label: 'id'},
@@ -462,13 +470,6 @@ var manage_identity = function(identity_id) {
 
         });
 
-        var mymodal = new gform(
-            {"fields":[
-                {name:'output',value:'',type:'output',label:''}
-            ],
-            "title":"Account Info",
-            "actions":[]}
-        );
         $('body').on('click','.account-info-btn',function(e){
             $.ajax({
                 url: '/api/identities/'+identity_id+'/accounts/'+e.target.dataset.id,

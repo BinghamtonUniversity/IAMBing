@@ -47,7 +47,7 @@ class DeleteExpiredEntitlements implements ShouldQueue
             if (!is_null($identity_entitlement)){
                 $identity_entitlement->delete();
             }
-            if (!$identity->recalculate_entitlements()) {
+            if ($identity->recalculate_entitlements() !== true) {
                 throw new Exception('Recalculate Entitlements Failed');
             }
         }
