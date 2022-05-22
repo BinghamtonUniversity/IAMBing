@@ -298,7 +298,7 @@ class Identity extends Authenticatable
         foreach($diff as $system_id) {
             $system = System::where('id',$system_id)->first();
             $myaccount = $identity->add_account($system);
-            if (!$myaccount->sync('create')) {
+            if ($myaccount->sync('create') == false) {
                 $sync_error = true;
             }
         }
@@ -308,16 +308,16 @@ class Identity extends Authenticatable
         $myaccounts_to_delete = Account::where('identity_id',$identity->id)->with('system')->whereIn('system_id',$diff)->get();
         foreach($myaccounts_to_delete as $myaccount) {
             if ($myaccount->system->onremove === 'delete') {
-                if ($myaccount->sync('delete')) {
-                    $myaccount->delete();
-                } else {
+                if ($myaccount->sync('delete') == false) {
                     $sync_error = true;
+                } else {
+                    $myaccount->delete();
                 }
             } else if ($myaccount->system->onremove === 'disable') {
-                if ($myaccount->sync('disable')) {
-                    $myaccount->disable();
-                } else {
+                if ($myaccount->sync('disable') == false) {
                     $sync_error = true;
+                } else {
+                    $myaccount->disable();
                 }
             }
         }
@@ -325,7 +325,7 @@ class Identity extends Authenticatable
         // Sync All Accounts with current attributes and entitlements
         $myaccounts = Account::where('identity_id',$identity->id)->with('system')->get();
         foreach($myaccounts as $myaccount) {
-            if (!$myaccount->sync('update')) {
+            if ($myaccount->sync('update') == false) {
                 $sync_error = true;
             }
         }

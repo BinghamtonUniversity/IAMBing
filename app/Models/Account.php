@@ -39,7 +39,12 @@ class Account extends Model
     }
 
     public function get_info() {
-        $this->info = $this->sync('info');
+        $response = $this->sync('info');
+        if ($response == false) {
+            $this->info = 'Error communicating with system';
+        } else {
+            $this->info = $response;
+        }
     }
 
     // private function build_sync_identity() {
@@ -68,7 +73,7 @@ class Account extends Model
                 $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
                 $response = EndpointHelper::http_request_maker($endpoint,$action_definition,$myidentity,$url);
                 if ($response['code'] == $action_definition->response_code) {
-                    return true;
+                    return $response['content'];
                 } else {
                     // Log The Error Somewhere?
                     // Log::debug($response);
