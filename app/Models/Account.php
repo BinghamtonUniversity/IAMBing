@@ -68,12 +68,16 @@ class Account extends Model
                 $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
                 $response = EndpointHelper::http_request_maker($endpoint,$action_definition,$myidentity,$url);
                 if ($response['code'] == $action_definition->response_code) {
-                    return $response['content'];
+                    return true;
                 } else {
-                    return $response;
+                    // Log The Error Somewhere?
+                    // Log::debug($response);
                 }
             }
         }
+        $this->status = 'sync_error';
+        $this->save();
+        return false;
     }
 
     protected function serializeDate(DateTimeInterface $date)

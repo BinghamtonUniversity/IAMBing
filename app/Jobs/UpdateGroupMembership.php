@@ -64,24 +64,21 @@ class UpdateGroupMembership implements ShouldQueue
 
         $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
         // Add Member to Group
-        if($action==='add'){
-            if (is_null($group_member)) {
-                $group_member = new GroupMember(['group_id'=>$group_id,'identity_id'=>$identity->id]);
-                $group_member->save();
-                $identity->recalculate_entitlements();
-            }
+        if($action==='add' && is_null($group_member)) {
+            $group_member = new GroupMember(['group_id'=>$group_id,'identity_id'=>$identity->id]);
+            $group_member->save();
         }
         // Remove member from Group
-        if($action==='remove'){
-            if (!is_null($group_member)) {
-                $group_member->delete();
-                $identity->recalculate_entitlements();
-            }
+        if($action==='remove' && !is_null($group_member)) {
+            $group_member->delete();
         }
+        if (!$identity->recalculate_entitlements()) {
+            throw new Exception('Recalculate Entitlements Failed');
+        }        
     }
 
     public function failed(Throwable $exception) {
         // Do nothing?
-        Log::debug($exception->getMessage());
+        // Log::debug($exception->getMessage());
     }   
 }

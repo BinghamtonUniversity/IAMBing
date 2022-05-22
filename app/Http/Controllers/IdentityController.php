@@ -166,6 +166,9 @@ class IdentityController extends Controller
 
     public function restore_account(Identity $identity, $account_id) {
         $account = Account::where('id',$account_id)->withTrashed()->first();
+        if (!$account->trashed()) {
+            abort(405, 'You cannot restore an account which has not been deleted');
+        }
         $account->restore();
         $account->status = 'active';
         $account->save();

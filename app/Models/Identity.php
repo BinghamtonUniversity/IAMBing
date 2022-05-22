@@ -235,7 +235,9 @@ class Identity extends Authenticatable
             return $account;
         } else {
             $existing_account->status = 'active';
-            $existing_account->restore();
+            if ($existing_account->trashed()) {
+                $existing_account->restore();
+            }
             $existing_account->save();
             return $existing_account;
         }
@@ -261,7 +263,6 @@ class Identity extends Authenticatable
                         'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
                     ]);
                     $log->save();
-
                     $identity_entitlement->delete();
                 }
             }
@@ -280,14 +281,14 @@ class Identity extends Authenticatable
                     'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
                 ]);
                 $log->save();
-
                 $entitlement->update(['type'=>'add','override'=>false,'expiration_date'=>null,'description'=>null,'override_identity_id'=>null]);
             }
         }
-        $this->sync_accounts();
+        return $this->sync_accounts();
     }
 
     public function sync_accounts() {
+        $sync_error = false;
         $identity = $this;
         // Create New Accounts for Unmet Entitlements
         $existing_identity_entitlements = IdentityEntitlement::select('entitlement_id')->where('identity_id',$identity->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
@@ -297,7 +298,9 @@ class Identity extends Authenticatable
         foreach($diff as $system_id) {
             $system = System::where('id',$system_id)->first();
             $myaccount = $identity->add_account($system);
-            $myaccount->sync('create');
+            if (!$myaccount->sync('create')) {
+                $sync_error = true;
+            }
         }
 
         // Delete accounts for Former Entitlements
@@ -305,20 +308,28 @@ class Identity extends Authenticatable
         $myaccounts_to_delete = Account::where('identity_id',$identity->id)->with('system')->whereIn('system_id',$diff)->get();
         foreach($myaccounts_to_delete as $myaccount) {
             if ($myaccount->system->onremove === 'delete') {
-                $myaccount->sync('delete');
-                $myaccount->delete();
+                if ($myaccount->sync('delete')) {
+                    $myaccount->delete();
+                } else {
+                    $sync_error = true;
+                }
             } else if ($myaccount->system->onremove === 'disable') {
-                $myaccount->sync('disable');
-                $myaccount->disable();
+                if ($myaccount->sync('disable')) {
+                    $myaccount->disable();
+                } else {
+                    $sync_error = true;
+                }
             }
         }
 
         // Sync All Accounts with current attributes and entitlements
         $myaccounts = Account::where('identity_id',$identity->id)->with('system')->get();
         foreach($myaccounts as $myaccount) {
-            $myaccount->sync('update');
+            if (!$myaccount->sync('update')) {
+                $sync_error = true;
+            }
         }
-
+        return $sync_error;
     }
 
     public function get_api_identity(){

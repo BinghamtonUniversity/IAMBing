@@ -14,7 +14,6 @@ use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-
 use Throwable;
 
 class DeleteExpiredEntitlements implements ShouldQueue
@@ -30,14 +29,12 @@ class DeleteExpiredEntitlements implements ShouldQueue
     public function __construct($config) {
         $this->identity_entitlement_id = $config['identity_entitlement_id'];
         $this->identity_id = $config['identity_id'];
-
     }
 
     public function middleware() {
         $identity_entitlement_id = $this->identity_entitlement_id;
         return [(new WithoutOverlapping($identity_entitlement_id))->releaseAfter(60)];
     }
-
 
     public function handle() {
         $identity_entitlement_id = $this->identity_entitlement_id;
@@ -46,15 +43,18 @@ class DeleteExpiredEntitlements implements ShouldQueue
         $identity_entitlement = IdentityEntitlement::where('id',$identity_entitlement_id)->first();
         $identity = Identity::where('id',$identity_id)->first();
         
-        if (!is_null($identity_entitlement)){
-            $identity_entitlement->delete();
-            $identity->recalculate_entitlements();
+        if (!is_null($identity)) {
+            if (!is_null($identity_entitlement)){
+                $identity_entitlement->delete();
+            }
+            if (!$identity->recalculate_entitlements()) {
+                throw new Exception('Recalculate Entitlements Failed');
+            }
         }
-
     }
 
     public function failed(Throwable $exception) {
         // Do nothing?
-        Log::debug($exception->getMessage());
+        // Log::debug($exception->getMessage());
     }
 }

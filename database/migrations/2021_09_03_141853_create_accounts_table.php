@@ -22,6 +22,7 @@ class CreateAccountsTable extends Migration
                 'active',
                 'disabled',
                 'deleted',
+                'sync_error',
             ])->default('active');
             $table->foreign('identity_id')->references('id')->on('identities');
             $table->foreign('system_id')->references('id')->on('systems');
