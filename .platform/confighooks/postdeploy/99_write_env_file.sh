@@ -25,6 +25,5 @@ done < <(jq -r <<< $ENVIRONMENT_JSON \
 # Supervisor Init Functions
 sudo supervisorctl reread
 sudo supervisorctl update
-sudo supervisorctl start horizon
 sudo supervisorctl restart horizon
 sudo -u webapp php /var/app/current/artisan horizon:terminate
