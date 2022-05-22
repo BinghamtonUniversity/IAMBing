@@ -13,6 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Exceptions\FailedRecalculateException;
 
 use Throwable;
 
@@ -47,9 +48,10 @@ class DeleteExpiredEntitlements implements ShouldQueue
             if (!is_null($identity_entitlement)){
                 $identity_entitlement->delete();
             }
-            if ($identity->recalculate_entitlements() !== true) {
-                throw new \Exception('Recalculate Entitlements Failed');
-            }
+            $resp = $identity->recalculate_entitlements();
+            if ($resp !== true) {
+                throw new FailedRecalculateException('Recalculate Entitlements Failed',$resp);
+            }        
         }
     }
 

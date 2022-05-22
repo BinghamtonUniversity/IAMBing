@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\Identity;
 use App\Models\GroupMember;
+use App\Exceptions\FailedRecalculateException;
 use Throwable;
 
 class UpdateGroupMembership implements ShouldQueue
@@ -72,8 +73,10 @@ class UpdateGroupMembership implements ShouldQueue
         if($action==='remove' && !is_null($group_member)) {
             $group_member->delete();
         }
-        if ($identity->recalculate_entitlements() !== true) {
-            throw new \Exception('Recalculate Entitlements Failed');
+        
+        $resp = $identity->recalculate_entitlements();
+        if ($resp !== true) {
+            throw new FailedRecalculateException('Recalculate Entitlements Failed',$resp);
         }        
     }
 

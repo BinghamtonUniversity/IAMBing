@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\Identity;
 use Facade\FlareClient\Api;
+use App\Exceptions\FailedRecalculateException;
 use Throwable;
 
 class UpdateIdentityAttributes implements ShouldQueue
@@ -42,7 +43,7 @@ class UpdateIdentityAttributes implements ShouldQueue
             $q->where('name',$unique_id)->where('value',$api_identity['ids'][$unique_id]);
         })->first();
         
-        if(!is_null($identity)){
+        if(!is_null($identity)) {
             $identity->update($api_identity);
             if(isset($api_identity['ids'])){
                 $identity->ids = $api_identity['ids'];
@@ -51,9 +52,10 @@ class UpdateIdentityAttributes implements ShouldQueue
                 $identity->attributes = $api_identity['attributes'];
             }
             $identity->save();
-            if ($identity->recalculate_entitlements() !== true) {
-                throw new \Exception('Recalculate Entitlements Failed');
-            }
+            $resp = $identity->recalculate_entitlements();
+            if ($resp !== true) {
+                throw new FailedRecalculateException('Recalculate Entitlements Failed',$resp);
+            }        
         }
     }
 

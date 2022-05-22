@@ -36,9 +36,9 @@ class IAMBingGroupSync
     ];
 
     static private $groups = [
-        'Staff'=>['B00505893','B00612268'],
-        'Avengers'=>['B0034346','B00123234','B00505893'],
-        'Applicants'=>['B00612268','B00123467'],
+        'staff'=>['B00505893','B00612268'],
+        // 'Avengers'=>['B0034346','B00123234','B00505893'],
+        // 'Applicants'=>['B00612268','B00123467'],
     ];
 
     static private function get_identities($bnumbers) {
@@ -52,8 +52,8 @@ class IAMBingGroupSync
     }
 
     static private $iambing_url = 'http://iambing.local:8000';
-    static private $iambing_username = 'test';
-    static private $iambing_password = 'test';
+    static private $iambing_username = 'defaultuser';
+    static private $iambing_password = 'defaultpass';
 
     static public function sync() {
         $httphelper = new HTTPHelper();
