@@ -293,12 +293,12 @@ class Identity extends Authenticatable
         // Create New Accounts for Unmet Entitlements
         $existing_identity_entitlements = IdentityEntitlement::select('entitlement_id')->where('identity_id',$identity->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
         $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_identity_entitlements)->get()->pluck('system_id')->unique();
-        $system_ids_has = Account::select('system_id')->where('identity_id',$identity->id)->where('status','active')->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
         foreach($diff as $system_id) {
             $system = System::where('id',$system_id)->first();
             $myaccount = $identity->add_account($system);
-            if ($myaccount->sync('create') == false) {
+            if (array_key_exists('error',$myaccount->sync('create'))) {
                 $sync_error = true;
             }
         }
@@ -308,13 +308,13 @@ class Identity extends Authenticatable
         $myaccounts_to_delete = Account::where('identity_id',$identity->id)->with('system')->whereIn('system_id',$diff)->get();
         foreach($myaccounts_to_delete as $myaccount) {
             if ($myaccount->system->onremove === 'delete') {
-                if ($myaccount->sync('delete') == false) {
+                if (array_key_exists('error',$myaccount->sync('delete'))) {
                     $sync_error = true;
                 } else {
                     $myaccount->delete();
                 }
             } else if ($myaccount->system->onremove === 'disable') {
-                if ($myaccount->sync('disable') == false) {
+                if (array_key_exists('error',$myaccount->sync('disable'))) {
                     $sync_error = true;
                 } else {
                     $myaccount->disable();
@@ -325,8 +325,13 @@ class Identity extends Authenticatable
         // Sync All Accounts with current attributes and entitlements
         $myaccounts = Account::where('identity_id',$identity->id)->with('system')->get();
         foreach($myaccounts as $myaccount) {
-            if ($myaccount->sync('update') == false) {
+            if (array_key_exists('error',$myaccount->sync('update'))) {
                 $sync_error = true;
+            } else {
+                if ($myaccount->status == 'sync_error') {
+                    $myaccount->status = 'active';
+                    $myaccount->save();
+                }
             }
         }
         return $sync_error;

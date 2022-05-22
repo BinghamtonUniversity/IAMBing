@@ -18,7 +18,6 @@ class EndpointHelper {
                 'username' => $endpoint->config->username,
                 'password' => $endpoint->getSecret(),
             ];
-            // dd($http_config);
             if (isset($endpoint->config->content_type) && $endpoint->config->content_type !== '') {
                 $http_config['content_type'] = $endpoint->config->content_type;
             }

@@ -158,8 +158,9 @@ class IdentityController extends Controller
 
     public function delete_account(Identity $identity, Account $account) {
         $account_id = $account->id;
-        $account->sync('delete');
-        $account->delete();
+        if (!array_key_exists('error',$account->sync('delete'))) {
+            $account->delete();
+        }
         $identity->recalculate_entitlements();
         return Account::where('id',$account_id)->withTrashed()->first();
     }
@@ -172,7 +173,6 @@ class IdentityController extends Controller
         $account->restore();
         $account->status = 'active';
         $account->save();
-        $account->sync('update');
         $identity->recalculate_entitlements();
         return $account;
     }

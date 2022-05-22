@@ -19,9 +19,6 @@ class GroupMemberObserver
             'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
-        // $identity = Identity::where('id',$group_member->id);
-        // $group_memberships = GroupMember::where('identity_id',$identity->id);
-        // dd($identity);
     }
 
     /**

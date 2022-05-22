@@ -39,12 +39,7 @@ class Account extends Model
     }
 
     public function get_info() {
-        $response = $this->sync('info');
-        if ($response == false) {
-            $this->info = 'Error communicating with system';
-        } else {
-            $this->info = $response;
-        }
+        $this->info = $this->sync('info');
     }
 
     // private function build_sync_identity() {
@@ -63,6 +58,7 @@ class Account extends Model
 
         $m = new \Mustache_Engine;
         $mysystem = System::where('id',$this->system_id)->first();
+        $error = 'API Endpoint Misconfiguration Error';
         if (isset($mysystem->config->actions) && is_array($mysystem->config->actions)) {
             $action_definition = Arr::first($mysystem->config->actions, function ($value, $key) use ($action) {
                 return $value->action === $action;
@@ -73,20 +69,20 @@ class Account extends Model
                 $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
                 $response = EndpointHelper::http_request_maker($endpoint,$action_definition,$myidentity,$url);
                 if ($response['code'] == $action_definition->response_code) {
-                    return $response['content'];
+                    return Arr::only($response, ['code', 'content']);
                 } else {
-                    // Log The Error Somewhere?
-                    // Log::debug($response);
+                    $error = $response;
                 }
             }
         }
-        $this->status = 'sync_error';
-        $this->save();
-        return false;
+        if ($action != 'info') {
+            $this->status = 'sync_error';
+            $this->save();
+        }
+        return ['error'=>$error];       
     }
 
-    protected function serializeDate(DateTimeInterface $date)
-    {
+    protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s a');
     }
 }
