@@ -52,7 +52,7 @@ class UpdateIdentityAttributes implements ShouldQueue
             }
             $identity->save();
             if ($identity->recalculate_entitlements() !== true) {
-                throw new Exception('Recalculate Entitlements Failed');
+                throw new \Exception('Recalculate Entitlements Failed');
             }
         }
     }

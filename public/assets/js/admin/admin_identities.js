@@ -2,7 +2,7 @@ var mymodal = new gform(
     {"fields":[
         {name:'output',value:'',type:'output',label:''}
     ],
-    "title":"Account Info",
+    "title":"Info",
     "actions":[]}
 );
 
@@ -361,6 +361,11 @@ var manage_identity = function(identity_id) {
                 form_data = form_event.form.get();
                 ajax.get('/api/identities/'+identity_id+'/recalculate',function(data) {
                     manage_identity(data.id);
+                    if (data.sync_errors === true) {
+                        toastr.success("Recalculate and Sync Success!");
+                    } else {
+                        mymodal.modal().set({output:'<pre>'+JSON.stringify(data.sync_errors,null,2)+'</pre>'});
+                    }
                 });
             }).on('view_logs',function(form_event){
                 form_data = form_event.form.get();

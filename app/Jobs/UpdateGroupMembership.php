@@ -73,7 +73,7 @@ class UpdateGroupMembership implements ShouldQueue
             $group_member->delete();
         }
         if ($identity->recalculate_entitlements() !== true) {
-            throw new Exception('Recalculate Entitlements Failed');
+            throw new \Exception('Recalculate Entitlements Failed');
         }        
     }
 
