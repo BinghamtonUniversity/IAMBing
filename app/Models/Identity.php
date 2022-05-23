@@ -197,17 +197,18 @@ class Identity extends Authenticatable
             }
             $this->load('identity_attributes');
         }
+        $must_save = false;
         // Create and Set New username
         if (($this->first_name !== '' && $this->last_name !== '' && $this->first_name !== null && $this->last_name !== null) &&
             (!isset($this->default_username) || $this->default_username === '' || $this->default_username === null)) {
             $is_taken = false;
             $iterator = 0;
-            $configuration = Configuration::where('name','default_username_template')->first();
-            if (!is_null($configuration)) {
-                $template = $configuration->config;
+            $default_username_configuration = Configuration::where('name','default_username_template')->first();
+            if (!is_null($default_username_configuration)) {
+                $default_username_template = $default_username_configuration->config;
             }
             do {
-                $username = $this->username_generate($template, $iterator);
+                $username = $this->username_generate($default_username_template, $iterator);
                 if (!$this->username_check_available($username)) {
                     $is_taken = true;
                     $iterator++;
@@ -216,23 +217,44 @@ class Identity extends Authenticatable
                 }
             } while ($is_taken);
             $this->default_username = $username;
-            $this->save();
+            $must_save = true;
+        }
+        if (!isset($this->default_email) || is_null($this->default_email) || $this->default_email === '') {
+            $default_email_configuration = Configuration::where('name','default_email_domain')->first();
+            if (!is_null($default_email_configuration)) {
+                $default_email_domain = $default_email_configuration->config;
+            }
+            $this->default_email = $this->default_username.'@'.$default_email_domain;
+            $must_save = true;
         }
         if (!isset($this->iamid) || is_null($this->iamid) || $this->iamid == '') {
             $this->iamid = 'IAM'.strtoupper(base_convert($this->id,10,36));
+            $must_save = true;
+        }
+        if ($must_save == true) {
             $this->save();
         }
     }
 
     private function check_unique_id_collision() {
-        if (!isset($this->set_ids) || !is_array($this->set_ids)) {
-            return true;
+        if ($this->first_name == '' || $this->last_name == '' || is_null($this->first_name) || is_null($this->last_name)) {
+            abort(400,'Identities must have a first and last name');
+        }
+        $ids = $this->set_ids;
+        $no_ids = true;
+        foreach($ids as $id_name => $id_value) {
+            if ($id_value != '' && !is_null($id_value)) {
+                $no_ids = false;
+                break;
+            }
+        }
+        if ($no_ids == true) {
+            return false;
         }
         $q = IdentityUniqueID::select('id','identity_id','name','value');
         if (isset($this->id) && !is_null($this->id)) {
             $q->where('identity_id','!=',$this->id);
         }
-        $ids = $this->set_ids;
         $q->where(function($q) use ($ids) {
             foreach($ids as $id_name => $id_value) {
                 if (!is_null($id_value) && $id_value != '') {
@@ -243,15 +265,10 @@ class Identity extends Authenticatable
             }
         });
         $collision = $q->first();
-        if (is_null($collision)) {
-            return false;
-        } else {
+        if (!is_null($collision)) {
             abort(400,'Collision of '.$collision->name.' ('.$collision->value.') with identity ('.$collision->identity_id.')');
         }
-
-        if ($this->first_name == '' || $this->last_name == '' || is_null($this->first_name) || is_null($this->last_name)) {
-            abort(400,'Identities must have a first and last name');
-        }
+        return false;
     }
 
     public function add_account($system, $account_id = null) {

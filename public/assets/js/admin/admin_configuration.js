@@ -2,30 +2,42 @@ gform.options = {autoFocus:false};
 $('#adminDataGrid').html(`
     <div class='row'>
         <div class='col-xs-12'>
-        <h3>Default username Template</h3>
-        <div class="alert alert-info">
-            This is the mustache template for generating default usernames
+            <h3>Default username Template</h3>
+            <div class="alert alert-info">
+                This is the mustache template for generating default usernames
+            </div>
+            <div class="default_username_template"></div>
         </div>
-        <div class="default_username_template"></div>
-        </div>
+
         <div class='col-xs-12'>
-        <h3>Identity Username Availability Check</h3>
-        <div class="usernames"></div>
+            <h3>Default Email Domain</h3>
+            <div class="alert alert-info">
+                This domain will be appended to the default username when generating the default email addresses.  (default_username@example.com)
+            </div>
+            <div class="default_email_domain"></div>
         </div>
+
+        <div class='col-xs-12'>
+            <h3>Identity Username Availability Check</h3>
+            <div class="usernames"></div>
+        </div>
+
         <div class='col-xs-12'>
             <h3>Identity Attributes</h3>
             <div class="alert alert-info">
                 These are the identity attributes which can be populated in IAMBing
             </div>
             <div class="identity_attributes"></div>
-            </div>
+        </div>
+
         <div class='col-xs-12'>
-        <h3>Identity Unique IDs</h3>
+            <h3>Identity Unique IDs</h3>
             <div class="alert alert-info">
                 These are the unique identity IDs which can be populated in IAMBing
             </div>
             <div class="identity_unique_ids"></div>
         </div>
+
         <div class='col-xs-12'>
             <h3>Affiliations</h3>
             <div class="alert alert-info">
@@ -33,6 +45,7 @@ $('#adminDataGrid').html(`
             </div>
             <div class="affiliations"></div>
         </div>
+
         <div class='col-xs-12'>
             <div id= 'manage_jobs'>
                 <h3>Database / Job Queue Reset</h3>
@@ -68,6 +81,25 @@ gforms.default_username_template = new gform(
         toastr.success('Configuration Updated');
     });
 });
+
+gforms.default_email_domain = new gform(
+    {"fields":[
+        {type:"hidden", name:"id"},
+        {type:"hidden", name:"name", value:'default_email_domain'},
+        {type:"text", name:"config", label:"Default Email Domain", edit:true,placeholder:"example.com"},
+    ],
+    "el":".default_email_domain",
+    "actions":[
+        {"type":"save","label":"Save","modifiers":"btn btn-primary"}
+    ]
+}
+).on('save',function(e) {
+    var form_data = e.form.get();
+    ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
+        toastr.success('Configuration Updated');
+    });
+});
+
 gforms.identity_attributes = new gform(
     {"fields":[
         {type:"hidden", name:"id"},

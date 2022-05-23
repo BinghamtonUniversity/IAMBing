@@ -57,6 +57,8 @@ class DatabaseSeeder extends Seeder
     {
         $default_username_template = new Configuration(['name' => 'default_username_template', 'config' => '{{first_name.0}}{{last_name.0}}{{last_name.1}}{{last_name.2}}{{last_name.3}}{{last_name.4}}{{last_name.5}}{{last_name.6}}{{last_name.7}}{{last_name.8}}{{last_name.9}}{{last_name.10}}{{#iterator}}{{iterator}}{{/iterator}}']);
         $default_username_template->save();
+        $default_email_domain = new Configuration(['name' => 'default_email_domain', 'config' => 'binghamton.edu']);
+        $default_email_domain->save();
         $identity_attributes = new Configuration(['name' => 'identity_attributes', 'config' => []]);
         $identity_attributes->save();
         $identity_unique_ids = new Configuration(['name' => 'identity_unique_ids', 'config' => [['name' => 'bnumber', 'label' => 'BNumber'], ['name' => 'suny_id', 'label' => 'SUNY ID'], ['name' => 'millennium_id', 'label' => 'Millennium ID']]]);
@@ -103,7 +105,6 @@ class DatabaseSeeder extends Seeder
         $systems['Google Workspace']->save();
         $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['actions' => [
             ['path' => '/banner/goremal', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            // @alikemaltanriverdi -- Please confirm the correct "create" route.  Is it POST or PUT?
             ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
             ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200], 
             ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200]

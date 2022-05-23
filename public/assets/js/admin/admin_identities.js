@@ -26,7 +26,7 @@ identity_form_attributes = [
     {type:"text", name:"first_name", label:"First Name", required:true},
     {type:"text", name:"last_name", label:"Last Name", required:true},
     {type:"text", name:"default_username", label:"Default username", required:false, help:'Leave blank to define automatically'},
-    {type:"text", name:"default_email", label:"Default Email Address", required:false},
+    {type:"text", name:"default_email", label:"Default Email Address", required:false, help:'Leave blank to define automatically'},
     {type:"identity", name:"sponsor_identity_id",required:false, label:"Sponsor",show:[{type:'matches',name:'sponsored',value:true}]},
 ];
 
