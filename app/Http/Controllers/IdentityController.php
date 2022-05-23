@@ -51,7 +51,6 @@ class IdentityController extends Controller
 
     public function update_identity(Request $request, Identity $identity) {
         $identity->update($request->all());
-
         $identity->recalculate_entitlements();
         return $identity;
     }

@@ -28,15 +28,14 @@ class IAMBingGroupSync
             'last_name'=>'Stark',
         ],
         [
-            'ids'=>['bnumber'=>'B0034346'],
-            'first_name'=>'Captaian',
-            'last_name'=>'America',
-            'attributes'=>['nickname'=>'Cap'],
+            'ids'=>['bnumber'=>'B00123458','otherid'=>1],
+            'first_name'=>'New',
+            'last_name'=>'Guy',
         ],
     ];
 
     static private $groups = [
-        'staff'=>['B00505893','B00612268'],
+        'test'=>['B00123458'],
         // 'Avengers'=>['B0034346','B00123234','B00505893'],
         // 'Applicants'=>['B00612268','B00123467'],
     ];

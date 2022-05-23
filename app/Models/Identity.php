@@ -159,7 +159,7 @@ class Identity extends Authenticatable
         return true;
     }
 
-    public function save_actions() {
+    private function save_actions() {
         if(!is_null($this->set_ids) || !is_null($this->set_attributes)){
             $configs_res = Configuration::where('name','identity_attributes')
                                         ->orWhere('name','identity_unique_ids')
@@ -174,7 +174,6 @@ class Identity extends Authenticatable
         }
         // Set IDS and Attributes
         if (isset($config) && sizeof($configs)>0 && !is_null($this->set_ids)) {
-            
             foreach($this->set_ids as $name => $value) {
                 if(!in_array($name,$config['identity_unique_ids'])){
                     continue;
@@ -218,6 +217,40 @@ class Identity extends Authenticatable
             } while ($is_taken);
             $this->default_username = $username;
             $this->save();
+        }
+        if (!isset($this->iamid) || is_null($this->iamid) || $this->iamid == '') {
+            $this->iamid = 'IAM'.strtoupper(base_convert($this->id,10,36));
+            $this->save();
+        }
+    }
+
+    private function check_unique_id_collision() {
+        if (!isset($this->set_ids) || !is_array($this->set_ids)) {
+            return true;
+        }
+        $q = IdentityUniqueID::select('id','identity_id','name','value');
+        if (isset($this->id) && !is_null($this->id)) {
+            $q->where('identity_id','!=',$this->id);
+        }
+        $ids = $this->set_ids;
+        $q->where(function($q) use ($ids) {
+            foreach($ids as $id_name => $id_value) {
+                if (!is_null($id_value) && $id_value != '') {
+                    $q->orWhere(function($q) use ($id_name,$id_value) {
+                        $q->where('name', $id_name)->where('value',$id_value);
+                    });
+                }
+            }
+        });
+        $collision = $q->first();
+        if (is_null($collision)) {
+            return false;
+        } else {
+            abort(400,'Collision of '.$collision->name.' ('.$collision->value.') with identity ('.$collision->identity_id.')');
+        }
+
+        if ($this->first_name == '' || $this->last_name == '' || is_null($this->first_name) || is_null($this->last_name)) {
+            abort(400,'Identities must have a first and last name');
         }
     }
 
@@ -394,11 +427,14 @@ class Identity extends Authenticatable
 
     protected static function booted()
     {
+        static::creating(function ($identity) {
+            $identity->check_unique_id_collision();
+        });
         static::created(function ($identity) {
             $identity->save_actions();
-            // Create IAM ID by base36 encoding the identity id
-            $identity->iamid = 'IAM'.strtoupper(base_convert($identity->id,10,36));
-            $identity->save();
+        });
+        static::updating(function ($identity) {
+            $identity->check_unique_id_collision();
         });
         static::updated(function ($identity) {
             $identity->save_actions();
@@ -406,14 +442,12 @@ class Identity extends Authenticatable
         static::saved(function($identity){
             $identity->save_actions();
         });
-
-        
     }
+
     public function is_group_admin($group_id=null){
         if (is_null($group_id)){
             return (bool)GroupAdmin::where('identity_id',$this->id)->first();
         }
-
         return (bool)GroupAdmin::where('identity_id',$this->id)
             ->where('group_id',$group_id)
             ->first();
@@ -431,5 +465,4 @@ class Identity extends Authenticatable
         /* Otherwise don't send email */
         return false;
     }
-
 }
