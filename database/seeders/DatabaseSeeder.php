@@ -104,7 +104,7 @@ class DatabaseSeeder extends Seeder
         $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['actions' => [
             ['path' => '/banner/goremal', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
             // @alikemaltanriverdi -- Please confirm the correct "create" route.  Is it POST or PUT?
-            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/banner/goremal', 'verb' => 'POST', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ],
             ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200], 
             ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200]
         ]]]);
