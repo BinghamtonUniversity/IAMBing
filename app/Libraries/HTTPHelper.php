@@ -96,9 +96,9 @@ class HTTPHelper {
         
         // Failed -- Return 502 Bad Gateway
         if ($response_data === FALSE || !isset($http_response_header)) {
-            if (class_exists('Log')) {
-                Log::error('HTTPHelper - '.$username.'@'.$password.' - Failed to Fetch Data For URL: '.$url);
-            }
+            // if (class_exists('Log')) {
+            //     Log::error('HTTPHelper - '.$username.'@'.$password.' - Failed to Fetch Data For URL: '.$url);
+            // }
             return ['code'=>502,'headers'=>[],'content'=>''];
         }
 
@@ -115,11 +115,11 @@ class HTTPHelper {
                 $response_code = $header_exploded[1];
             }
         }
-        if ($response_code[0] === '5') {
-            if (class_exists('Log')) {
-                Log::error($response_code.' response code received for URL: '.$url);
-            }
-        }
+        // if ($response_code[0] === '5') {
+        //     if (class_exists('Log')) {
+        //         Log::error($response_code.' response code received for URL: '.$url);
+        //     }
+        // }
         return ['content'=>$response_data,'code'=>$response_code,'headers'=>$http_response_header];
     }
 }
