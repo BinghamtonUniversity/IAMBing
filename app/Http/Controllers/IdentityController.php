@@ -84,6 +84,7 @@ class IdentityController extends Controller
             $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
                 ->where(function ($query) use ($search) {
                     $query->where('iamid',$search[0])
+                        ->orWhere('id',$search[0])
                         ->orWhere('first_name','like',$search[0].'%')
                         ->orWhere('last_name','like',$search[0].'%')
                         ->orWhere('default_username',$search[0])

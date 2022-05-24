@@ -398,7 +398,7 @@ class Identity extends Authenticatable
         ->orderBy('order')
         ->get()
         ->pluck('affiliation')
-        ->unique()->values();
+        ->unique()->values()->toArray();
         $identity_account_systems = System::select('id','name')->whereIn('id',$this->accounts->pluck('system_id'))->get();
         return [
             'id'=>$this->id,
@@ -415,7 +415,7 @@ class Identity extends Authenticatable
                 'name'=>$q->name
                 ];
             }),
-            'primary_affiliation' => isset($myidentity['affiliations'][0])?$myidentity['affiliations'][0]:null,
+            'primary_affiliation' => isset($affiliations[0])?$affiliations[0]:null,
             'entitlements'=>$this->entitlements,
             'accounts'=>$this->accounts ->map(function($q) use ($identity_account_systems){
                 return [
@@ -426,7 +426,7 @@ class Identity extends Authenticatable
                 ];
             }),
             'attributes'=>$this->attributes
-            ];
+        ];
     }
 
     protected static function booted()
