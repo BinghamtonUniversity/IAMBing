@@ -44,18 +44,20 @@ class AdminController extends Controller
         // Actions to be used to send to the Manage Identities page
         $user_actions = [];
         if ($identity->can('update_identities','App\Identity')){
-            $user_actions[] = ["type"=>"save","label"=>"Update Identity"];
-            $user_actions[] = ["type"=>"button","label"=>"Delete Identity","action"=>"delete","modifiers"=>"btn btn-danger"];
-            $user_actions[] = ["type"=>"button","label"=>"Recalculate","action"=>"recalculate","modifiers"=>"btn btn-warning"];
-        }
-        if ($identity->can('merge_identities','App\Identity')){
-            $user_actions[] = ["type"=>"button","label"=>"Merge","action"=>"merge_identity","modifiers"=>"btn btn-danger"];
-        }
-        if ($identity->can('impersonate_identities','App\Identity')){
-            $user_actions[] = ["type"=>"button","label"=>"Impersonate Identity","action"=>"login","modifiers"=>"btn btn-warning"];
+            $user_actions[] = ["type"=>"save","label"=>"Update Identity","action"=>"save","modifiers"=>"btn-success"];
+            $user_actions[] = ["type"=>"button","label"=>"Recalculate / Sync","action"=>"recalculate","modifiers"=>"btn-info"];
         }
         if($identity->can('view','App\Log')){
-            $user_actions[] = ["type"=>"button","label"=>"User Logs","action"=>"view_logs","modifiers"=>"btn btn-info"];
+            $user_actions[] = ["type"=>"button","label"=>"View Logs","action"=>"view_logs","modifiers"=>"btn-info"];
+        }
+        if ($identity->can('impersonate_identities','App\Identity')){
+            $user_actions[] = ["type"=>"button","label"=>"Login as Identity","action"=>"login","modifiers"=>"btn-warning"];
+        }
+        if ($identity->can('merge_identities','App\Identity')){
+            $user_actions[] = ["type"=>"button","label"=>"Merge Identities","action"=>"merge_identity","modifiers"=>"btn-danger"];
+        }
+        if ($identity->can('update_identities','App\Identity')){
+            $user_actions[] = ["type"=>"button","label"=>"Delete Identity","action"=>"delete","modifiers"=>"btn-danger"];
         }
 
         return view('default.admin',[

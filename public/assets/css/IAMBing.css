@@ -765,3 +765,7 @@ a.list-group-action {
   font-size:12px;
   margin-top:3px;
 }
+
+.identity-edit .gform-footer {
+  display:none;
+}

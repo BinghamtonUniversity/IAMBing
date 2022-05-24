@@ -110,7 +110,7 @@ class IdentityController extends Controller
                             ->where('last_name','like',$search[0].'%');
                     });
                 })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
-                    ->limit(25)->get()->toArray();
+                    ->limit(15)->get()->toArray();
         }
         foreach($identities as $index => $identity) {
             $identities[$index] = array_intersect_key($identity, array_flip(['id','iamid','first_name','last_name','default_username','default_email']));

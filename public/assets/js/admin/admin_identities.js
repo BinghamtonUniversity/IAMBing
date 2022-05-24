@@ -30,16 +30,17 @@ identity_form_attributes = [
     {type:"identity", name:"sponsor_identity_id",required:false, label:"Sponsor",show:[{type:'matches',name:'sponsored',value:true}]},
 ];
 
-$('#adminDataGrid').html(`
+$('#adminDataGrid').html(Ractive({template:`
 <div class="row">
     <div class="col-sm-3 actions">
         <div class="row">
-            <div class="col-sm-12 identity-search"></div>
+            <div class="col-sm-12">
+                <div class="identity-search"></div>
+            </div>
         </div>
-        <hr>
         <div class="row">
             <div class="col-sm-12">
-                <div class="btn btn-success identity-new">Create New Identity</div><br><br>
+                <div class="btn btn-success identity-new" style="width:100%;">Create New Identity</div><br><br>
             </div>
         </div>
     </div>
@@ -47,7 +48,22 @@ $('#adminDataGrid').html(`
         <div class="row">
             <div class="col-sm-6">
                 <div class="panel panel-default">
-                    <div class="panel-heading"><h3 class="panel-title">Identity</h3></div>
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <div class="dropdown">
+                                <button class="btn btn-primary dropdown-toggle btn-xs pull-right" type="button" id="dropdownMenu1" data-toggle="dropdown">
+                                    Identity Actions
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu pull-right" style="margin-top:25px;">
+                                    {{#actions}}
+                                        <li><a style="cursor:pointer;" class="{{modifiers}} identity-action" data-action="{{action}}">{{label}}</a></li>
+                                    {{/actions}}
+                                </ul>
+                            </div>
+                            Identity
+                        </h3>
+                    </div>
                     <div class="panel-body identity-edit"></div>
                 </div>
             </div>
@@ -66,14 +82,10 @@ $('#adminDataGrid').html(`
     color:white;
 }
 </style>
-`);
+`,data:{actions:actions}}).toHTML());
 
 identitylist_template = `
-{{#identities.length}}
-    Select Identity to View
-{{/identities.length}}
-<hr style="border:solid 1px #333">
-{{^identities.length}}No results{{/identities.length}}
+{{^identities.length}}<div class="alert alert-warning">No Matches</div>{{/identities.length}}
 <div class="list-group">
     {{#identities}}
         <a href="javascript:void(0);" class="list-group-item identity" data-id="{{id}}">
@@ -283,7 +295,7 @@ var manage_identity = function(identity_id) {
             // $('.identity-entitlements').html(Ractive({template:identity_entitlements_template,data:data}).toHTML());
             // console.log(data)
             // Edit Identity
-            new gform(
+            identity_form = new gform(
                 {
                     "fields":identity_form_attributes
                         .map(d=>{
@@ -297,14 +309,15 @@ var manage_identity = function(identity_id) {
                 }
             ).on('delete',function(form_event) {
                 form_data = form_event.form.get();
-                if (confirm('Are you super sure you want to do this?  This action cannot be undone!')){
+                if (prompt('Please enter the IAM ID of this identity to confirm deletion') == form_data.iamid){
                     ajax.delete('/api/identities/'+form_data.id,{},function(data) {
                         $('.identity-view').hide();
                     });
+                } else {
+                    toastr.error('Delete Action Canceled');
                 }
             }).on('merge_identity',function(form_event) {
                 form_data = form_event.form.get();
-
                 target_identity = form_data.id;
                 new gform(
                     {"fields":[{
@@ -321,7 +334,6 @@ var manage_identity = function(identity_id) {
                     ]}
                 ).modal().on('save',function(merge_form_event) {
                     var merge_form_data = merge_form_event.form.get();
-
                     if(form_event.form.validate() && merge_form_data.source_identity !== '')
                     {
                         if (confirm("Are you sure you want to merge these identities?  This action cannot be undone!")) {
@@ -345,18 +357,18 @@ var manage_identity = function(identity_id) {
                     merge_form_event.form.trigger('close');
                 });
             }).on('save',function(form_event) {
-                if(form_event.form.validate())
-                {
-
+                if(form_event.form.validate()) {
                     form_data = form_event.form.get();
                     ajax.put('/api/identities/' + form_data.id, form_data, function (data) {
                     });
                 }
             }).on('login',function(form_event) {
-                form_data = form_event.form.get();
-                ajax.post('/api/login/'+form_data.id,{},function(data) {
-                    window.location = '/';
-                });
+                if (confirm("Are you sure you want to continue?")) {
+                    form_data = form_event.form.get();
+                    ajax.post('/api/login/'+form_data.id,{},function(data) {
+                        window.location = '/';
+                    });
+                }
             }).on('recalculate',function(form_event) {
                 form_data = form_event.form.get();
                 ajax.get('/api/identities/'+identity_id+'/recalculate',function(data) {
@@ -371,6 +383,9 @@ var manage_identity = function(identity_id) {
                 form_data = form_event.form.get();
                 window.location = form_data.id+"/logs";
             });
+            $('.identity-action').on('click',function(e) {
+                identity_form.trigger(e.target.dataset.action);
+            }) 
             // end
             // Edit Permissions
             new gform(
@@ -497,9 +512,9 @@ ajax.get('/api/configuration/',function(data) {
     identity_form_attributes.push(unique_ids_fields);
     var identity_attributes_fields = {type: "fieldset",label:'Attributes',name: "attributes",fields:_.find(data,{name:'identity_attributes'}).config};
     identity_form_attributes.push(identity_attributes_fields);
-    new gform(
+    search_identities_form = new gform(
         {"fields":[
-			{name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, username, or unique id<hr>"},
+			{name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, username, or unique id"},
 			{type:'output',name:'results',label:false}
         ],
         "el":".identity-search",
@@ -508,16 +523,13 @@ ajax.get('/api/configuration/',function(data) {
         $('.identity-view').hide();
     })
     .on('change:query',_.debounce(function(e){
-        $.ajax({
-            url: '/api/identities/search/'+this.toJSON().query,
-            success: function(data) {
-                var html = Ractive({template:identitylist_template,data:{identities:data}}).toHTML();
-                e.form.find('results').update({value:html});
-            }.bind(e)
-        })
+        ajax.get('/api/identities/search/'+this.toJSON().query,function(data) {
+            var html = Ractive({template:identitylist_template,data:{identities:data}}).toHTML();
+            search_identities_form.find('results').update({value:html});
+        });
     },500))
 
-    $('body').on('click','.list-group-item.identity', function(e){
+    $('body').on('click','.list-group-item.identity', function(e) {
 		manage_identity(e.currentTarget.dataset.id);
     });
 

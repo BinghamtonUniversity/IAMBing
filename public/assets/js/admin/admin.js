@@ -117,5 +117,26 @@ gform.types['identity']= _.extend({}, gform.types['combobox'], {
                     display:'{{first_name}} {{last_name}}<div style="color:#aaa">{{default_username}}</div><div style="color:#aaa">{{unique_id}}</div>'
                 }
         }
-
   })
+
+// // Automatically cancel unfinished ajax requests 
+// // when the user navigates elsewhere.
+// (function($) {
+//     var xhrPool = [];
+//     $(document).ajaxSend(function(e, jqXHR, options){
+//         xhrPool.push(jqXHR);
+//     });
+//     $(document).ajaxComplete(function(e, jqXHR, options) {
+//         xhrPool = $.grep(xhrPool, function(x){return x!=jqXHR});
+//     });
+//     var abort = function() {
+//         $.each(xhrPool, function(idx, jqXHR) {
+//             jqXHR.abort();
+//         });
+//     };
+//     var oldbeforeunload = window.onbeforeunload;
+//     window.onbeforeunload = function() {
+//         abort();
+//         return oldbeforeunload ? oldbeforeunload() : undefined;
+//     }
+// })(jQuery);

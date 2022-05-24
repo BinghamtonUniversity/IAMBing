@@ -242,6 +242,9 @@ class Identity extends Authenticatable
         }
         $ids = $this->set_ids;
         $no_ids = true;
+        if (!is_array($ids)) {
+            return false;
+        }
         foreach($ids as $id_name => $id_value) {
             if ($id_value != '' && !is_null($id_value)) {
                 $no_ids = false;
