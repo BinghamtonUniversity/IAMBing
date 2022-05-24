@@ -76,7 +76,7 @@
           <li><a href="/"><h4 style="margin:0;">IAMBing Admin</h4></a>
             <li class="dropdown">
               <a href="#" class="dropdown-toggle identity-info" data-toggle="dropdown" role="button">
-                <img class="gravatar" src="https://www.gravatar.com/avatar/{{ md5(Auth::user()->email) }}?d=mm" />
+                <img class="gravatar" src="https://www.gravatar.com/avatar/{{ md5(Auth::user()->default_email) }}?d=mm" />
                 {{ Auth::user()->first_name }} {{ Auth::user()->last_name }}
                 <span class="caret"></span>
               </a>
