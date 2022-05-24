@@ -6,75 +6,39 @@ use App\Models\IdentityEntitlement;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 
-class IdentityEntitlementObserver
-{
-    /**
-     * Handle the IdentityEntitlement "created" event.
-     *
-     * @param  \App\Models\IdentityEntitlement  $identityEntitlement
-     * @return void
-     */
-    public function created(IdentityEntitlement $identityEntitlement)
-    {
+class IdentityEntitlementObserver {
+
+    private function handle(IdentityEntitlement $identityEntitlement,$action) {
+        $data = [];
+        if (isset($identityEntitlement->override)) {
+            $data[] = 'Type: '.($identityEntitlement->override?'Manual':'Automatic');
+        }
+        if (isset($identityEntitlement->sponsor_id)) {
+            $data[] = 'Sponsor ID: '.$identityEntitlement->sponsor_id;
+        }
+        if (isset($identityEntitlement->expiration_date)) {
+            $data[] = 'Exp: '.$identityEntitlement->expiration_date->format('Y-m-d');
+        }
+        if (isset($identityEntitlement->description)) {
+            $data[] = 'Description: '.$identityEntitlement->description;
+        }
         $log = new Log([
-            'action'=>'add',
-            'identity_id'=>$identityEntitlement->identity_id,
             'type'=>'entitlement',
+            'identity_id'=>$identityEntitlement->identity_id,
+            'action'=>$action,
             'type_id'=>$identityEntitlement->entitlement_id,
-            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null,
+            'data'=>substr(implode(', ',$data),0,254),
         ]);
         $log->save();
     }
-
-    /**
-     * Handle the IdentityEntitlement "updated" event.
-     *
-     * @param  \App\Models\IdentityEntitlement  $identityEntitlement
-     * @return void
-     */
-    public function updated(IdentityEntitlement $identityEntitlement)
-    {
-        
-        
+    
+    public function updated(IdentityEntitlement $identityEntitlement) {
+        $this->handle($identityEntitlement,'update');
     }
-
-    /**
-     * Handle the IdentityEntitlement "deleted" event.
-     *
-     * @param  \App\Models\IdentityEntitlement  $identityEntitlement
-     * @return void
-     */
-    public function deleted(IdentityEntitlement $identityEntitlement)
-    {
-        $log = new Log([
-            'action'=>'delete',
-            'identity_id'=>$identityEntitlement->identity_id,
-            'type'=>'entitlement',
-            'type_id'=>$identityEntitlement->entitlement_id,
-            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
-        ]);
-        $log->save();
-    }
-
-    /**
-     * Handle the IdentityEntitlement "restored" event.
-     *
-     * @param  \App\Models\IdentityEntitlement  $identityEntitlement
-     * @return void
-     */
-    public function restored(IdentityEntitlement $identityEntitlement)
-    {
-        //
-    }
-
-    /**
-     * Handle the IdentityEntitlement "force deleted" event.
-     *
-     * @param  \App\Models\IdentityEntitlement  $identityEntitlement
-     * @return void
-     */
-    public function forceDeleted(IdentityEntitlement $identityEntitlement)
-    {
-        //
+    public function created(IdentityEntitlement $identityEntitlement) {
+        if (isset($identityEntitlement->override) && $identityEntitlement->override == true) {
+            $this->handle($identityEntitlement,'add');
+        }
     }
 }

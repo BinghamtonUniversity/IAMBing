@@ -202,26 +202,6 @@ class IdentityController extends Controller
             return response(json_encode(['error'=>'You cannot "add" override entitlements of this type!']),403)->header('Content-Type', 'application/json');
         }
 
-        if($request->override && $request->type=='remove'){
-            $log = new Log([
-                'action'=>'delete',
-                'identity_id'=>$identity_entitlement->identity_id,
-                'type'=>'entitlement',
-                'type_id'=>$identity_entitlement->entitlement_id,
-                'actor_identity_id'=>Auth::user()?Auth::user()->id:null
-            ]);
-            $log->save();
-        }elseif($request->override && $request->type=='add'){
-            $log = new Log([
-                'action'=>'add',
-                'identity_id'=>$identity_entitlement->identity_id,
-                'type'=>'entitlement',
-                'type_id'=>$identity_entitlement->entitlement_id,
-                'actor_identity_id'=>Auth::user()?Auth::user()->id:null
-            ]);
-            $log->save();
-        }
-
         $identity_entitlement->update($request->all());
         $identity_entitlement->override_identity_id = Auth::user()->id;
         $identity_entitlement->identity_id = $identity->id;

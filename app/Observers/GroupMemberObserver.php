@@ -3,36 +3,27 @@
 namespace App\Observers;
 
 use App\Models\GroupMember;
-// use App\Models\Identity;
 use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 
-class GroupMemberObserver
-{
-    public function created(GroupMember $group_member)
-    {
+class GroupMemberObserver {
+
+    public function created(GroupMember $group_member) {
         $log = new Log([
             'action'=>'add',
             'identity_id'=>$group_member->identity_id,
-            'type'=>'membership',
+            'type'=>'group',
             'type_id'=>$group_member->group_id,
             'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
     }
 
-    /**
-     * Handle the GroupMember "deleted" event.
-     *
-     * @param  \App\Models\GroupMember  $group_member
-     * @return void
-     */
-    public function deleted(GroupMember $group_member)
-    {
+    public function deleted(GroupMember $group_member) {
         $log = new Log([
             'action'=>'delete',
             'identity_id'=>$group_member->identity_id,
-            'type'=>'membership',
+            'type'=>'group',
             'type_id'=>$group_member->group_id,
             'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);

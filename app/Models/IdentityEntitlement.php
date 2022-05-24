@@ -32,4 +32,29 @@ class IdentityEntitlement extends Model
         return $date->format('Y-m-d H:i:s a');
     }
 
+    private function fix_values() {
+        if ($this->override == false) {
+            $this->expire = false;
+            $this->expiration_date = null;
+            $this->description = null;
+            $this->override_identity_id = null;
+            $this->sponsor_renew_allow = false;
+            $this->sponsor_renew_days = null;
+        }
+        if ($this->expire == false) {
+            $this->expiration_date = null;
+        }
+        if ($this->sponsor_renew_allow == false) {
+            $this->sponsor_renew_days = null;
+        }
+    }
+
+    protected static function booted() {
+        static::creating(function($identity_entitlement) {
+            $identity_entitlement->fix_values();
+        });
+        static::updating(function($identity_entitlement) {
+            $identity_entitlement->fix_values();
+        });
+    }
 }

@@ -303,16 +303,8 @@ class Identity extends Authenticatable
         $existing_identity_entitlements = IdentityEntitlement::where('identity_id',$identity->id)->get();
         foreach($existing_identity_entitlements as $identity_entitlement) {
             if (!$identity_entitlement->override || ($identity_entitlement->expire === true && $identity_entitlement->expiration_date->isPast())) {
-                $identity_entitlement->update(['override'=>false,'exipration_date'=>null,'description'=>null,'override_identity_id'=>null]);
+                $identity_entitlement->update(['override'=>false,'expiration_date'=>null,'description'=>null,'override_identity_id'=>null]);
                 if (!$calculated_entitlement_ids->contains($identity_entitlement->entitlement_id)) {
-                    $log = new Log([
-                        'action'=>'delete',
-                        'identity_id'=>$identity_entitlement->identity_id,
-                        'type'=>'entitlement',
-                        'type_id'=>$identity_entitlement->entitlement_id,
-                        'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
-                    ]);
-                    $log->save();
                     $identity_entitlement->delete();
                 }
             }
@@ -323,14 +315,6 @@ class Identity extends Authenticatable
                 $new_identity_entitlement = new IdentityEntitlement(['identity_id'=>$identity->id,'entitlement_id'=>$calculated_entitlement_id]);
                 $new_identity_entitlement->save();
             } else if ((!$entitlement->override || ($identity_entitlement->expire === true && $entitlement->expiration_date->isPast())) && $entitlement->type === 'remove') {
-                $log = new Log([
-                    'action'=>'add',
-                    'identity_id'=>$entitlement->identity_id,
-                    'type'=>'entitlement',
-                    'type_id'=>$entitlement->entitlement_id,
-                    'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
-                ]);
-                $log->save();
                 $entitlement->update(['type'=>'add','override'=>false,'expiration_date'=>null,'description'=>null,'override_identity_id'=>null]);
             }
         }

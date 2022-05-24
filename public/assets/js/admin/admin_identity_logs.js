@@ -17,15 +17,15 @@ ajax.get('/api/identities/'+window.id+"/logs",function(data) {
                     {label:"Disable",value:"disable"}
             ]
         },
-        {type:"text", name:"actor_identity_id", label:"Actor",template:"{{attributes.actor.first_name}} {{attributes.actor.last_name}}"},
         {type:"select", name:"type", label:"Type",
             options:[
-                {label:"Membership",value:"membership"},
+                {label:"Group Membership",value:"group"},
                 {label:"Account",value:"account"},
                 {label:"Entitlement",value:"entitlement"}
         ]},
         {type:"text", name:"type_name", label:"Name"},
-        {type:"text", name:"data", label:"Account"},
+        {type:"text", name:"data", label:"Info"},
+        {type:"text", name:"actor_identity_id", label:"Actor",template:"{{attributes.actor.first_name}} {{attributes.actor.last_name}}"},
         {type:"date",name:"created_at",label:"Created at"}
     ], data: data
     });

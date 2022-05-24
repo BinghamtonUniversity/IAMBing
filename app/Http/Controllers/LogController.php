@@ -14,7 +14,7 @@ class LogController extends Controller
             select('logs.action','logs.type','logs.type_id','logs.actor_identity_id','logs.identity_id',
                 'logs.data',
                 DB::raw("(case
-                when logs.type = 'membership' then g.name
+                when logs.type = 'group' then g.name
                 when logs.type = 'entitlement' then e.name
                 when logs.type = 'account' then s.name
                 else 'wrong'
@@ -26,6 +26,11 @@ class LogController extends Controller
             ->leftJoin('systems as s','s.id','=','a.system_id')
             ->with('actor')
             ->orderBy('logs.created_at','desc')
+            ->orderByRaw("(case 
+            when logs.type = 'group' then 0 
+            when logs.type = 'entitlement' then 1 
+            when logs.type = 'account' then 2 
+            end)")
             ->distinct()
             ->get();
     }
@@ -35,7 +40,7 @@ class LogController extends Controller
             ->select('logs.action','logs.type','logs.type_id','logs.actor_identity_id','logs.identity_id',
                 'logs.data',
                 DB::raw("(case
-                when logs.type = 'membership' then g.name
+                when logs.type = 'group' then g.name
                 when logs.type = 'entitlement' then e.name
                 when logs.type = 'account' then s.name
                 else 'wrong'
@@ -47,6 +52,11 @@ class LogController extends Controller
             ->leftJoin('systems as s','s.id','=','a.system_id')
             ->with('actor')
             ->orderBy('logs.created_at','desc')
+            ->orderByRaw("(case 
+            when logs.type = 'group' then 0 
+            when logs.type = 'entitlement' then 1 
+            when logs.type = 'account' then 2 
+            end)")
             ->distinct()
             ->get();
     }    
