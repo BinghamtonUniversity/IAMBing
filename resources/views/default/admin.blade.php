@@ -212,6 +212,7 @@
     <script src='/assets/js/vendor/bootstrap-datetimepicker.min.js'></script>
     <script src='/assets/js/vendor/sortable.js'></script>
     <script src='/assets/js/vendor/ractive.min.js'></script>
+    <script src="/assets/js/admin/_framework.js"></script>
     <script src="/assets/js/admin/admin.js"></script>
     <script>
         @if(isset($ids)) window.ids={!!json_encode($ids)!!}; @endif

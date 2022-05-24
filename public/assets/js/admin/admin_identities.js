@@ -250,7 +250,7 @@ identity_accounts_template = `
 `;
 
 // Create New Identity
-$('.identity-new').on('click',function() {
+app.click('.identity-new',function() {
     new gform(
         {"fields":identity_form_attributes,
         "title":"Create New Identity",
@@ -271,12 +271,12 @@ $('.identity-new').on('click',function() {
 })
 
 var manage_identity = function(identity_id) {
+    app.data.identity_id = identity_id;
     if (identity_id != null && identity_id != '') {
         ajax.get('/api/identities/'+identity_id,function(data) {
             data.auth_user_perms = auth_user_perms;
             window.history.pushState({},'','/identities/'+identity_id);
             $('.identity-view').show();
-
             $('.identityinfo-column').html(Ractive({
                 template:identityinfo_column_template,
                 partials: {
@@ -289,11 +289,6 @@ var manage_identity = function(identity_id) {
                 data:data
             }).toHTML());
 
-            // $('.identity-groups').html(gform.m(identity_groups_template,data));
-            // $('.identity-affiliations').html(Ractive({template:identity_affiliations_template,data:data}).toHTML());
-            // $('.identity-accounts').html(gform.m(identity_accounts_template,data));
-            // $('.identity-entitlements').html(Ractive({template:identity_entitlements_template,data:data}).toHTML());
-            // console.log(data)
             // Edit Identity
             identity_form = new gform(
                 {
@@ -383,9 +378,6 @@ var manage_identity = function(identity_id) {
                 form_data = form_event.form.get();
                 window.location = form_data.id+"/logs";
             });
-            $('.identity-action').on('click',function(e) {
-                identity_form.trigger(e.target.dataset.action);
-            }) 
             // end
             // Edit Permissions
             new gform(
@@ -489,19 +481,6 @@ var manage_identity = function(identity_id) {
             // end
 
         });
-
-        $('body').on('click','.account-info-btn',function(e){
-            $.ajax({
-                url: '/api/identities/'+identity_id+'/accounts/'+e.target.dataset.id,
-                success: function(data) {
-                    mymodal.modal().set({output:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>'});
-                },
-                error: function(data){
-                    console.log(data)
-                    toastr.error(data.responseJSON.message)
-                }
-            })
-        });
     } else {
         $('.identity-view').hide();
     }
@@ -529,8 +508,23 @@ ajax.get('/api/configuration/',function(data) {
         });
     },500))
 
-    $('body').on('click','.list-group-item.identity', function(e) {
+    app.click('.list-group-item.identity', function(e) {
 		manage_identity(e.currentTarget.dataset.id);
+    });
+    app.click('.identity-action',function(e) {
+        identity_form.trigger(e.target.dataset.action);
+    }) 
+    app.click('.account-info-btn',function(e){
+        $.ajax({
+            url: '/api/identities/'+app.data.identity_id+'/accounts/'+e.target.dataset.id,
+            success: function(data) {
+                mymodal.modal().set({output:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>'});
+            },
+            error: function(data){
+                console.log(data)
+                toastr.error(data.responseJSON.message)
+            }
+        })
     });
 
     if (typeof id !== 'undefined') {
