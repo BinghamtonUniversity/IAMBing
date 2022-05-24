@@ -1,7 +1,7 @@
 ajax.get('/api/identities/'+window.id+"/logs",function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
     item_template: gform.stencils['table_row'],
-    search: false,columns: false,upload:false,download:false,title:'Systems',
+    search: false,columns: false,upload:false,download:true,title:'Log Events',
     sort:'created_at',
     actions:[
     ],

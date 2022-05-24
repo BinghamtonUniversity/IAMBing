@@ -493,7 +493,7 @@ ajax.get('/api/configuration/',function(data) {
     identity_form_attributes.push(identity_attributes_fields);
     search_identities_form = new gform(
         {"fields":[
-			{name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, username, or unique id"},
+			{name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, account, or id"},
 			{type:'output',name:'results',label:false}
         ],
         "el":".identity-search",

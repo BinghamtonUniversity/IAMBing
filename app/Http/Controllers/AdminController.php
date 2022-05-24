@@ -44,20 +44,20 @@ class AdminController extends Controller
         // Actions to be used to send to the Manage Identities page
         $user_actions = [];
         if ($identity->can('update_identities','App\Identity')){
-            $user_actions[] = ["type"=>"save","label"=>"Update Identity","action"=>"save","modifiers"=>"btn-success"];
-            $user_actions[] = ["type"=>"button","label"=>"Recalculate / Sync","action"=>"recalculate","modifiers"=>"btn-info"];
+            $user_actions[] = ["type"=>"save","label"=>"Update Identity","action"=>"save","modifiers"=>"alert-success"];
+            $user_actions[] = ["type"=>"button","label"=>"Recalculate / Sync","action"=>"recalculate","modifiers"=>"alert-info"];
         }
         if($identity->can('view','App\Log')){
-            $user_actions[] = ["type"=>"button","label"=>"View Logs","action"=>"view_logs","modifiers"=>"btn-info"];
+            $user_actions[] = ["type"=>"button","label"=>"View Logs","action"=>"view_logs","modifiers"=>"alert-info"];
         }
         if ($identity->can('impersonate_identities','App\Identity')){
-            $user_actions[] = ["type"=>"button","label"=>"Login as Identity","action"=>"login","modifiers"=>"btn-warning"];
+            $user_actions[] = ["type"=>"button","label"=>"Login as Identity","action"=>"login","modifiers"=>"alert-warning"];
         }
         if ($identity->can('merge_identities','App\Identity')){
-            $user_actions[] = ["type"=>"button","label"=>"Merge Identities","action"=>"merge_identity","modifiers"=>"btn-danger"];
+            $user_actions[] = ["type"=>"button","label"=>"Merge Identities","action"=>"merge_identity","modifiers"=>"alert-danger"];
         }
         if ($identity->can('update_identities','App\Identity')){
-            $user_actions[] = ["type"=>"button","label"=>"Delete Identity","action"=>"delete","modifiers"=>"btn-danger"];
+            $user_actions[] = ["type"=>"button","label"=>"Delete Identity","action"=>"delete","modifiers"=>"alert-danger"];
         }
 
         return view('default.admin',[
@@ -88,8 +88,8 @@ class AdminController extends Controller
         ]);
     }
     public function identity_logs(Request $request,Identity $identity){
-        return view('default.admin',['page'=>'identity_logs','ids'=>[$identity->id],'title'=>'Identity Logs','help'=>
-            'Identity Logs'
+        return view('default.admin',['page'=>'identity_logs','ids'=>[$identity->id],'title'=>$identity->first_name.' '.$identity->last_name.'\'s Log Events','help'=>
+            'View all log events for this identity'
         ]);
     }
 
