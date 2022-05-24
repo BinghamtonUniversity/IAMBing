@@ -20,36 +20,36 @@ class DatabaseSeeder extends Seeder
         // Use This tool to convert the entitlement spreadsheet into a PHP Array: https://t.yctin.com/en/excel/to-php-array/
         // Entitlement Spreadsheet: https://docs.google.com/spreadsheets/d/1yD-TTZ8B8hRXI7JX8wAf-9Hu_nJWfXfxyYbDTRCW6WA/edit#gid=0
         return array(
-            0 => array('', '', 'faculty', 'faculty', 'staff', 'student', 'student', 'student', 'staff', 'alum', 'alum', 'applicant', 'applicant', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate'),
-            1 => array('System', 'Entitlement', 'Faculty', 'Recent Faculty', 'Staff', 'Students', 'Online Students', 'Currently Enrolled Students', 'Student Staff', 'Alumni', 'Recent Alumni', 'Applicants', 'Admitted Applicants', 'Rf Staff', 'Retirees', 'Volunteers', 'Live On Campus', 'Visiting Scholars Professionals', 'Alumni Associates', 'Alumni Email', 'Alumni AD'),
-            2 => array('BU', 'BU Account', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x'),
-            3 => array('BU', 'Enforce 2FA', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', 'x', 'x', '', '', 'x'),
-            4 => array('BU', 'Wireless-Employee', 'x', '', 'x', '', '', '', '', '', '', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            5 => array('BU', 'VPN-Employee', 'x', '', 'x', '', '', '', '', '', '', '', '', 'x', '', '', '', '', '', '', ''),
-            6 => array('BU', 'VDI-Faculty', 'x', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            7 => array('BU', 'VDI-Staff', '', '', 'x', '', '', '', '', '', '', '', '', 'x', '', '', '', '', '', '', ''),
-            8 => array('BU', 'Wireless-Students', '', '', '', 'x', 'x', 'x', '', '', 'x', '', '', '', '', '', '', '', '', '', ''),
-            9 => array('BU', 'VPN-Students', '', '', '', 'x', 'x', 'x', '', '', 'x', '', '', '', '', '', '', '', '', '', ''),
-            10 => array('BU', 'VDI-Students', '', '', '', 'x', 'x', 'x', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            11 => array('BU', 'Interactive-Login', 'x', '', 'x', 'x', 'x', 'x', '', '', '', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            12 => array('BU', 'Wireless-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            13 => array('BU', 'VPN-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            14 => array('BU', 'VDI-Other', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            15 => array('BU', 'VPN-rdp', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            16 => array('BU', 'Wireless-Deny', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            17 => array('Google Workspace', 'Google Account', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x', ''),
-            18 => array('Google Workspace', 'Google TwoStep', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x', ''),
-            19 => array('Google Workspace', 'Google Email', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', 'x', 'x', '', 'x', '', 'x', ''),
-            20 => array('Google Workspace', 'Google Drive', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            21 => array('Google Workspace', 'Google Sites', 'x', '', 'x', '', '', '', '', '', '', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            22 => array('Google Workspace', 'Google Chat', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            23 => array('Google Workspace', 'Google Groups', 'x', '', 'x', 'x', '', 'x', '', '', '', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            24 => array('Google Workspace', 'Google Calendar', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            25 => array('Google Workspace', 'Google Classroom', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            26 => array('Google Workspace', 'Google Addons', 'x', '', 'x', 'x', 'x', 'x', '', '', 'x', '', '', 'x', '', 'x', '', 'x', '', '', ''),
-            27 => array('Google Workspace', 'Google Vault', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
-            28 => array('Banner', 'UNIV Email', '', '', '', 'x', 'x', 'x', '', '', 'x', '', '', '', '', '', '', '', '', '', ''),
-            29 => array('Banner', 'EMPL Email', 'x', 'x', 'x', '', '', '', '', '', '', '', '', 'x', '', 'x', '', 'x', '', '', ''),
+            0 => array('', '', 'faculty', 'faculty', 'faculty', 'staff', 'student', 'student', 'student', 'staff', 'employee', 'alum', 'alum', 'applicant', 'applicant', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate'),
+            1 => array('System', 'Entitlement', 'Faculty', 'Recent Faculty', 'Emeritus Faculty', 'Staff', 'Students', 'Online Students', 'Currently Enrolled Students', 'Student Staff', 'Rf Staff', 'Alumni', 'Recent Alumni', 'Applicants', 'Admitted Applicants', 'Retirees', 'Volunteers', 'Live On Campus', 'Visiting Scholars Professionals', 'Alumni Associates', 'Alumni Email', 'Alumni AD'),
+            2 => array('BU', 'BU Account', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x'),
+            3 => array('BU', 'Enforce 2FA', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', 'x', 'x', 'x', 'x', '', '', 'x'),
+            4 => array('BU', 'Wireless-Employee', 'x', '', 'x', 'x', '', '', '', '', 'x', '', '', '', '', '', 'x', '', 'x', '', '', ''),
+            5 => array('BU', 'VPN-Employee', 'x', '', 'x', 'x', '', '', '', '', 'x', '', '', '', '', '', '', '', '', '', '', ''),
+            6 => array('BU', 'VDI-Faculty', 'x', '', 'x', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            7 => array('BU', 'VDI-Staff', '', '', '', 'x', '', '', '', '', 'x', '', '', '', '', '', '', '', '', '', '', ''),
+            8 => array('BU', 'Wireless-Students', '', '', '', '', 'x', 'x', 'x', '', '', '', 'x', '', '', '', '', '', '', '', '', ''),
+            9 => array('BU', 'VPN-Students', '', '', '', '', 'x', 'x', 'x', '', '', '', 'x', '', '', '', '', '', '', '', '', ''),
+            10 => array('BU', 'VDI-Students', '', '', '', '', 'x', 'x', 'x', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            11 => array('BU', 'Interactive-Login', 'x', '', 'x', 'x', 'x', 'x', 'x', '', 'x', '', '', '', '', '', 'x', '', 'x', '', '', ''),
+            12 => array('BU', 'Wireless-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            13 => array('BU', 'VPN-AdminNetAccess', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            14 => array('BU', 'VDI-Other', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            15 => array('BU', 'VPN-rdp', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            16 => array('BU', 'Wireless-Deny', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            17 => array('Google Workspace', 'Google Account', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', 'x', 'x', '', 'x', '', 'x', ''),
+            18 => array('Google Workspace', 'Google TwoStep', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', 'x', 'x', '', 'x', '', 'x', ''),
+            19 => array('Google Workspace', 'Google Email', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', 'x', 'x', '', 'x', '', 'x', ''),
+            20 => array('Google Workspace', 'Google Drive', 'x', '', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', '', 'x', '', 'x', '', '', ''),
+            21 => array('Google Workspace', 'Google Sites', 'x', '', 'x', 'x', '', '', '', '', 'x', '', '', '', '', '', 'x', '', 'x', '', '', ''),
+            22 => array('Google Workspace', 'Google Chat', 'x', '', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', '', 'x', '', 'x', '', '', ''),
+            23 => array('Google Workspace', 'Google Groups', 'x', '', 'x', 'x', 'x', '', 'x', '', 'x', '', '', '', '', '', 'x', '', 'x', '', '', ''),
+            24 => array('Google Workspace', 'Google Calendar', 'x', '', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', '', 'x', '', 'x', '', '', ''),
+            25 => array('Google Workspace', 'Google Classroom', 'x', '', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', '', 'x', '', 'x', '', '', ''),
+            26 => array('Google Workspace', 'Google Addons', 'x', '', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', '', 'x', '', 'x', '', '', ''),
+            27 => array('Google Workspace', 'Google Vault', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''),
+            28 => array('Banner', 'UNIV Email', '', '', '', '', 'x', 'x', 'x', '', '', '', 'x', '', '', '', '', '', '', '', '', ''),
+            29 => array('Banner', 'EMPL Email', 'x', 'x', 'x', 'x', '', '', '', '', 'x', '', '', '', '', '', 'x', '', 'x', '', '', ''),
         );
     }
 
@@ -104,10 +104,10 @@ class DatabaseSeeder extends Seeder
         ]]]);
         $systems['Google Workspace']->save();
         $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['actions' => [
-            ['path' => '/banner/goremal', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200], 
-            ['path' => '/banner/goremal', 'verb' => 'PUT', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200]
+            ['path' => '/banner/goremal/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            ['path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200], 
+            ['path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200]
         ]]]);
         $systems['Banner']->save();
 
