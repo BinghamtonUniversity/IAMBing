@@ -400,6 +400,9 @@ class Identity extends Authenticatable
         ->pluck('affiliation')
         ->unique()->values()->toArray();
         $identity_account_systems = System::select('id','name')->whereIn('id',$this->accounts->pluck('system_id'))->get();
+        if ($this->sponsored == true) {
+            $sponsor_info = Identity::where('id',$this->sponsor_identity_id)->first()->only(['first_name','last_name','ids','iamid']);
+        }
         return [
             'id'=>$this->id,
             'first_name' => $this->first_name,
@@ -425,7 +428,8 @@ class Identity extends Authenticatable
                 'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name
                 ];
             }),
-            'attributes'=>$this->attributes
+            'attributes'=>$this->attributes,
+            'sponsor'=>$this->sponsored?$sponsor_info:false,
         ];
     }
 
