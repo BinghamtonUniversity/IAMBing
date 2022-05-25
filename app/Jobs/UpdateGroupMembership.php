@@ -30,7 +30,7 @@ class UpdateGroupMembership implements ShouldQueue
     protected $action;
 
     public function __construct($config) {
-        $this->group_id = $config['group_id'];
+        $this->group_id = isset($config['group_id'])?$config['group_id']:null;
         $this->unique_id = isset($config['unique_id'])?$config['unique_id']:null;
         $this->api_identity = isset($config['api_identity'])?$config['api_identity']:null;
         $this->identity_id = isset($config['identity_id'])?$config['identity_id']:null;

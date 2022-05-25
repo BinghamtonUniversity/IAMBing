@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use App\Models\Group;
 use App\Models\Identity;
+use App\Jobs\UpdateGroupMembership;
 
 class RecalculateIdentities extends Command
 {
@@ -34,15 +35,14 @@ class RecalculateIdentities extends Command
             $query->where('group_id',$target_group->id);
         })->get();
 
+        $this->info("Dispatching Jobs ...");
         $num_members = count($target_identities);
-
         $bar = $this->output->createProgressBar($num_members);
-        // ProgressBar::setFormatDefinition('custom', ' %current%/%max% -- %message%');
-        // $bar->setFormat('custom');
         foreach($target_identities as $index => $target_identity) {
             $percent_complete = floor(($index / $num_members)*100).'%';
-            $bar->setMessage($target_identity->first_name.' '.$target_identity->last_name);
-            $target_identity->recalculate_entitlements();
+            UpdateGroupMembership::dispatch([
+                'identity_id' => $target_identity->id,
+            ]);
             $bar->advance();
         }
     }
