@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Identity;
 use App\Models\GroupMember;
 use App\Exceptions\FailedRecalculateException;
+use App\Models\GroupActionQueue;
+
 use Throwable;
 
 class UpdateIdentityJob implements ShouldQueue
@@ -74,11 +76,13 @@ class UpdateIdentityJob implements ShouldQueue
             $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
             $group_member = new GroupMember(['group_id'=>$group_id,'identity_id'=>$identity->id]);
             $group_member->save();
+            GroupActionQueue::where('group_id',$group_id)->where('identity_id',$identity->id)->delete();
         }
         // Remove Identity from Group
         if($action==='remove' && !is_null($group_id)) {
             $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
             $group_member->delete();
+            GroupActionQueue::where('group_id',$group_id)->where('identity_id',$identity->id)->delete();
         }
         
         $resp = $identity->recalculate_entitlements();
