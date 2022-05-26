@@ -7,9 +7,7 @@ use App\Models\GroupMember;
 use App\Models\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use App\Jobs\BatchJobs;
-use App\Jobs\UpdateGroupMembership;
-use App\Jobs\UpdateIdentityAttributes;
+use App\Jobs\UpdateIdentityJob;
 use App\Models\Configuration;
 use App\Models\System;
 use Exception;
@@ -82,31 +80,31 @@ class PublicAPIController extends Controller {
         foreach($api_identities as $api_identity) {
             if ($unique_ids_which_dont_exist->contains($api_identity['ids'][$unique_id])) {
                 // Identity Doesn't exist.. create them!
-                UpdateGroupMembership::dispatch([
+                UpdateIdentityJob::dispatch([
                     'group_id' => $group_id,
                     'api_identity' => $api_identity,
                     'unique_id' => $unique_id,
-                    'action'=>"add"
+                    'action'=>'add'
                 ]);
                 $counts['created']++;
             }
         }
         foreach($identity_ids_which_arent_group_members as $identity_id) {
             // Identity Exists, but isnt a member... add them to the group!
-            UpdateGroupMembership::dispatch([
+            UpdateIdentityJob::dispatch([
                 'group_id' => $group_id,
                 'identity_id' => $identity_id,
-                'action'=>"add"
+                'action'=> 'add'
             ]);
             $counts['added']++;
         }
 
         foreach($should_remove_group_membership as $identity_id) {
             // Identity Exists, but shouldn't be a member... remove them from the group!
-            UpdateGroupMembership::dispatch([
+            UpdateIdentityJob::dispatch([
                 'group_id' => $group_id,
                 'identity_id' => $identity_id,
-                'action'=>"remove"
+                'action' => 'remove'
             ]);
             $counts['removed']++;
         }
@@ -292,9 +290,10 @@ class PublicAPIController extends Controller {
             if(!is_null($res)){
                 $counts['not_updated']++;
             }else{
-                UpdateIdentityAttributes::dispatch([
-                   "api_identity"=>$api_identity,
-                    "unique_id"=>$request->id
+                UpdateIdentityJob::dispatch([
+                    'action' => 'update',
+                    'api_identity' => $api_identity,
+                    'unique_id' => $request->id
                  ]);
                  $counts['updated']++;
             }

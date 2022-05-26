@@ -16,7 +16,7 @@ use App\Models\GroupMember;
 use App\Exceptions\FailedRecalculateException;
 use Throwable;
 
-class UpdateGroupMembership implements ShouldQueue
+class UpdateIdentityJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -49,28 +49,35 @@ class UpdateGroupMembership implements ShouldQueue
         $identity_id = $this->identity_id;
         $action = $this->action;
 
-        if (is_null($identity_id)) {
+        // Try to find existing Identity
+        if (!is_null($identity_id)) {
+            $identity = Identity::where('id',$identity_id)->first();
+        } else if (!is_null($api_identity) && !is_null($unique_id)) {
             $identity = Identity::whereHas('identity_unique_ids', function($q) use ($unique_id, $api_identity){
                 $q->where('name',$unique_id)->where('value',$api_identity['ids'][$unique_id]);
             })->first();
-        } else {
-            $identity = Identity::where('id',$identity_id)->first();
         }
 
-        if ($action==='add' && is_null($identity)) {
+        // Couldn't find the identity... create it!
+        if (is_null($identity) && !is_null($api_identity)) {
             $identity = new Identity($api_identity);
             $identity->save();
-            $identity_id = $identity->id;
         } 
 
-        $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
-        // Add Member to Group
-        if($action==='add' && is_null($group_member)) {
+        // Update Identity
+        if ($action == 'update' && !is_null($api_identity)) {
+            $identity->update($api_identity);
+        }
+
+        // Add Identity to Group
+        if($action==='add' && !is_null($group_id)) {
+            $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
             $group_member = new GroupMember(['group_id'=>$group_id,'identity_id'=>$identity->id]);
             $group_member->save();
         }
-        // Remove member from Group
-        if($action==='remove' && !is_null($group_member)) {
+        // Remove Identity from Group
+        if($action==='remove' && !is_null($group_id)) {
+            $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
             $group_member->delete();
         }
         
