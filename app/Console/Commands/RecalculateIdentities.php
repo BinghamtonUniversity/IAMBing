@@ -21,18 +21,27 @@ class RecalculateIdentities extends Command
             $this->error("No Available Groups... Exiting");
             return;
         }
-        $group_name = $this->choice(
-            'Which group would you like to recalculate?',
-            $all_groups->pluck('name')->toArray(),
-        );
-        $target_group = $all_groups->firstWhere('name',$group_name);
 
-        if (!$this->confirm('Are you sure you want recalcuate all Identities within the "'.$group_name.'" group?  This action can not be undone!')) {
+        $target_groups = []; $target_group_ids = [];
+        do {
+            $group_name = $this->choice(
+                'Which group would you like to recalculate?',
+                $all_groups->pluck('name')->toArray(),
+            );
+            $target_group = $all_groups->firstWhere('name',$group_name);
+            $target_groups[] = $target_group; $target_group_ids[] = $target_group->id;
+        } while ($this->confirm('Would you like to select another group to recalculate?'));
+
+        $this->info("You have selected the following groups:");
+        foreach($target_groups as $target_group) {
+            $this->info(" * ".$target_group->name);
+        }
+        if (!$this->confirm('Would you like to initiate recacluation of all identities within these groups? This action can not be undone!')) {
             $this->error("Exiting");
             return;
         }
-        $target_identities = Identity::whereHas('group_memberships',function ($query) use ($target_group) {
-            $query->where('group_id',$target_group->id);
+        $target_identities = Identity::whereHas('group_memberships',function ($query) use ($target_group_ids) {
+            $query->whereIn('group_id',$target_group_ids);
         })->get();
 
         $this->info("Dispatching Jobs ...");
@@ -45,5 +54,6 @@ class RecalculateIdentities extends Command
             ]);
             $bar->advance();
         }
+        $this->info("\nAll Jobs Dispatched.  Please consult horizon queue for pending jobs.");
     }
 }
