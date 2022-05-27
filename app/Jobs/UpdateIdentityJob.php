@@ -39,10 +39,10 @@ class UpdateIdentityJob implements ShouldQueue
         $this->action = isset($config['action'])?$config['action']:null;
     }
 
-    public function middleware() {
-        $unique_id = $this->identity_id?$this->identity_id:$this->api_identity['ids'][$this->unique_id];
-        return [(new WithoutOverlapping($unique_id))->releaseAfter(60)];
-    }
+    // public function middleware() {
+    //     $unique_id = $this->identity_id?$this->identity_id:$this->api_identity['ids'][$this->unique_id];
+    //     return [(new WithoutOverlapping($unique_id))->releaseAfter(60)];
+    // }
 
     public function handle() {
         $group_id = $this->group_id;
@@ -73,15 +73,17 @@ class UpdateIdentityJob implements ShouldQueue
 
         // Add Identity to Group
         if($action==='add' && !is_null($group_id)) {
-            $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
-            $group_member = new GroupMember(['group_id'=>$group_id,'identity_id'=>$identity->id]);
-            $group_member->save();
+            $group_member = GroupMember::updateOrCreate(
+                ['group_id'=>$group_id,'identity_id'=>$identity->id],
+            ); 
             GroupActionQueue::where('group_id',$group_id)->where('identity_id',$identity->id)->delete();
         }
         // Remove Identity from Group
         if($action==='remove' && !is_null($group_id)) {
             $group_member = GroupMember::where('group_id',$group_id)->where('identity_id',$identity->id)->first();
-            $group_member->delete();
+            if (!is_null($group_member)) {
+                $group_member->delete();
+            }
             GroupActionQueue::where('group_id',$group_id)->where('identity_id',$identity->id)->delete();
         }
         

@@ -208,7 +208,7 @@ class AdminController extends Controller
                 'Use this page to confirm and manually execute group add / remove actions which are pending in the group action queue.',
                 'actions' => [
                     ["name"=>"execute","label"=>"Execute Actions"],
-                    ["name"=>"delete","label"=>"Delete Action from Queue"]
+                    // ["name"=>"delete","label"=>"Delete Action from Queue"]
                 ]
             ]
         );
