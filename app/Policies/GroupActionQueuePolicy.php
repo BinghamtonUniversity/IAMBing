@@ -24,4 +24,9 @@ class GroupActionQueuePolicy
             ->orWhere('permission','manage_group_action_queue')
             ->first();
     }
+
+    public function manage_group_action_queue(Identity $identity){
+        return Permission::where('identity_id',$identity->id)
+            ->where('permission','manage_group_action_queue')->first();
+    }
 }

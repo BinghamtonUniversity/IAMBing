@@ -203,13 +203,15 @@ class AdminController extends Controller
     }
 
     public function group_action_queue(Request $request) {
+        $identity = Auth::user();
+        $user_actions = [];
+        if ($identity->can('manage_group_action_queue','App\GroupActionQueue')){
+            $user_actions[] = ["name"=>"execute","label"=>"Execute Actions"];
+        }
         return view('default.admin',
             ['page'=>'group_action_queue','ids'=>[],'title'=>'Group Action Queue','help'=>
                 'Use this page to confirm and manually execute group add / remove actions which are pending in the group action queue.',
-                'actions' => [
-                    ["name"=>"execute","label"=>"Execute Actions"],
-                    // ["name"=>"delete","label"=>"Delete Action from Queue"]
-                ]
+                'actions' => $user_actions
             ]
         );
     }
