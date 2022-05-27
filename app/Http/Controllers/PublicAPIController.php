@@ -100,10 +100,10 @@ class PublicAPIController extends Controller {
         }
 
         // Identity Exists, but isnt a member... add them to the group!
+        $group_actions = collect([]);
         foreach($identity_ids_which_arent_group_members as $identity_id) {
             if ($group->manual_confirmation_add == true) {
-                // TJC potential peformance improvement with bulk upsert w/o loop
-                GroupActionQueue::updateOrCreate(
+                $group_actions[] = GroupActionQueue::updateOrCreate(
                     ['identity_id' => $identity_id, 'group_id' => $group_id],
                     ['action' => 'add']
                 );                
@@ -120,8 +120,7 @@ class PublicAPIController extends Controller {
         // Identity Exists, but shouldn't be a member... remove them from the group!
         foreach($should_remove_group_membership as $identity_id) {
             if ($group->manual_confirmation_remove == true) {
-                // TJC potential peformance improvement with bulk upsert w/o loop
-                GroupActionQueue::updateOrCreate(
+                $group_actions[] = GroupActionQueue::updateOrCreate(
                     ['identity_id' => $identity_id, 'group_id' => $group_id],
                     ['action' => 'remove']
                 );                
@@ -133,6 +132,11 @@ class PublicAPIController extends Controller {
                 ]);
             }
             $counts['removed']++;
+        }
+
+        // Delete any action queue outliers for this group
+        if ($group->manual_confirmation_add == true || $group->manual_confirmation_remove == true) {
+            GroupActionQueue::where('group_id',$group_id)->whereNotIn('id',$group_actions->pluck('id'))->delete();
         }
 
         return ['success'=>'Dispatched All Jobs to Queue','counts'=>$counts];

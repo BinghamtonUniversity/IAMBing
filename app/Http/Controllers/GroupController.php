@@ -35,7 +35,12 @@ class GroupController extends Controller
         return Group::where('id',$group->id)->first();
     }
     public function update_group(Request $request, Group $group){
-        $group->update($request->all());
+        $group_info = $request->all();
+        if ($group_info['type'] == 'manual') {
+            $group_info['manual_confirmation_add'] = false;
+            $group_info['manual_confirmation_remove'] = false;
+        }
+        $group->update($group_info);
         return Group::where('id',$group->id)->first();
     }
 
