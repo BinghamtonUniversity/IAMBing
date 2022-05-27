@@ -143,6 +143,7 @@
             @can('view_in_admin',App\Models\Job::class)
             <li><a href="/horizon" target="_blank"><i class="fa fa-fw fa-chart-line"></i>&nbsp; Jobs (Horizon)</a></li>
             @endcan
+            <li><a href="/history_chart"><i class="fa fa-fw fa-chart-line"></i> Group Membership Charts</a></li>
             <li><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-fw fa-info"></i>&nbsp; View Documentation</a></li>
         </ul>
     </div>
@@ -214,6 +215,8 @@
     <script src='/assets/js/vendor/ractive.min.js'></script>
     <script src="/assets/js/admin/_framework.js"></script>
     <script src="/assets/js/admin/admin.js"></script>
+    <script src="/assets/js/vendor/d3.v3.js" charset="utf-8"></script>
+    <script src="/assets/js/vendor/c3.min.js"></script>
     <script>
         @if(isset($ids)) window.ids={!!json_encode($ids)!!}; @endif
         if (typeof window.ids !== 'undefined' && Array.isArray(window.ids)) {
