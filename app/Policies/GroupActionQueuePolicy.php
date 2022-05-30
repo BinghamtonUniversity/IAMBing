@@ -20,8 +20,10 @@ class GroupActionQueuePolicy
 
     public function view_in_admin(Identity $identity){
         return Permission::where('identity_id',$identity->id)
-            ->where('permission','view_group_action_queue')
-            ->orWhere('permission','manage_group_action_queue')
+            ->where(function($q){
+                $q->orWhere('permission','view_group_action_queue')
+                ->orWhere('permission','manage_group_action_queue');
+            })
             ->first();
     }
 
