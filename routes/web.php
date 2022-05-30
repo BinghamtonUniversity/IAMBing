@@ -47,7 +47,6 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/configuration', [AdminController::class, 'configuration'])->middleware('can:update,App\Models\Configuration');
     Route::get('/identities/{identity}/logs',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
     Route::get('/group_action_queue', [AdminController::class, 'group_action_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
-    Route::get('/history_chart', [AdminController::class, 'entitlements_history_chart']);
 
     Route::group(['prefix' => 'api'], function () {
         /* Identity Methods */
@@ -140,7 +139,6 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
         /* Logs Methods */
         Route::get('/logs',[LogController::class,'get_logs'])->middleware('can:view,App\Models\Log'); // Get All Logs
-        Route::get('/membership_logs',[LogController::class,'get_membership_logs'])->middleware('can:view,App\Models\Log'); // Get All Logs
 
         Route::get('/group_action_queue',[GroupActionQueueController::class,'get_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
         Route::post('/group_action_queue/execute',[GroupActionQueueController::class,'execute'])->middleware('can:manage_group_action_queue,App\Models\GroupActionQueue');

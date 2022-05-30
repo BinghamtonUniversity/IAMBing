@@ -215,12 +215,4 @@ class AdminController extends Controller
             ]
         );
     }
-    public function entitlements_history_chart(Request $request){
-        return view('default.admin',
-            [
-                'page'=>'history_chart',
-                'ids'=>[],'title'=>'Group Memberships Visual Reports',
-                'help'=> 'Group Memberships Visual Reports'
-        ]);
-    }
 }

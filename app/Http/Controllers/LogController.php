@@ -59,14 +59,5 @@ class LogController extends Controller
             end)")
             ->distinct()
             ->get();
-    }
-
-    public function get_membership_logs(Request $request){
-        return Log::select(
-            DB::raw('count(action) as num'),'action',DB::raw('DATE(created_at) as date'))
-            ->where('type','group')
-            ->groupBy('action',DB::raw('DATE(created_at)'))
-            ->get()
-            ->sortBy(['date', 'asc']);
-    }
+    }    
 }
