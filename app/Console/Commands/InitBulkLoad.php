@@ -29,10 +29,7 @@ class InitBulkLoad extends Command
     }
 
     private function get_default_username($source_identity) {
-        $usernames = [
-            'matches' => ['numeric'=>[],'non_numeric'=>[]],
-            'not_matches' => ['numeric'=>[],'non_numeric'=>[]]
-        ];
+        $default_username = null;
         $derived_username_substr = 
             strtolower(
                 (isset($source_identity['first_name'][0])?$source_identity['first_name'][0]:'').
@@ -40,30 +37,27 @@ class InitBulkLoad extends Command
                 (isset($source_identity['last_name'][1])?$source_identity['last_name'][1]:'')
             );
 
+        $accounts_rank = [];
         foreach($source_identity['accounts'] as $username => $account) {
             if ($account['primary'] === true) {
-                if (str_starts_with($username,$derived_username_substr)) { $matches_index = 'matches'; } 
-                else { $matches_index = 'not_matches'; }
-                if (is_numeric(substr($username, -1, 1))) {
-                    $usernames[$matches_index]['numeric'][] = $username;
-                } else {
-                    $usernames[$matches_index]['non_numeric'][] = $username;
-                }
+                $accounts_rank[$username] = 0;
+                if (str_starts_with($username,$derived_username_substr)) { $accounts_rank[$username]+=1; } 
+                if (!is_numeric(substr($username, -1, 1))) { $accounts_rank[$username]+=2; }
+                if ($account['ad'] == true) { $accounts_rank[$username]+=3; }
+                if ($account['google'] == true) { $accounts_rank[$username]+=3; }
             }
         }
-        sort($usernames['matches']['numeric']); sort($usernames['matches']['non_numeric']);
-        sort($usernames['not_matches']['numeric']); sort($usernames['not_matches']['non_numeric']);
-
-        if (count($usernames['matches']['non_numeric'])>0) {
-            $default_username = $usernames['matches']['non_numeric'][0];
-        } else if (count($usernames['not_matches']['non_numeric'])>0) {
-            $default_username = $usernames['not_matches']['non_numeric'][0];
-        } else if (count($usernames['matches']['numeric'])>0) {
-            $default_username = $usernames['matches']['numeric'][0];
-        } else if (count($usernames['not_matches']['numeric'])>0) {
-            $default_username = $usernames['not_matches']['numeric'][0];
-        } else {
-            $default_username = null;
+        $ranks = [];
+        foreach($accounts_rank as $username => $rank) {
+            $ranks[$rank][] = $username;
+        }
+        if (count($ranks) > 0) {
+            $max_rank = max(array_keys($ranks));
+            $max_rank_accounts = $ranks[$max_rank];
+            sort($max_rank_accounts);
+            if (isset($max_rank_accounts[0])) {
+                $default_username = $max_rank_accounts[0];
+            }
         }
         return $default_username;
     }
@@ -99,6 +93,8 @@ class InitBulkLoad extends Command
             // Decide if the identity is an orphan
             $is_orphan = true;
             if (count($source_identity['affiliations']) > 0) {
+                $is_orphan = false;
+            } else if (isset($source_identity['millennium_id']) && !is_null($source_identity['millennium_id']) && $source_identity['millennium_id'] != '') {
                 $is_orphan = false;
             } else {
                 $no_ad_or_google_accounts = true;
@@ -160,20 +156,25 @@ class InitBulkLoad extends Command
             }
             /* Handle Alumni with an existing Google Account ==> Add to Alumni Email Group */
             /* Handle Alumni with an existing AD Account ==> Add to Alumni AD Group */
-            $alumni_google = false; $alumni_ad = false;
             foreach($source_identity['accounts'] as $username => $account) {
-                if ($account['google'] == true && $account['primary'] == true && !$alumni_google) {
+                if ($account['google'] == true && $account['primary'] == true) {
                     if ($account['vanity_alumni'] == true || 
                         in_array('alumni',$source_identity['affiliations']) || 
+                        (isset($source_identity['millennium_id']) && !is_null($source_identity['millennium_id']) && $source_identity['millennium_id'] != '') ||
                         (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1) || 
                         (in_array('alumni_associates',$source_identity['affiliations']) && in_array('applicants',$source_identity['affiliations']))) {
                         $new_identity['groups'][] = ['group_id'=>$alumni_email_group->id,'name'=>$alumni_email_group->name];
+                        break;
                     }
                 }
-                if ($account['ad'] == true && $account['primary'] == true && !$alumni_ad) {
+            }
+            foreach($source_identity['accounts'] as $username => $account) {
+                if ($account['ad'] == true && $account['primary'] == true) {
                     if (in_array('alumni',$source_identity['affiliations']) || 
+                        (isset($source_identity['millennium_id']) && !is_null($source_identity['millennium_id']) && $source_identity['millennium_id'] != '') ||
                         (in_array('alumni_associates',$source_identity['affiliations']) && count($source_identity['affiliations']) == 1)) {
                         $new_identity['groups'][] = ['group_id'=>$alumni_ad_group->id,'name'=>$alumni_ad_group->name];
+                        break;
                     }
                 }
             }
