@@ -35,5 +35,32 @@ ajax.get('/api/group_action_queue/',function(data) {
         },function(data) {
             // Do nothing!
         });
+    }).on('download',function(event){
+        toastr.info("Please wait. Fetching the data...");
+        ajax.get('/api/group_action_queue/download',function(content) {
+            toastr.success("Fetched the data");
+            if(content.length>1){
+                var filename = "Group Action Queues.csv";
+                var blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+                if (navigator.msSaveBlob) { // IE 10+
+                    navigator.msSaveBlob(blob, exportedFilenmae);
+                } else {
+                    var link = document.createElement("a");
+                    if (link.download !== undefined) { // feature detection
+                        var url = URL.createObjectURL(blob);
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", filename);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                }
+                toastr.clear()
+                toastr.success("Group Action Queue Downloaded!  Saving data to local machine... ",'',{ timeOut: 10000 })
+            }
+        },function(data) {
+            // Do nothing!
+        });
     });
 });

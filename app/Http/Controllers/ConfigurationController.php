@@ -27,15 +27,4 @@ class ConfigurationController extends Controller
         $response = Redis::command('flushdb');
         return ['msg'=>'Wiping Redis Database','ret'=>$response];
     }
-
-    // Don't do this! Hella Bad and loses all data!
-//    public function refresh_db(Request $request) {
-//        if (config('app.env')==='development' || config('app.env')==='dev' || config('app.env')==='local') {
-//            $response = Artisan::call('migrate:refresh',['--seed'=>null]);
-//            return ['msg'=>'Running php artisan migrate:refresh --seed','ret'=>$response];
-//        } else {
-//            return ['msg'=>'App In Production, Not Allowed','ret'=>false];
-//        }
-//    }
-    
 }

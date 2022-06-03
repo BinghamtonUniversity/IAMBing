@@ -140,6 +140,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/logs',[LogController::class,'get_logs'])->middleware('can:view,App\Models\Log'); // Get All Logs
 
         Route::get('/group_action_queue',[GroupActionQueueController::class,'get_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
+        Route::get('/group_action_queue/download',[GroupActionQueueController::class,'download_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
         Route::post('/group_action_queue/execute',[GroupActionQueueController::class,'execute'])->middleware('can:manage_group_action_queue,App\Models\GroupActionQueue');
     });
 

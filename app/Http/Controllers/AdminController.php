@@ -205,6 +205,9 @@ class AdminController extends Controller
     public function group_action_queue(Request $request) {
         $identity = Auth::user();
         $user_actions = [];
+        if ($identity->can('view_in_admin','App\GroupActionQueue')){
+            $user_actions[] = ["name"=>"download",'type'=>"info","label"=>"Download Action Queue as CSV"];
+        }
         if ($identity->can('manage_group_action_queue','App\GroupActionQueue')){
             $user_actions[] = ["name"=>"execute","label"=>"Execute Actions"];
         }
