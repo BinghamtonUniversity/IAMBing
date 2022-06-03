@@ -75,4 +75,13 @@ class Account extends Model
     protected function serializeDate(DateTimeInterface $date) {
         return $date->format('Y-m-d H:i:s a');
     }
+
+    protected static function booted() {
+        static::saving(function ($account) {
+            if (!isset($account->account_id) || is_null($account->account_id) || $account->account_id == '') {
+                abort(400,'Account ID Cannot be Blank');
+            }
+        });
+    }
+
 }

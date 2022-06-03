@@ -149,6 +149,9 @@ class IdentityController extends Controller
     }
 
     public function add_account(Identity $identity, Request $request) {
+        $validated = $request->validate([
+            'account_id' => 'required',
+        ]);
         $system = System::where('id',$request->system_id)->first();
         $account = $identity->add_account($system, $request->account_id);
         $account->update($request->all());

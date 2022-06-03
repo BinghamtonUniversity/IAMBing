@@ -27,13 +27,15 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
                 {type:"text", name:"account_id", label:"Account ID",required:true,help:'This is the unique identifier which will be used for this account.  It may be a username or some other unique id.'}   
             ]
         }).on('save',function(form_event){
-            toastr.info('Processing... Please Wait')
-            form_event.form.trigger('close');
-            ajax.post('/api/identities/'+id+'/accounts',form_event.form.get(),function(data) {
-                gdg.add(data);
-            },function(data){
-                // Do nothing?
-            });
+            if (form_event.form.validate()) {
+                toastr.info('Processing... Please Wait')
+                form_event.form.trigger('close');
+                ajax.post('/api/identities/'+id+'/accounts',form_event.form.get(),function(data) {
+                    gdg.add(data);
+                },function(data){
+                    // Do nothing?
+                });
+            }
         }).on('cancel',function(form_event){
             form_event.form.trigger('close');
         }).modal()

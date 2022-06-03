@@ -7,7 +7,6 @@ use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 
 class AccountObserver {
-    
     public function created(Account $account) {   
         $log = new Log([
             'action'=>'add',
