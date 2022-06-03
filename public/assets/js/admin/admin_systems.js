@@ -46,6 +46,7 @@ ajax.get('/api/systems',function(data) {
 			"type": "fieldset",
 			"label": "Configuration",
 			"name": "config",
+			"showColumn":false,
 			"fields": [
 				{
 					"type": "fieldset",
