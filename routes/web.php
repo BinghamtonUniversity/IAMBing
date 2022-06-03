@@ -133,7 +133,6 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
         /* Configuration Methods */
         Route::get('/configuration',[ConfigurationController::class,'get_configurations'])->middleware('can:list_search,App\Models\Configuration');
-        Route::get('/configuration/refresh/db',[ConfigurationController::class, 'refresh_db'])->middleware('can:flush_job_queue,App\Models\Job');
         Route::get('/configuration/refresh/redis',[ConfigurationController::class, 'refresh_redis'])->middleware('can:flush_job_queue,App\Models\Job');
         Route::put('/configuration/{config_name}',[ConfigurationController::class,'update_configuration'])->middleware('can:update,App\Models\Configuration');
 

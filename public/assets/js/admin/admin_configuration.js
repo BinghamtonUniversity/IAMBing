@@ -50,9 +50,8 @@ $('#adminDataGrid').html(`
             <div id= 'manage_jobs'>
                 <h3>Database / Job Queue Reset</h3>
                 <div class="alert alert-info">
-                Refresh the IAMBing Database and/or Redis Job Queue! (Seriously guys, this is pretty serious)
+                Refresh the IAMBing Redis Job Queue! (Seriously guys, this is pretty serious)
                 </div>
-                <div class="btn btn-danger nuke_database">Reset Database</div>
                 <div class="btn btn-danger nuke_redis">Flush Job Queue (Redis)</div>
             </div>
         </div>
@@ -254,18 +253,6 @@ gforms.username_availability = new gform(
     });
 });
 
-
-
-
-$('.nuke_database').on('click',function() {
-    toastr.warning('Database reset in progress...');
-    ajax.get('/api/configuration/refresh/db',function(data) {
-        toastr.success('Database has been reset!');
-    },
-    function(data){
-        toastr.error(data.responseJSON.message);
-    });
-});
 $('.nuke_redis').on('click',function() {
     toastr.warning('Redis Job Queue flush in progress...');
     ajax.get('/api/configuration/refresh/redis',function(data) {
@@ -275,7 +262,6 @@ $('.nuke_redis').on('click',function() {
         toastr.error(data.responseJSON.message);
     });
 });
-
 
 ajax.get('/api/configuration/',function(data) {
     _.each(data,function(item) {
