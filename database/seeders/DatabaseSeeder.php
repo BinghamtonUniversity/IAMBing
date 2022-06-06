@@ -89,25 +89,25 @@ class DatabaseSeeder extends Seeder
 
         // Create Seed Systems
         $systems = [];
-        $systems['BU'] = new System(['name' => 'BU', 'default_account_id_template' => '{{default_username}}', 'onremove' => 'delete', 'config' => ['actions' => [
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ],
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/ad/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ]
+        $systems['BU'] = new System(['name' => 'BU', 'default_account_id_template' => '{{default_username}}', 'onremove' => 'delete', 'config' => ['api' => [
+            'info' => ['enabled' => true, 'path' => '/ad/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ],
+            'create' => ['enabled' => true, 'path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            'update' => ['enabled' => true, 'path' => '/ad/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            'delete' => ['enabled' => true, 'path' => '/ad/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ]
         ]]]);
         $systems['BU']->save();
-        $systems['Google Workspace'] = new System(['name' => 'Google Workspace', 'default_account_id_template' => '{{default_username}}@binghamton.edu', 'onremove' => 'delete', 'config' => ['actions' => [
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ],
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/google/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200 ]
+        $systems['Google Workspace'] = new System(['name' => 'Google Workspace', 'default_account_id_template' => '{{default_username}}@binghamton.edu', 'onremove' => 'delete', 'config' => ['api' => [
+            'info' => ['enabled' => true, 'path' => '/google/user/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            'create' => ['enabled' => true, 'path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ],
+            'update' => ['enabled' => true, 'path' => '/google/user/{{account.account_id}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            'delete' => ['enabled' => true, 'path' => '/google/user/{{account.account_id}}', 'verb' => 'DELETE', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200 ]
         ]]]);
         $systems['Google Workspace']->save();
-        $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['actions' => [
-            ['path' => '/banner/goremal/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
-            ['path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200], 
-            ['path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200]
+        $systems['Banner'] = new System(['name' => 'Banner', 'default_account_id_template' => '{{ids.bnumber}}', 'onremove' => 'delete', 'config' => ['api' => [
+            'info' => ['enabled' => true, 'path' => '/banner/goremal/{{account.account_id}}', 'verb' => 'GET', 'action' => 'info', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            'create' => ['enabled' => true, 'path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'create', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200, ], 
+            'update' => ['enabled' => true, 'path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'update', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200], 
+            'delete' => ['enabled' => true, 'path' => '/banner/goremal/{{account.account_id}}/{{default_email}}', 'verb' => 'PUT', 'action' => 'delete', 'endpoint' => (string)$endpoint1->id, 'response_code' => 200]
         ]]]);
         $systems['Banner']->save();
 

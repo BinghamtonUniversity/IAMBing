@@ -31,10 +31,6 @@ ajax.get('/api/systems',function(data) {
                     "label": "Delete Account",
                     "value": "delete"
                 },
-                // {
-                //     "label": "Disable Account",
-                //     "value": "disable"
-                // },
                 {
                     "label": "No Action",
                     "value": "none"
@@ -44,126 +40,93 @@ ajax.get('/api/systems',function(data) {
         },
         {
 			"type": "fieldset",
-			"label": "Configuration",
+			"label": "",
 			"name": "config",
 			"showColumn":false,
 			"fields": [
 				{
-					"type": "fieldset",
-					"label": "Actions",
-					"name": "actions",
-					"array": {
-						"min": 0,
-						"max": 10
-					},
-					"fields": [
+					"type": "fieldset","label": "API Configuration","name": "api","fields": [
 						{
-							"type": "select",
-							"label": "Action",
-							"name": "action",
-							"multiple": false,
-							"columns": 4,
-							"required": true,
-							"showColumn": true,
-							"options": [
+							"type": "fieldset",
+							"label": "Get Account Info",
+							"name": "info",
+							"fields": [
+								{type:"checkbox",label:"Status",name:"enabled",value:false,options:[{label:"Enabled",value:false},{label:"Enabled",value:true}],columns:3},
 								{
-									"label": "",
-									"type": "optgroup",
-									"options": [
-										{
-											"label": "Please Select an Option"
-										},
-                                        {
-											"label": "Get Account Info",
-											"value": "info"
-										},
-										{
-											"label": "Create Account",
-											"value": "create"
-										},
-										{
-											"label": "Update Account",
-											"value": "update"
-										},
-										{
-											"label": "Delete Account",
-											"value": "delete"
-										},
-										// {
-										// 	"label": "Deactivate Account",
-										// 	"value": "deactivate"
-										// }
-									]
+									"type": "select","label": "Verb","name": "verb","columns": 3,
+									"options": ["GET","POST","PUT","DELETE"]
+								},{
+									"type": "number","label": "Expected Response Code","name": "response_code",
+									"value": 200,"columns": 6,"required": true,
+								},{
+									"type": "select","label": "Endpoint","name": "endpoint","columns": 6,
+									"options": [{"type": "optgroup","path": "/api/endpoints","format": {"label": "{{name}} - {{config.url}}","value": "{{id}}"}}]
+								},{
+									"type": "text","label": "Path","name": "path","columns": 6,
 								}
 							]
 						},
 						{
-							"type": "select",
-							"label": "Verb",
-							"name": "verb",
-							"multiple": false,
-							"columns": 4,
-							"showColumn": true,
-							"options": [
+							"type": "fieldset",
+							"label": "Create Account",
+							"name": "create",
+							"fields": [
+								{type:"checkbox",label:"Status",name:"enabled",value:false,options:[{label:"Enabled",value:false},{label:"Enabled",value:true}],columns:3},
 								{
-									"label": "",
-									"type": "optgroup",
-									"options": [
-										{
-											"label": "GET",
-											"value": "GET"
-										},
-										{
-											"label": "POST",
-											"value": "POST"
-										},
-										{
-											"label": "PUT",
-											"value": "PUT"
-										},
-										{
-											"label": "DELETE",
-											"value": "DELETE"
-										}
-									]
+									"type": "select","label": "Verb","name": "verb","columns": 3,
+									"options": ["GET","POST","PUT","DELETE"]
+								},{
+									"type": "number","label": "Expected Response Code","name": "response_code",
+									"value": 200,"columns": 6,"required": true,
+								},{
+									"type": "select","label": "Endpoint","name": "endpoint","columns": 6,
+									"options": [{"type": "optgroup","path": "/api/endpoints","format": {"label": "{{name}} - {{config.url}}","value": "{{id}}"}}]
+								},{
+									"type": "text","label": "Path","name": "path","columns": 6,
 								}
 							]
 						},
 						{
-							"type": "number",
-							"label": "Expected Response Code",
-							"name": "response_code",
-							"value": 200,
-							"columns": 4,
-							"required": true,
-							"showColumn": true
-						},
-						{
-							"type": "select",
-							"label": "Endpoint",
-							"name": "endpoint",
-							"multiple": false,
-							"columns": 6,
-							"showColumn": true,
-							"options": [
+							"type": "fieldset",
+							"label": "Update Account",
+							"name": "update",
+							"fields": [
+								{type:"checkbox",label:"Status",name:"enabled",value:false,options:[{label:"Enabled",value:false},{label:"Enabled",value:true}],columns:3},
 								{
-									"label": "",
-									"type": "optgroup",
-									"path": "/api/endpoints",
-									"format": {
-										"label": "{{name}} - {{config.url}}",
-										"value": "{{id}}"
-									}
+									"type": "select","label": "Verb","name": "verb","columns": 3,
+									"options": ["GET","POST","PUT","DELETE"]
+								},{
+									"type": "number","label": "Expected Response Code","name": "response_code",
+									"value": 200,"columns": 6,"required": true,
+								},{
+									"type": "select","label": "Endpoint","name": "endpoint","columns": 6,
+									"options": [{"type": "optgroup","path": "/api/endpoints","format": {"label": "{{name}} - {{config.url}}","value": "{{id}}"}}]
+								},{
+									"type": "text","label": "Path","name": "path","columns": 6,
 								}
 							]
 						},
 						{
-							"type": "text",
-							"label": "Path",
-							"name": "path",
-							"columns": 6,
-							"showColumn": true
+							"type": "fieldset",
+							"label": "Delete Account",
+							"name": "delete",
+							"fields": [
+								{type:"checkbox",label:"Status",name:"enabled",value:false,options:[{label:"Enabled",value:false},{label:"Enabled",value:true}],columns:3},
+								{
+									"type": "select","label": "Verb","name": "verb","columns": 3,
+									"options": ["GET","POST","PUT","DELETE"]
+								},{
+									"type": "number","label": "Expected Response Code","name": "response_code",
+									"value": 200,"columns": 6,"required": true,
+								},{
+									"type": "select","label": "Endpoint","name": "endpoint","columns": 6,
+									"options": [{"type": "optgroup","path": "/api/endpoints","format": {"label": "{{name}} - {{config.url}}","value": "{{id}}"}}]
+								},{
+									"type": "text","label": "Path","name": "path","columns": 6,
+								}
+							]
 						}
+
 					]
 				}
 			]
