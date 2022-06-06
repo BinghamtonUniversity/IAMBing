@@ -297,7 +297,6 @@ class Identity extends Authenticatable
     }
 
     public function recalculate_entitlements() {
-        // This code adds new accounts for any new systems
         $identity = $this;
         $group_ids = GroupMember::select('group_id')->where('identity_id',$identity->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
@@ -305,13 +304,18 @@ class Identity extends Authenticatable
         // Check to see if calculated entitlements match enforced entitlements
         $existing_identity_entitlements = IdentityEntitlement::where('identity_id',$identity->id)->get();
         foreach($existing_identity_entitlements as $identity_entitlement) {
-            if (!$identity_entitlement->override || ($identity_entitlement->expire === true && $identity_entitlement->expiration_date->isPast())) {
+            if (!$identity_entitlement->override) {
                 $identity_entitlement->update(['override'=>false,'expiration_date'=>null,'description'=>null,'override_identity_id'=>null]);
                 if (!$calculated_entitlement_ids->contains($identity_entitlement->entitlement_id)) {
                     $identity_entitlement->delete();
                 }
             }
+            if ($identity_entitlement->override && $identity_entitlement->expire === true && $identity_entitlement->expiration_date->isPast()) {
+                $identity_entitlement->delete();
+            }
         }
+
+        // Add Entitlements if they are missing
         foreach($calculated_entitlement_ids as $calculated_entitlement_id) {
             $entitlement = $existing_identity_entitlements->firstWhere('entitlement_id',$calculated_entitlement_id);
             if (is_null($entitlement)) {
