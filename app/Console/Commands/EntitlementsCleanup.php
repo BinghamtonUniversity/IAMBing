@@ -22,7 +22,7 @@ class EntitlementsCleanup extends Command
             return;
         }
         $options = $this->options();
-        if (!isset($options['silent'])) {
+        if (!$options['silent']) {
             if (!$this->confirm('There are '.count($identity_ids).' identities with expired entitlements.  Would you like to clean them up?')) {
                 $this->error("Exiting");
                 return;
