@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Artisan;
 
 class Kernel extends ConsoleKernel
 {
@@ -53,12 +54,7 @@ class Kernel extends ConsoleKernel
         // })->name('sponsored_identity_expiration_reminder')->dailyAt(config('app.sponsored_identity_ent_exp_reminder'))->timezone('America/New_York')->onOneServer();
 
         $schedule->call(function(){
-            $identity_ids = IdentityEntitlement::where('type','add')->where('expiration_date',"<",Carbon::now())->get()->pluck('identity_id')->unique();    
-            foreach($identity_ids as $identity_id){
-                UpdateIdentityJob::dispatch([
-                    'identity_id' => $identity_id
-                ]);
-            }
+            $response = Artisan::call('entitlements:cleanup',['--silent'=>true]);
         })->name('delete_expired_identity_entitlements')->dailyAt(config('app.delete_expired_identity_entitlements'))->timezone('America/New_York')
         ->onOneServer();
     }

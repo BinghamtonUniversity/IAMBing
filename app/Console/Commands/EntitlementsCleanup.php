@@ -9,7 +9,7 @@ use App\Jobs\UpdateIdentityJob;
 
 class EntitlementsCleanup extends Command
 {
-    protected $signature = 'entitlements:cleanup';
+    protected $signature = 'entitlements:cleanup {--silent}';
     protected $description = 'Cleanup Expired Entitlements';
 
     public function handle() {
@@ -21,9 +21,12 @@ class EntitlementsCleanup extends Command
             $this->error("No Expired Entitlements... Exiting");
             return;
         }
-        if (!$this->confirm('There are '.count($identity_ids).' identities with expired entitlements.  Would you like to clean them up?')) {
-            $this->error("Exiting");
-            return;
+        $options = $this->options();
+        if (!isset($options['silent'])) {
+            if (!$this->confirm('There are '.count($identity_ids).' identities with expired entitlements.  Would you like to clean them up?')) {
+                $this->error("Exiting");
+                return;
+            }
         }
         $this->info("Dispatching Jobs ...");
         $bar = $this->output->createProgressBar(count($identity_ids));
