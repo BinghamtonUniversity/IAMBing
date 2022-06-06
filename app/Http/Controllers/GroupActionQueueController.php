@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Configuration;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -36,26 +37,22 @@ class GroupActionQueueController extends Controller
         $headers = ['action','first_name','last_name','group_name'];
         $headers = array_merge($headers,$unique_ids);
         $rows = [];
-        if($result->count()>0){
-            header('Content-type: text/csv');
-             $rows[0] = '"'.implode('","',$headers).'"';
-            foreach($result as $data){
-                $datus = [
-                    "action"=>$data->action,
-                    "first_name"=>$data->identity->first_name,
-                    "last_name"=>$data->identity->last_name,
-                    "group_name"=>$data->group->name,
-                ];
-                foreach($unique_ids as $id){
-                    $datus[$id] = isset($data->identity->ids[$id])?$data->identity->ids[$id]:null;
-                }
 
-                $rows[] = '"'.implode('","',array_values($datus)).'"';
+        $rows[] = '"'.implode('","',$headers).'"';
+        foreach($result as $data){
+            $datus = [
+                "action"=>$data->action,
+                "first_name"=>$data->identity->first_name,
+                "last_name"=>$data->identity->last_name,
+                "group_name"=>$data->group->name,
+            ];
+            foreach($unique_ids as $id){
+                $datus[$id] = isset($data->identity->ids[$id])?$data->identity->ids[$id]:null;
             }
-            echo implode("\n",$rows);
+            $rows[] = '"'.implode('","',array_values($datus)).'"';
         }
-        else{
-            return [];
-        }
+        return response(implode("\n",$rows), 200)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition','attachment; filename="Group Action Queue - '.Carbon::now()->toDateString().'.csv');
     }
 }
