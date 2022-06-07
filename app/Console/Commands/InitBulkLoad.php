@@ -68,10 +68,24 @@ class InitBulkLoad extends Command
             $this->error("Exiting");
             return;
         }
-        $filename = $this->ask('What is the filename/filepath for the default JSON Bulk Load?');
+        $source_identities_file = $this->ask('What is the filename/filepath for the All Identities JSON File?');
+        if (!file_exists($source_identities_file)) {
+            $this->error("The specified file path does not exist.  Exiting");
+            return;
+        }
+
+        $reserved_usernames = collect([]);
+        if ($this->confirm('Would you also like to specify a reserved usernames file?')) {
+            $reserved_usernames_file = $this->ask('What is the filename/filepath for the reserved usernames file?');
+            if (!file_exists($reserved_usernames_file)) {
+                $this->error("The specified file path does not exist.  Exiting");
+                return;
+            }
+            $reserved_usernames = collect(explode("\n",file_get_contents($reserved_usernames_file)));
+        }
 
         $this->info("Pre-Processing The Data...");
-        $source_identities = json_decode(file_get_contents($filename),true);
+        $source_identities = json_decode(file_get_contents($source_identities_file),true);
 
         $bu_sys = System::where('name','BU')->first();
         $google_sys = System::where('name','Google Workspace')->first();
@@ -261,7 +275,25 @@ class InitBulkLoad extends Command
 
         // SAVE EVERYTHING to Database!
         // Populate Reserved Usernames:
-        $this->info("Populating Reserved Usernames ...");
+        if (count($reserved_usernames)) {
+            $this->info("Populating Reserved Usernames from Reserved Usernames File ...");
+            $reserved_usernames_chunks = $reserved_usernames->chunk(100);
+            $bar = $this->output->createProgressBar(count($reserved_usernames_chunks));
+            foreach($reserved_usernames_chunks as $reserved_usernames_chunk) {
+                $upsert_arr = [];
+                foreach($reserved_usernames_chunk as $reserved_username) {
+                    $upsert_arr[] = [
+                        'username' => $reserved_username
+                    ];
+                }
+                ReservedUsername::upsert($upsert_arr,'username');
+                $bar->advance();
+            }
+            $this->info("\n");
+            unset($reserved_usernames); unset($reserved_usernames_chunks);
+        }
+
+        $this->info("Populating Reserved Usernames From Identities File ...");
         $bar = $this->output->createProgressBar(count($source_identities));
         foreach($source_identities as $source_identity) {
             $upsert_arr = [];
