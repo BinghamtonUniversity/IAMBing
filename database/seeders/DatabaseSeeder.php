@@ -84,7 +84,7 @@ class DatabaseSeeder extends Seeder
         $permission2->save();
 
         // Create Seed Endpoints
-        $endpoint1 = new Endpoint(['name' => 'DataProxy Default', 'config' => ['content_type' => 'application/x-www-form-urlencoded', 'secret' => '', 'type' => 'http_basic_auth', 'url' => 'https://hermesdev.binghamton.edu/iam', 'username' => '', ]]);
+        $endpoint1 = new Endpoint(['name' => 'DataProxy DEV', 'config' => ['content_type' => 'application/x-www-form-urlencoded', 'secret' => 'NOTAPASSWORD', 'type' => 'http_basic_auth', 'url' => 'https://hermesdev.binghamton.edu/iam', 'username' => 'NOTAUSERNAME']]);
         $endpoint1->save();
 
         // Create Seed Systems
