@@ -206,10 +206,11 @@ class AdminController extends Controller
         $identity = Auth::user();
         $user_actions = [];
         if ($identity->can('view_in_admin','App\GroupActionQueue')){
-            $user_actions[] = ["name"=>"download",'type'=>"info","label"=>"Download Action Queue as CSV"];
+            $user_actions[] = ["name"=>"download",'type'=>"info","label"=>'<i class="fa fa-download"></i> Download as CSV'];
         }
         if ($identity->can('manage_group_action_queue','App\GroupActionQueue')){
-            $user_actions[] = ["name"=>"execute","label"=>"Execute Actions"];
+            $user_actions[] = ''; $user_actions[] = '';
+            $user_actions[] = ["name"=>"execute","label"=>"Execute Actions","type"=>"danger"];
         }
         return view('default.admin',
             ['page'=>'group_action_queue','ids'=>[],'title'=>'Group Action Queue','help'=>

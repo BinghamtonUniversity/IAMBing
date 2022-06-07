@@ -9,7 +9,7 @@ class GroupActionQueue extends Model
 {
     protected $fillable = ['identity_id','group_id','action'];
     protected $table = 'group_action_queue';
-    protected $casts = ['created_at'=>'date:Y-m-d'];
+    protected $casts = ['created_at'=>'date:Y-m-d H:i:s'];
 
     public function identity(){
         return $this->belongsTo(SimpleIdentity::class);

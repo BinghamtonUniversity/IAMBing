@@ -37,6 +37,6 @@ ajax.get('/api/group_action_queue/',function(data) {
         });
     }).on('download',function(event){
         toastr.info("Please wait. Fetching the data...");
-        window.open('/api/group_action_queue/download', '_blank');
+        window.open('/group_action_queue/download_csv', '_blank');
     });
 });
