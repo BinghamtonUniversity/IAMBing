@@ -38,5 +38,7 @@ ajax.get('/api/group_action_queue/',function(data) {
     }).on('download',function(event){
         toastr.info("Please wait. Fetching the data...");
         window.open('/group_action_queue/download_csv', '_blank');
+    }).on('click',function(event) {
+        window.location = '/identities/'+event.model.attributes.identity_id
     });
 });
