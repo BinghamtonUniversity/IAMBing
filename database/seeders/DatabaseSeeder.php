@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         // Use This tool to convert the entitlement spreadsheet into a PHP Array: https://t.yctin.com/en/excel/to-php-array/
         // Entitlement Spreadsheet: https://docs.google.com/spreadsheets/d/1yD-TTZ8B8hRXI7JX8wAf-9Hu_nJWfXfxyYbDTRCW6WA/edit#gid=0
         return array(
-            0 => array('', '', 'faculty', 'faculty', 'faculty', 'staff', 'student', 'student', 'student', 'staff', 'employee', 'alum', 'alum', 'applicant', 'applicant', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate'),
+            0 => array('', '', 'faculty', 'faculty', 'faculty', 'staff', 'student', 'student', 'student', 'staff', 'employee', 'alum', 'alum', 'applicant', 'applicant', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'affiliate', 'alum', 'alum'),
             1 => array('System', 'Entitlement', 'Faculty', 'Recent Faculty', 'Emeritus Faculty', 'Staff', 'Students', 'Online Students', 'Currently Enrolled Students', 'Student Staff', 'Rf Staff', 'Alumni', 'Recent Alumni', 'Applicants', 'Admitted Applicants', 'Retirees', 'Volunteers', 'Live On Campus', 'Visiting Scholars Professionals', 'Alumni Associates', 'Alumni Email', 'Alumni AD'),
             2 => array('BU', 'BU Account', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', '', 'x'),
             3 => array('BU', 'Enforce 2FA', 'x', 'x', 'x', 'x', 'x', 'x', 'x', '', 'x', '', 'x', '', '', 'x', 'x', 'x', 'x', '', '', 'x'),
