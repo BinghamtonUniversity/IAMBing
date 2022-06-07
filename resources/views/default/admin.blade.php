@@ -90,23 +90,23 @@
               @can('view_in_admin',App\Models\Group::class)
                   <li class="visible-xs-block @if($page=="groups") active @endif"><a href="/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
               @endcan
+              @can('view_in_admin',App\Models\Entitlement::class)
+                  <li class="visible-xs-block @if($page=="entitlements") active @endif"><a href="/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
+              @endcan
               @can('view_in_admin',App\Models\System::class)
                   <li class="visible-xs-block @if($page=="systems") active @endif"><a href="/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
               @endcan
-              @can('view_in_admin',App\Models\Entitlement::class)
-                  <li class="visible-xs-block @if($page=="entitlements") active @endif"><a href="/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
+              @can('view_in_admin',App\Models\GroupActionQueue::class)
+                  <li class="visible-xs-block @if($page=="group_action_queue") active @endif"><a href="/group_action_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
+              @endcan
+              @can('view_in_admin',App\Models\Job::class)
+                <li class="visible-xs-block"><a href="/horizon" target="_blank"><i class="fa fa-chart-line fa-fw"></i>&nbsp; Jobs (Horizon)</a></li>
               @endcan
               @can('view_in_admin',App\Models\Endpoint::class)
                   <li class="visible-xs-block @if($page=="endpoints") active @endif"><a href="/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>
               @endcan
               @can('view_in_admin',App\Models\Configuration::class)
                   <li class="visible-xs-block @if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
-              @endcan
-              @can('view_in_admin',App\Models\GroupActionQueue::class)
-                  <li class="visible-xs-block @if($page=="group_action_queue") active @endif"><a href="/group_action_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
-              @endcan
-              @can('view_in_admin',App\Models\Job::class)
-              <li class="visible-xs-block"><a href="/horizon" target="_blank"><i class="fa fa-chart-line fa-fw"></i>&nbsp; Jobs (Horizon)</a></li>
               @endcan
               <li class="visible-xs-block"><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-info fa-fw"></i>&nbsp; View Documentation</a></li>
             </li>
@@ -125,23 +125,23 @@
             @can('view_in_admin',App\Models\Group::class)
                 <li class="@if($page=="groups") active @endif"><a href="/groups"><i class="fa fa-users fa-fw"></i>&nbsp; Groups</a></li>
             @endcan
-            @can('view_in_admin',App\Models\System::class)
-                <li class="@if($page=="systems") active @endif"><a href="/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
-            @endcan
             @can('view_in_admin',App\Models\Entitlement::class)
                 <li class="@if($page=="entitlements") active @endif"><a href="/entitlements"><i class="fa fa-certificate fa-fw"></i>&nbsp; Entitlements</a></li>
             @endcan
-            @can('view_in_admin',App\Models\Endpoint::class)
-                <li class="@if($page=="endpoints") active @endif"><a href="/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>
-            @endcan
-            @can('view_in_admin',App\Models\Configuration::class)
-                <li class="@if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
+            @can('view_in_admin',App\Models\System::class)
+                <li class="@if($page=="systems") active @endif"><a href="/systems"><i class="fa fa-wrench fa-fw"></i>&nbsp; Systems</a></li>
             @endcan
             @can('view_in_admin',App\Models\GroupActionQueue::class)
                 <li class="@if($page=="group_action_queue") active @endif"><a href="/group_action_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
             @endcan
             @can('view_in_admin',App\Models\Job::class)
             <li><a href="/horizon" target="_blank"><i class="fa fa-fw fa-chart-line"></i>&nbsp; Jobs (Horizon)</a></li>
+            @endcan
+            @can('view_in_admin',App\Models\Endpoint::class)
+                <li class="@if($page=="endpoints") active @endif"><a href="/endpoints"><i class="fa fa-cogs fa-fw"></i>&nbsp; API Endpoints</a></li>
+            @endcan
+            @can('view_in_admin',App\Models\Configuration::class)
+                <li class="@if($page=="configuration") active @endif"><a href="/configuration"><i class="fa fa-cog fa-fw"></i>&nbsp; System Config</a></li>
             @endcan
             <li><a href="https://github.com/BinghamtonUniversity/IAMBing/wiki" target="_blank"><i class="fa fa-fw fa-info"></i>&nbsp; View Documentation</a></li>
         </ul>
