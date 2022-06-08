@@ -26,3 +26,10 @@ DB_PASSWORD=iambing
 
 # License
 IAMBing is open-source software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+
+# Screenshots 
+## Identity Management Interface (Dark Mode)
+![Identity Management Interface](examples/example_identity.png)
+
+## Group Management Interface (Dark Mode)
+![Group Management Interface](examples/example_groups.png)
