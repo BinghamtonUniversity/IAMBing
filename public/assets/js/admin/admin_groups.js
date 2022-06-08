@@ -43,68 +43,6 @@ ajax.get('/api/configuration/',function(app_config) {
             window.location = '/groups/'+grid_event.model.attributes.id+'/entitlements';
         }).on("model:manage_admins",function(grid_event) {
             window.location = '/groups/'+grid_event.model.attributes.id+'/admins';
-        }).on('model:bulk_add',function(grid_event){
-
-            new gform({
-                "legend":"Bulk Add",
-                "name": "bulk_add",
-                "fields": [
-                    {
-                        "type": "textarea",
-                        "label": "Unique IDs",
-                        "name": "unique_ids",
-                        "showColumn": true,
-                        "help":"Please enter a list of Unique IDs (BNumbers). " +
-                            "You can either use a \",\" (comma) to separate them or enter them in separate lines<br>" +
-                            "Duplicates or existing group members will be ignored."
-                    }
-                ]
-            }).on('save',function(form_event){
-                toastr.info('Processing... Please Wait')
-                form_event.form.trigger('close');
-                ajax.post('/api/groups/'+grid_event.model.attributes.id+'/identities/bulk_add',form_event.form.get(),function(data) {
-                    if (data.added.length > 0 || data.ignored.length > 0 || data.skipped.length) {
-                        template = `
-                            {{#skipped.length}}
-                                <div class="alert alert-danger">
-                                    <h5>The Following IDs were ignored, as these identities do not exist within BComply:</h5>
-                                    <ul>
-                                    {{#skipped}}
-                                        <li>{{.}}</li>
-                                    {{/skipped}}
-                                    </ul>
-                                </div>
-                            {{/skipped.length}}
-                            {{#ignored.length}}
-                                <div class="alert alert-info">
-                                    <h5>The Following IDs were skipped, as these identities are already a member of this group:</h5>
-                                    <ul>
-                                    {{#ignored}}
-                                        <li>{{.}}</li>
-                                    {{/ignored}}
-                                    </ul>
-                                </div>
-                            {{/ignored.length}}
-                            {{#added.length}}
-                                <div class="alert alert-success">
-                                    <h5>The Following IDs were sucessfully added:</h5>
-                                    <ul>
-                                    {{#added}}
-                                        <li>{{.}}</li>
-                                    {{/added}}
-                                    </ul>
-                                </div>
-                            {{/added.length}}
-                            `;
-                        $('#adminModal .modal-title').html('Additional Information')
-                        $('#adminModal .modal-body').html(gform.m(template,data));
-                        $('#adminModal').modal('show')
-                    }
-                },function(data){
-                });
-            }).on('cancel',function(form_event){
-                form_event.form.trigger('close');
-            }).modal()
         }).on('sort', e => {
             var tempdata = {items:_.map(e.grid.models, function(item){return item.attributes}).reverse()};//[].concat.apply([],pageData)
             var sortlist = '<ol id="sorter" class="list-group" style="margin: -15px;"> {{#items}} <li id="list_{{id}}" data-id="{{id}}" class="list-group-item filterable"> <div class="sortableContent"> <div class="fa fa-bars" style="cursor:move;"></div> {{name}} </div> </li> {{/items}} </ol>';
