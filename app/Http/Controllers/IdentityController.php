@@ -33,11 +33,10 @@ class IdentityController extends Controller
         $group_ids = GroupMember::select('group_id')->where('identity_id',$identity->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
         $identity->calculated_entitlements = Entitlement::whereIn('id',$calculated_entitlement_ids)->get();
-        $identity->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values();
+        $identity->affiliations = Group::select('affiliation','order')->whereIn('id',$group_ids)->whereNotNull('affiliation')->orderBy('order')->get()->pluck('affiliation')->unique()->values();
         $identity->primary_affiliation = isset($identity->affiliations[0])?$identity->affiliations[0]:null;
         $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->with('entitlement')->get();
         $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->whereNotNull('sponsor_id')->with('sponsor')->with('entitlement')->get();
-//        $identity->account_history = Account::where('identity_id',$identity->id)->withTrashed()->with('system')->get();
         return $identity;
 
     }

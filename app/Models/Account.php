@@ -32,16 +32,6 @@ class Account extends Model
         $this->info = $this->sync('info');
     }
 
-    // private function build_sync_identity() {
-    //     $myidentity = Identity::where('id',$this->identity_id)->with('identity_entitlements')->first()->only([
-    //         'first_name','last_name','attributes','entitlements','ids','default_username','default_email','id'
-    //     ]);
-    //     $group_ids = GroupMember::select('group_id')->where('identity_id',$myidentity['id'])->get()->pluck('group_id');
-    //     $myidentity['affiliations'] = Group::select('affiliation','order')->whereIn('id',$group_ids)->orderBy('order')->get()->pluck('affiliation')->unique()->values()->toArray();
-    //     $myidentity['primary_affiliation'] = isset($myidentity['affiliations'][0])?$myidentity['affiliations'][0]:null;
-    //     return $myidentity;
-    // }
-
     public function sync($action) {
         $identity = Identity::where('id',$this->identity_id)->first();
         $myidentity = $identity->get_api_identity();

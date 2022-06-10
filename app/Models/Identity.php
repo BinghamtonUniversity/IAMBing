@@ -395,6 +395,7 @@ class Identity extends Authenticatable
     public function get_api_identity(){
         $affiliations = Group::select('affiliation','order')
         ->whereIn('id',$this->group_memberships->pluck('group_id'))
+        ->whereNotNull('affiliation')
         ->orderBy('order')
         ->get()
         ->pluck('affiliation')
