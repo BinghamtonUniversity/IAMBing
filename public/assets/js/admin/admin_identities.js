@@ -191,13 +191,12 @@ identity_affiliations_template = `
 `;
 
 identity_entitlements_template = `
-<h5>Enforced</h5>
 <div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
 <div style="font-size:20px;">
 {{#identity_entitlements}}
     {{#pivot.override}}
         {{#pivot.type === 'remove'}}
-            <div class="label label-danger">
+            <div class="label label-danger" style="margin:0px;">
                 {{name}}
                 <div class="tinytext">
                     {{#pivot.expire}}(Manually Removed Until: {{pivot.expiration_date}}){{/}}
@@ -206,7 +205,7 @@ identity_entitlements_template = `
             </div>
         {{/}}
         {{#pivot.type === 'add'}}
-            <div class="label label-success">
+            <div class="label label-success" style="margin:0px;">
                 {{name}}
                 <div class="tinytext">
                     {{#pivot.expire}}(Manually Added Until: {{pivot.expiration_date}}){{/}}
@@ -215,21 +214,25 @@ identity_entitlements_template = `
             </div>
         {{/}}
     {{/}}
+{{/identity_entitlements}}
+{{#identity_entitlements}}
     {{^pivot.override}}
-        <div class="label label-default">{{name}}</div>
+        <div class="label label-default" style="display:inline-block;margin:0px 5px 0px 0px;">{{name}}</div>
     {{/}}
 {{/identity_entitlements}}
 </div>
 {{^identity_entitlements}}
     <div class="alert alert-warning">No Entitlements</div>
 {{/identity_entitlements}}
-<hr>
-<h5>Calculated</h5>
-<div class="well well-sm"><i class="fa fa-info-circle"></i> These are the entitlements which are automatically calculated based on group memberships</div>
-<div style="font-size:15px;">
-{{#calculated_entitlements}}
-    <div class="label label-default" style="display:inline-block;margin:0px 5px 5px 0px;">{{name}}</div>
-{{/calculated_entitlements}}
+
+<h5><a class="btn btn-default btn-xs" data-toggle="collapse" href=".show-hide-calculated" style="width:100%;">Show / Hide Default Entitlements</a></h5>
+<div class="show-hide-calculated panel-collapse collapse">
+    <div class="well well-sm"><i class="fa fa-info-circle"></i> These are the default entitlements which are automatically calculated based on group memberships</div>
+    <div style="font-size:15px;">
+        {{#calculated_entitlements}}
+            <div class="label label-default" style="display:inline-block;margin:0px 5px 5px 0px;">{{name}}</div>
+        {{/calculated_entitlements}}
+    </div>
 </div>
 `;
 
