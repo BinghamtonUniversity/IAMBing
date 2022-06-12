@@ -191,7 +191,7 @@ identity_affiliations_template = `
 `;
 
 identity_entitlements_template = `
-<div  class="well well-sm" style="margin-bottom:5px;"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
+<div class="well well-sm" style="margin-bottom:10px;"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
 <div style="font-size:20px;">
 {{#identity_entitlements}}
     {{#pivot.override}}
@@ -227,7 +227,7 @@ identity_entitlements_template = `
 
 <h5><a class="btn btn-default btn-xs" data-toggle="collapse" href=".show-hide-calculated" style="width:100%;">Show / Hide Default Entitlements</a></h5>
 <div class="show-hide-calculated panel-collapse collapse">
-    <div class="well well-sm" style="margin-bottom:5px;"><i class="fa fa-info-circle"></i> These are the default entitlements which are automatically calculated based on group memberships</div>
+    <div class="well well-sm" style="margin-bottom:10px;"><i class="fa fa-info-circle"></i> These are the default entitlements which are automatically calculated based on group memberships</div>
     <div style="font-size:15px;">
         {{#calculated_entitlements}}
             <div class="label label-default" style="display:inline-block;margin:0px 5px 5px 0px;">{{name}}</div>
@@ -238,7 +238,7 @@ identity_entitlements_template = `
 
 
 identity_accounts_template = `
-<div class="well well-sm"  style="margin-bottom:5px;><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
+<div class="well well-sm"  style="margin-bottom:10px;"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
 <div style="font-size:20px;">
     {{#systems_with_accounts_history}}
             <div class="label {{#if pivot.status === 'active'}}label-default{{elseif pivot.status === 'sync_error'}}label-warning{{elseif pivot.status === 'disabled'}}label-danger{{else}}label-danger{{/if}}">
