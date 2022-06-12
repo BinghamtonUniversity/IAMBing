@@ -238,7 +238,7 @@ identity_entitlements_template = `
 
 
 identity_accounts_template = `
-<div  class="well well-sm"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
+<div class="well well-sm"  style="margin-bottom:5px;><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
 <div style="font-size:20px;">
     {{#systems_with_accounts_history}}
             <div class="label {{#if pivot.status === 'active'}}label-default{{elseif pivot.status === 'sync_error'}}label-warning{{elseif pivot.status === 'disabled'}}label-danger{{else}}label-danger{{/if}}">
