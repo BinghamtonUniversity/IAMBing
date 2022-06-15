@@ -19,6 +19,7 @@ use App\Models\IdentityEntitlement;
 use App\Models\IdentityAttribute;
 use App\Models\IdentityUniqueID;
 use App\Models\Log;
+use App\Models\GroupActionQueue;
 use Illuminate\Support\Facades\Mail;
 
 class IdentityController extends Controller
@@ -231,6 +232,7 @@ class IdentityController extends Controller
         $source_accounts = Account::where('identity_id',$source_identity->id)->get();
         $source_sponsored_identities = Identity::where('sponsor_identity_id',$source_identity->id)->get();
         $source_permissions = Permission::where('identity_id',$source_identity->id)->get();
+        $source_group_action_queue = GroupActionQueue::where('identity_id',$source_identity->id)->get();
 
         $target_entitlements = IdentityEntitlement::where('identity_id',$target_identity->id)->get();
         $target_group_memberships = GroupMember::where('identity_id',$target_identity->id)->get();
@@ -280,6 +282,10 @@ class IdentityController extends Controller
                 $permission->identity_id = $target_identity->id;
                 $permission->save();
             }
+        }
+
+        foreach ($source_group_action_queue as $source_group_action_queue_entry){
+            $source_group_action_queue_entry->delete();
         }
 
         $source_identity->recalculate_entitlements();
