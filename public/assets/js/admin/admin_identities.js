@@ -337,21 +337,25 @@ var manage_identity = function(identity_id) {
                     var merge_form_data = merge_form_event.form.get();
                     if(form_event.form.validate() && merge_form_data.source_identity !== '')
                     {
-                        if (confirm("Are you sure you want to merge these identities?  This action cannot be undone!")) {
-                            ajax.put('/api/identities/'+merge_form_data.source_identity+'/merge_into/'+target_identity,
-                                { delete:merge_form_data.delete},
-                                function (data) {
-                                merge_form_event.form.trigger('close');
-                                if (_.has(data,'errors')) {
-                                    toastr.error('One or more errors occurred.')
-                                    console.log(data.errors);
-                                    window.alert(data.errors.join("\n"))
-                                } else {
-                                    toastr.success('Identity Merge Successful!');
-                                }
-                            });
-                        }else{
-                            toastr.warning("Aborting the merge...");
+                        if (merge_form_data.source_identity == target_identity) {
+                            toastr.error("You cannot merge an identity into itself!")
+                        } else {
+                            if (confirm("Are you sure you want to merge these identities?  This action cannot be undone!")) {
+                                ajax.put('/api/identities/'+merge_form_data.source_identity+'/merge_into/'+target_identity,
+                                    { delete:merge_form_data.delete},
+                                    function (data) {
+                                    merge_form_event.form.trigger('close');
+                                    if (_.has(data,'errors')) {
+                                        toastr.error('One or more errors occurred.')
+                                        console.log(data.errors);
+                                        window.alert(data.errors.join("\n"))
+                                    } else {
+                                        toastr.success('Identity Merge Successful!');
+                                    }
+                                });
+                            }else{
+                                toastr.warning("Aborting the merge...");
+                            }
                         }
                     }
                 }).on('cancel',function(merge_form_event) {

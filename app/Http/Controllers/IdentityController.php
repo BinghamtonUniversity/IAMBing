@@ -227,6 +227,9 @@ class IdentityController extends Controller
         return $identity_entitlements;
     }
     public function merge_identity(Request $request, Identity $source_identity, Identity $target_identity){
+        if ($source_identity->id == $target_identity->id) {
+            return response(json_encode(['error'=>'You cannot merge an identity into itself!']),403)->header('Content-Type', 'application/json');
+        }
         $source_entitlements = IdentityEntitlement::where('identity_id',$source_identity->id)->get();
         $source_group_memberships = GroupMember::where('identity_id',$source_identity->id)->get();
         $source_accounts = Account::where('identity_id',$source_identity->id)->get();
