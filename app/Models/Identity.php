@@ -16,13 +16,13 @@ class Identity extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['active','type','sponsored','default_username', 'default_email', 'ids', 'attributes', 'first_name', 'last_name', 'sponsor_identity_id'];
+    protected $fillable = ['active','type','sponsored','default_username', 'default_email', 'ids', 'additional_attributes', 'first_name', 'last_name', 'sponsor_identity_id'];
     protected $hidden = ['identity_unique_ids','identity_attributes', 'identity_permissions', 'password', 'remember_token','created_at','updated_at'];
-    protected $appends = ['ids','permissions','attributes','entitlements'];
+    protected $appends = ['ids','permissions','additional_attributes','entitlements'];
     protected $with = ['identity_unique_ids','identity_attributes','identity_permissions'];
 
     private $set_ids = null;
-    private $set_attributes = null;
+    private $set_additional_attributes = null;
 
     public function group_memberships(){
         return $this->hasMany(GroupMember::class,'identity_id');
@@ -89,20 +89,20 @@ class Identity extends Authenticatable
         return $this->hasMany(IdentityAttribute::class,'identity_id');
     }
 
-    public function getAttributesAttribute() {
-        $attributes = [];
+    public function getAdditionalAttributesAttribute() {
+        $additional_attributes = [];
         foreach($this->identity_attributes as $attribute) {
             if ($attribute['array']===true) {
-                $attributes[$attribute['name']] = explode(',',$attribute['value']);
+                $additional_attributes[$attribute['name']] = explode(',',$attribute['value']);
             } else {
-                $attributes[$attribute['name']] = $attribute['value'];
+                $additional_attributes[$attribute['name']] = $attribute['value'];
             }
         }
-        return $attributes;
+        return $additional_attributes;
     }
 
-    public function setAttributesAttribute($attributes) {
-        $this->set_attributes = $attributes;
+    public function setAdditionalAttributesAttribute($additional_attributes) {
+        $this->set_additional_attributes = $additional_attributes;
     }
 
     // Converts Identity Permissions to Array
@@ -123,7 +123,7 @@ class Identity extends Authenticatable
             'iterator' => $iterator,
             'default_username' => $this->default_username,
             'ids'=>$this->ids,
-            'attributes' => $this->attributes,
+            'additional_attributes' => $this->additional_attributes,
         ];
         $m = new \Mustache_Engine;
         return $m->render($template, $obj);
@@ -160,7 +160,7 @@ class Identity extends Authenticatable
     }
 
     private function save_actions() {
-        if(!is_null($this->set_ids) || !is_null($this->set_attributes)){
+        if(!is_null($this->set_ids) || !is_null($this->set_additional_attributes)){
             $configs_res = Configuration::where('name','identity_attributes')
                                         ->orWhere('name','identity_unique_ids')
                                         ->get()->toArray();
@@ -185,8 +185,8 @@ class Identity extends Authenticatable
             }
             $this->load('identity_unique_ids');
         }
-        if (isset($config) && sizeof($configs)>0 && !is_null($this->set_attributes)) {
-            foreach($this->set_attributes as $name => $value) {
+        if (isset($config) && sizeof($configs)>0 && !is_null($this->set_additional_attributes)) {
+            foreach($this->set_additional_attributes as $name => $value) {
                 if(!in_array($name,$config['identity_attributes'])){
                     continue;
                 }
@@ -405,7 +405,7 @@ class Identity extends Authenticatable
         if ($this->sponsored == true) {
             $sponsor_info = Identity::where('id',$this->sponsor_identity_id)->first()->only(['first_name','last_name','ids','iamid']);
         }
-        return [
+        $data = [
             'id'=>$this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
@@ -430,9 +430,10 @@ class Identity extends Authenticatable
                 'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name
                 ];
             }),
-            'attributes'=>$this->attributes,
+            'additional_attributes'=>$this->additional_attributes,
             'sponsor'=>$this->sponsored?$sponsor_info:false,
         ];
+        return $data;
     }
 
     protected static function booted()

@@ -23,7 +23,7 @@ $('#adminDataGrid').html(`
         </div>
 
         <div class='col-xs-12'>
-            <h3>Identity Attributes</h3>
+            <h3>Additional Attributes</h3>
             <div class="alert alert-info">
                 These are the identity attributes which can be populated in IAMBing
             </div>
