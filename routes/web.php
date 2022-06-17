@@ -32,7 +32,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/', [AdminController::class, 'admin']);
     Route::get('/identities/{identity?}', [AdminController::class, 'identities'])->middleware('can:view_in_admin,App\Models\Identity');
     Route::get('/identities/{identity}/accounts', [AdminController::class, 'identity_accounts'])->middleware('can:manage_identity_accounts,App\Models\Identity');
-    Route::get('/identities/{identity}/groups', [AdminController::class, 'identity_groups'])->middleware('can:manage_groups,App\Models\Group');
+    Route::get('/identities/{identity}/groups', [AdminController::class, 'identity_groups'])->middleware('can:view_in_admin,App\Models\Identity');
     Route::get('/identities/{identity}/permissions', [AdminController::class, 'identity_permissions'])->middleware('can:manage_identity_permissions,App\Models\Identity');
     Route::get('/identities/{identity}/entitlements', [AdminController::class, 'identity_entitlements'])->middleware('can:override_identity_entitlements,App\Models\Identity');
     Route::get('/groups', [AdminController::class, 'groups'])->middleware('can:list_search,App\Models\Group');
@@ -74,7 +74,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/identities/{identity}/accounts/{account_id}/restore',[IdentityController::class,'restore_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
 
         // Identity Groups
-        Route::get('/identities/{identity}/groups',[IdentityController::class,'get_groups'])->middleware('can:manage_groups,App\Models\Group');
+        Route::get('/identities/{identity}/groups',[IdentityController::class,'get_groups'])->middleware('can:view_identity_info,App\Models\Identity');
 
         // Identity Entitlements
         Route::get('/identities/{identity}/entitlements',[IdentityController::class,'get_entitlements'])->middleware('can:override_identity_entitlements,App\Models\Identity');

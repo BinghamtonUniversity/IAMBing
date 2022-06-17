@@ -126,11 +126,9 @@ identityinfo_column_template = `
 </div>
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
-    {{#auth_user_perms}}
-        {{#if . == "manage_groups"}}
-            <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/groups">Manage Groups</a>
-        {{/if}}
-    {{/auth_user_perms}}
+    {{#if auth_user_perms.includes("manage_groups") || auth_user_perms.includes("view_groups") }}
+        <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/groups">Manage Groups</a>
+    {{/if}}
     Groups
 </h3></div>
 <div class="panel-body identity-groups">{{>identity_groups_template}}</div>
