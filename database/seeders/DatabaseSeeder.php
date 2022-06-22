@@ -71,9 +71,9 @@ class DatabaseSeeder extends Seeder
 
         // Create Seed Identities for Ali Kemal and Tim
         $identities = [];
-        $identities['tim'] = new Identity(['first_name' => 'Ali Kemal', 'last_name' => 'Tanriverdi', 'attributes' => [], 'default_username' => 'atanrive', 'default_email' => 'atanrive@binghamton.edu']);
+        $identities['tim'] = new Identity(['first_name' => 'Ali Kemal', 'last_name' => 'Tanriverdi', 'default_username' => 'atanrive', 'default_email' => 'atanrive@binghamton.edu']);
         $identities['tim']->save();
-        $identities['ali'] = new Identity(['first_name' => 'Tim', 'last_name' => 'Cortesi', 'attributes' => [], 'default_username' => 'tcortesi', 'default_email' => 'tcortesi@binghamton.edu']);
+        $identities['ali'] = new Identity(['first_name' => 'Tim', 'last_name' => 'Cortesi', 'default_username' => 'tcortesi', 'default_email' => 'tcortesi@binghamton.edu']);
         $identities['ali']->save();
         $example_unique_id = new IdentityUniqueID(['identity_id' => $identities['tim']->id, 'name' => "bnumber", 'value' => "B00450942"]);
         $example_unique_id->save();
