@@ -58,7 +58,7 @@ class IdentityController extends Controller
     public function delete_identity(Request $request, Identity $identity) {
         $sponsored_identities = Identity::where('sponsor_identity_id',$identity->id)->get();
         $sponsored_entitlements = IdentityEntitlement::where('sponsor_id',$identity->id)->get();
-        if (!is_null($sponsored_identities) || !is_null($sponsored_entitlements)) {
+        if (count($sponsored_identities)>0 || count($sponsored_entitlements)>0) {
             return response(json_encode(['error'=>'You cannot delete an identity with active identity or entitlement sponsorships.  Please remove them first.']),403)->header('Content-Type', 'application/json');
         }
         IdentityEntitlement::where('identity_id',$identity->id)->delete();
