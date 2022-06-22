@@ -363,7 +363,14 @@ var manage_identity = function(identity_id) {
                 if(form_event.form.validate()) {
                     form_data = form_event.form.get();
                     ajax.put('/api/identities/' + form_data.id, form_data, function (data) {
-                    });
+                        manage_identity(data.id);
+                        if (data.sync_errors === true) {
+                            toastr.success("Recalculate / Sync Success!");
+                        } else {
+                            toastr.error("Recalculate / Sync Error");
+                            mymodal.modal().set({output:'<pre>'+JSON.stringify(data.sync_errors,null,2)+'</pre>'});
+                        }
+                    });    
                 }
             }).on('login',function(form_event) {
                 if (confirm("Are you sure you want to continue?")) {
@@ -377,8 +384,9 @@ var manage_identity = function(identity_id) {
                 ajax.get('/api/identities/'+identity_id+'/recalculate',function(data) {
                     manage_identity(data.id);
                     if (data.sync_errors === true) {
-                        toastr.success("Recalculate and Sync Success!");
+                        toastr.success("Recalculate / Sync Success!");
                     } else {
+                        toastr.error("Recalculate / Sync Error");
                         mymodal.modal().set({output:'<pre>'+JSON.stringify(data.sync_errors,null,2)+'</pre>'});
                     }
                 });
