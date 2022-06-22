@@ -232,7 +232,7 @@ class IdentityController extends Controller
         }
         $source_entitlements = IdentityEntitlement::where('identity_id',$source_identity->id)->get();
         $source_group_memberships = GroupMember::where('identity_id',$source_identity->id)->get();
-        $source_accounts = Account::where('identity_id',$source_identity->id)->get();
+        $source_accounts = Account::where('identity_id',$source_identity->id)->withTrashed()->get();
         $source_sponsored_identities = Identity::where('sponsor_identity_id',$source_identity->id)->get();
         $source_permissions = Permission::where('identity_id',$source_identity->id)->get();
         $source_group_action_queue = GroupActionQueue::where('identity_id',$source_identity->id)->get();
@@ -253,7 +253,6 @@ class IdentityController extends Controller
                 $ent->save();
             }
         }
-
         foreach($source_group_memberships as $membership){
             if ($target_group_memberships->where('group_id',$membership->group_id)->where('identity_id',$target_identity->id)->first()){
                 $membership->delete();
@@ -265,7 +264,7 @@ class IdentityController extends Controller
         }
         foreach($source_accounts as $account){
             if ($target_accounts->where('account_id',$account->account_id)->where('identity_id',$target_identity->id)->first()){
-                $account->delete();
+                $account->forceDelete();
             }
             if (!$target_accounts->where('account_id',$account->account_id)->where('identity_id',$target_identity->id)->first()){
                 $account->identity_id = $target_identity->id;
