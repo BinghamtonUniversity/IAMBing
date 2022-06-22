@@ -56,12 +56,18 @@ class IdentityController extends Controller
     }
 
     public function delete_identity(Request $request, Identity $identity) {
+        $sponsored_identities = Identity::where('sponsor_identity_id',$identity->id)->get();
+        $sponsored_entitlements = IdentityEntitlement::where('sponsor_id',$identity->id)->get();
+        if (!is_null($sponsored_identities) || !is_null($sponsored_entitlements)) {
+            return response(json_encode(['error'=>'You cannot delete an identity with active identity or entitlement sponsorships.  Please remove them first.']),403)->header('Content-Type', 'application/json');
+        }
         IdentityEntitlement::where('identity_id',$identity->id)->delete();
         IdentityAttribute::where('identity_id',$identity->id)->delete();
         IdentityUniqueID::where('identity_id',$identity->id)->delete();
         GroupMember::where('identity_id',$identity->id)->delete();
         Permission::where('identity_id',$identity->id)->delete();
-        Account::where('identity_id',$identity->id)->delete();
+        Account::where('identity_id',$identity->id)->withTrashed()->forceDelete();
+        GroupActionQueue::where('identity_id',$identity->id)->delete();
         $identity->delete();
         return "1";
     }
@@ -234,6 +240,7 @@ class IdentityController extends Controller
         $source_group_memberships = GroupMember::where('identity_id',$source_identity->id)->get();
         $source_accounts = Account::where('identity_id',$source_identity->id)->withTrashed()->get();
         $source_sponsored_identities = Identity::where('sponsor_identity_id',$source_identity->id)->get();
+        $source_sponsored_entitlements = IdentityEntitlement::where('sponsor_id',$source_identity->id)->get();
         $source_permissions = Permission::where('identity_id',$source_identity->id)->get();
         $source_group_action_queue = GroupActionQueue::where('identity_id',$source_identity->id)->get();
 
@@ -275,7 +282,10 @@ class IdentityController extends Controller
             $identity->sponsor_identity_id = $target_identity->id;
             $identity->save();
         }
-
+        foreach ($source_sponsored_entitlements as $identity_entitlement){
+            $identity_entitlement->sponsor_id = $target_identity->id;
+            $identity_entitlement->save();
+        }
         foreach ($source_permissions as $permission){
             if ($target_permissions->where('permission',$permission->permission)->where('identity_id',$target_identity->id)->first()){
                 $permission->delete();
