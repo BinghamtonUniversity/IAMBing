@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\Identity;
 use App\Models\Group;
 use App\Models\GroupMember;
+use App\Models\GroupAdmin;
 use App\Models\Permission;
 use App\Models\Account;
 use App\Models\Configuration;
@@ -58,13 +59,15 @@ class IdentityController extends Controller
     public function delete_identity(Request $request, Identity $identity) {
         $sponsored_identities = Identity::where('sponsor_identity_id',$identity->id)->get();
         $sponsored_entitlements = IdentityEntitlement::where('sponsor_id',$identity->id)->get();
-        if (count($sponsored_identities)>0 || count($sponsored_entitlements)>0) {
+        $override_entitlements = IdentityEntitlement::where('override_identity_id',$identity->id)->get();
+        if (count($sponsored_identities)>0 || count($sponsored_entitlements)>0 || count($override_entitlements)>0) {
             return response(json_encode(['error'=>'You cannot delete an identity with active identity or entitlement sponsorships.  Please remove them first.']),403)->header('Content-Type', 'application/json');
         }
         IdentityEntitlement::where('identity_id',$identity->id)->delete();
         IdentityAttribute::where('identity_id',$identity->id)->delete();
         IdentityUniqueID::where('identity_id',$identity->id)->delete();
         GroupMember::where('identity_id',$identity->id)->delete();
+        GroupAdmin::where('identity_id',$identity->id)->delete();
         Permission::where('identity_id',$identity->id)->delete();
         Account::where('identity_id',$identity->id)->withTrashed()->forceDelete();
         GroupActionQueue::where('identity_id',$identity->id)->delete();
@@ -238,23 +241,24 @@ class IdentityController extends Controller
         }
         $source_entitlements = IdentityEntitlement::where('identity_id',$source_identity->id)->get();
         $source_group_memberships = GroupMember::where('identity_id',$source_identity->id)->get();
+        $source_group_admins = GroupAdmin::where('identity_id',$source_identity->id)->get();
         $source_accounts = Account::where('identity_id',$source_identity->id)->withTrashed()->get();
         $source_sponsored_identities = Identity::where('sponsor_identity_id',$source_identity->id)->get();
         $source_sponsored_entitlements = IdentityEntitlement::where('sponsor_id',$source_identity->id)->get();
+        $source_override_entitlements = IdentityEntitlement::where('override_identity_id',$source_identity->id)->get();
         $source_permissions = Permission::where('identity_id',$source_identity->id)->get();
         $source_group_action_queue = GroupActionQueue::where('identity_id',$source_identity->id)->get();
 
         $target_entitlements = IdentityEntitlement::where('identity_id',$target_identity->id)->get();
         $target_group_memberships = GroupMember::where('identity_id',$target_identity->id)->get();
+        $target_group_admins = GroupAdmin::where('identity_id',$target_identity->id)->get();
         $target_accounts = Account::where('identity_id',$target_identity->id)->get();
         $target_permissions = Permission::where('identity_id',$target_identity->id)->get();
 
         foreach ($source_entitlements as $ent){
             if ($target_entitlements->where('entitlement_id',$ent->entitlement_id)->where('identity_id',$target_identity->id)->first()){
                 $ent->delete();
-            }
-
-            if (!$target_entitlements->where('entitlement_id',$ent->entitlement_id)->where('identity_id',$target_identity->id)->first()){
+            } else {
                 $ent->identity_id = $target_identity->id;
                 $ent->override_identity_id = isset(Auth::user()->id)? Auth::user()->id: null;
                 $ent->save();
@@ -263,17 +267,23 @@ class IdentityController extends Controller
         foreach($source_group_memberships as $membership){
             if ($target_group_memberships->where('group_id',$membership->group_id)->where('identity_id',$target_identity->id)->first()){
                 $membership->delete();
-            }
-            if (!$target_group_memberships->where('group_id',$membership->group_id)->where('identity_id',$target_identity->id)->first()){
+            } else {
                 $membership->identity_id = $target_identity->id;
                 $membership->save();
+            }
+        }
+        foreach($source_group_admins as $group_admin){
+            if ($target_group_admins->where('group_id',$group_admin->group_id)->where('identity_id',$target_identity->id)->first()){
+                $group_admin->delete();
+            } else {
+                $group_admin->identity_id = $target_identity->id;
+                $group_admin->save();
             }
         }
         foreach($source_accounts as $account){
             if ($target_accounts->where('account_id',$account->account_id)->where('identity_id',$target_identity->id)->first()){
                 $account->forceDelete();
-            }
-            if (!$target_accounts->where('account_id',$account->account_id)->where('identity_id',$target_identity->id)->first()){
+            } else {
                 $account->identity_id = $target_identity->id;
                 $account->save();
             }
@@ -286,16 +296,18 @@ class IdentityController extends Controller
             $identity_entitlement->sponsor_id = $target_identity->id;
             $identity_entitlement->save();
         }
+        foreach ($source_override_entitlements as $identity_entitlement){
+            $identity_entitlement->sponsor_id = $target_identity->id;
+            $identity_entitlement->save();
+        }
         foreach ($source_permissions as $permission){
             if ($target_permissions->where('permission',$permission->permission)->where('identity_id',$target_identity->id)->first()){
                 $permission->delete();
-            }
-            if (!$target_permissions->where('permission',$permission->permission)->where('identity_id',$target_identity->id)->first()){
+            } else {
                 $permission->identity_id = $target_identity->id;
                 $permission->save();
             }
         }
-
         foreach ($source_group_action_queue as $source_group_action_queue_entry){
             $source_group_action_queue_entry->delete();
         }
@@ -304,6 +316,8 @@ class IdentityController extends Controller
         $target_identity->recalculate_entitlements();
 
         if($request->delete){
+            IdentityAttribute::where('identity_id',$source_identity->id)->delete();
+            IdentityUniqueID::where('identity_id',$source_identity->id)->delete();
             $source_identity->delete();
         }
 
