@@ -1,5 +1,6 @@
 ajax.get('/api/systems',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
+	name: 'systems',
     item_template: gform.stencils['table_row'],
     search: false,columns: false,upload:false,download:false,title:'Systems',
     entries:[],

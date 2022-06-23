@@ -1,8 +1,7 @@
 ajax.get('/api/entitlements/'+id+'/groups',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
-    // item_template: gform.stencils['table_row'],
+    name: 'entitlements_groups',
     search: false,columns: false,upload:false,download:false,title:'Group Entitlements',
-    // entries:[],
     actions:[
         {"name":"create","label":"Add Group to Entitlement"},
         '','',

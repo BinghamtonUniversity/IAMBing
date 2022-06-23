@@ -1,5 +1,6 @@
 ajax.get('/api/identities/'+id+'/accounts',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
+    name: 'identities_accounts',
     item_template: gform.stencils['table_row'],
     search: false,columns: false,upload:false,download:false,title:'Identities',
     entries:[],

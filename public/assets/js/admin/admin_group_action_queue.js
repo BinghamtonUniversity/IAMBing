@@ -8,14 +8,15 @@ ajax.get('/api/group_action_queue/',function(data) {
     ];
 
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
+        name: 'group_action_queue',
         item_template: gform.stencils['table_row'],
         search: false,columns: false,upload:false,download:false,title:'Queue',
         entries:[],
         sortBy: 'order',
         actions:actions,
-        count:20,
+        count:100,
         schema:group_action_queue_form_fields, 
-        data: data
+        data: data,
     }).on('execute',function(event) {
         var models = event.grid.getSelected();
         var action_queue_ids = _.map(models,function(model) {

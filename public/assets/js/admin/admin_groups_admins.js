@@ -1,5 +1,6 @@
 ajax.get('/api/groups/'+id+'/admins?simple=true',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
+    name: 'groups_admins',
     item_template: gform.stencils['table_row'],
     search: false,columns: false,upload:false,download:false,title:'Group Admins',
     entries:[],
