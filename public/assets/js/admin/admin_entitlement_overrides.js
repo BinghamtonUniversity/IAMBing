@@ -4,7 +4,6 @@ overrides_template = `
 ajax.get('/api/entitlements/'+id+'/overrides',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
         name: 'entitlement_overrides',
-        item_template: gform.stencils['table_row'],
         search: false,columns: false,upload:false,download:true,title:'Entitlement Overrides',
         count:20,
         actions:[],

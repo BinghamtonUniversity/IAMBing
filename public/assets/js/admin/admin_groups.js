@@ -14,7 +14,6 @@ ajax.get('/api/configuration/',function(app_config) {
     ajax.get('/api/groups',function(data) {
         gdg = new GrapheneDataGrid({el:'#adminDataGrid',
         name: 'groups',
-        item_template: gform.stencils['table_row'],
         search: false,columns: false,upload:false,download:false,title:'Groups',
         entries:[],
         sortBy: 'order',
