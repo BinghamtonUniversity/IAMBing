@@ -204,16 +204,35 @@ class PublicAPIController extends Controller {
             'identities' => 'required',
             'id' => 'required',
         ]);
-        $counts = ["updated"=>0,"not_updated"=>0];
+
+        $counts = ["updated"=>0,"not_updated"=>0, "not_found"=>0];
         $api_identities = $request->identities;
+        
         foreach($api_identities as $api_identity){
             $res = Identity::query();
+            $t_res = $res;
+            if(isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
+                && !is_null($api_identity['ids'][$request['id']]) && $api_identity['ids'][$request['id']]!==""){
+                $t_res->whereHas('identity_unique_ids', function($q) use ($api_identity,$request){
+                    $q->where('name',$request['id'])->where('value',$api_identity['ids'][$request['id']]);
+                });
+                if(is_null($t_res->first())){
+                    $counts['not_found']++;
+                    continue;
+                }
+            }else{
+                $counts['not_found']++;
+                continue;
+            }
+
             foreach($api_identity as $api_identity_key=>$api_identity_value){
                 if($api_identity_key === 'ids'){
                     foreach($api_identity_value as $key=>$value){
-                        $res->whereHas('identity_unique_ids', function($q) use ($key,$value){
-                            $q->where('name',$key)->where('value',$value);
-                        });
+                        if (isset($value) && !is_null($value)){
+                            $res->whereHas('identity_unique_ids', function($q) use ($key,$value){
+                                $q->where('name',$key)->where('value',$value);
+                            });
+                        }
                     }
                 }
                 elseif($api_identity_key ==='attributes'){
