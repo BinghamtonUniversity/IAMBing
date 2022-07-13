@@ -12,8 +12,8 @@ use DateTimeInterface;
 class Account extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['identity_id','system_id','account_id','status','attributes'];
-    protected $casts = ['system_id'=>'string','attributes'=>'array'];
+    protected $fillable = ['identity_id','system_id','account_id','status','account_attributes'];
+    protected $casts = ['system_id'=>'string','account_attributes'=>'array'];
 
     public function system(){
         return $this->belongsTo(System::class);
@@ -42,8 +42,8 @@ class Account extends Model
             $action_definition = $mysystem->config->api->$action;
             if ($action_definition->enabled == true) {
                 $endpoint = Endpoint::where('id',$action_definition->endpoint)->first();
-                $myidentity['account'] = $this->only('account_id','status');
-                $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity);   
+                $myidentity['account'] = $this->only('account_id','status','account_attributes');
+                $url = $m->render($endpoint->config->url.$action_definition->path, $myidentity); 
                 $response = EndpointHelper::http_request_maker($endpoint,$action_definition,$myidentity,$url);
                 if ($response['code'] == $action_definition->response_code) {
                     return Arr::only($response, ['code', 'content']);

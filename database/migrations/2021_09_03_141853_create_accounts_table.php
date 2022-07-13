@@ -24,7 +24,7 @@ class CreateAccountsTable extends Migration
                 'deleted',
                 'sync_error',
             ])->default('active');
-            $table->json('attributes');
+            $table->json('account_attributes');
             $table->foreign('identity_id')->references('id')->on('identities');
             $table->foreign('system_id')->references('id')->on('systems');
             $table->unique(['identity_id','system_id','account_id']);

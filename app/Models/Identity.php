@@ -395,12 +395,12 @@ class Identity extends Authenticatable
 
     public function get_api_identity(){
         $affiliations = Group::select('affiliation','order')
-        ->whereIn('id',$this->group_memberships->pluck('group_id'))
-        ->whereNotNull('affiliation')
-        ->orderBy('order')
-        ->get()
-        ->pluck('affiliation')
-        ->unique()->values()->toArray();
+            ->whereIn('id',$this->group_memberships->pluck('group_id'))
+            ->whereNotNull('affiliation')
+            ->orderBy('order')
+            ->get()
+            ->pluck('affiliation')
+            ->unique()->values()->toArray();
         $identity_account_systems = System::select('id','name')->whereIn('id',$this->accounts->pluck('system_id'))->get();
         if ($this->sponsored == true) {
             $sponsor_info = Identity::where('id',$this->sponsor_identity_id)->first()->only(['first_name','last_name','ids','iamid']);
@@ -415,19 +415,20 @@ class Identity extends Authenticatable
             'affiliations' => $affiliations,
             'group_memberships'=>$this->groups->map(function($q){
                 return [
-                'id'=>$q->id,
-                'slug'=>$q->slug,
-                'name'=>$q->name
+                    'id'=>$q->id,
+                    'slug'=>$q->slug,
+                    'name'=>$q->name
                 ];
             }),
             'primary_affiliation' => isset($affiliations[0])?$affiliations[0]:null,
             'entitlements'=>$this->entitlements,
-            'accounts'=>$this->accounts ->map(function($q) use ($identity_account_systems){
+            'accounts'=>$this->accounts->map(function($q) use ($identity_account_systems){
                 return [
-                'id'=>$q->id,
-                'account_id'=>$q->account_id,
-                'system_id'=>$q->system_id,
-                'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name
+                    'id'=>$q->id,
+                    'account_id'=>$q->account_id,
+                    'system_id'=>$q->system_id,
+                    'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name,
+                    'account_attributes'=>$q->account_attributes,
                 ];
             }),
             'additional_attributes'=>$this->additional_attributes,

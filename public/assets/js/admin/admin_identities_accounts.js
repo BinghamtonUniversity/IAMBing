@@ -69,19 +69,19 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
         }); 
     }).on("model:edit_attributes",function(grid_event) {
         ajax.get('/api/systems/'+grid_event.model.attributes.system_id,function(data) {
-            if (_.has(data.config.account_attributes,'attributes') && typeof data.config.account_attributes === 'object') {
-                data.config.account_attributes.attributes = _.map(data.config.account_attributes.attributes,function(item) {
+            if (_.has(data.config.account_config,'account_attributes') && typeof data.config.account_config.length === 'object' && data.config.account_config.length > 0) {
+                data.config.account_config.account_attributes = _.map(data.config.account_config.account_attributes,function(item) {
                     if (item.array == true) {item.array = {min:0,max:100}};
                     return item;
                 });
                 new gform({
                     "legend":"Edit Account Attributes",
                     "name": "edit_attributes",
-                    "fields": data.config.account_attributes.attributes
+                    "fields": data.config.account_config.account_attributes
                 }).on('save',function(form_event){
                     toastr.info('Processing... Please Wait')
                     form_event.form.trigger('close');
-                    grid_event.model.attributes.attributes = form_event.form.get();
+                    grid_event.model.attributes.account_attributes = form_event.form.get();
                     ajax.put('/api/identities/'+id+'/accounts/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
                         grid_event.model.update(data)
                     },function(data) {
@@ -89,9 +89,9 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
                     }); 
                 }).on('cancel',function(form_event){
                     form_event.form.trigger('close');
-                }).modal().set(grid_event.model.attributes.attributes);
+                }).modal().set(grid_event.model.attributes.account_attributes);
             } else {
-                toastr.error("No attributes defined for accounts in this system.")
+                toastr.error("There are no account attributes defined for this system.")
             }
         });        
     });

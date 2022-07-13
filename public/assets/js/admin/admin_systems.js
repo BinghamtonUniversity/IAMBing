@@ -45,9 +45,9 @@ ajax.get('/api/systems',function(data) {
 			"showColumn":false,
 			"fields": [
                 {
-					"type": "fieldset","label": "Account Attributes","name": "account_attributes","fields": [
-                        {type: "fieldset",label:'Attribute',columns:6,name:"attributes",array:{min:0,max:100},fields:[
-                            {label: "Label",name: "label",},{label: "Name",name: "name"},{type:"checkbox", name:"array", label:"Multi-Value Attribute", value:false, options:[{label:'Disabled',value:false},{label:'Enabled',value:true}]}
+					"type": "fieldset","label": "Account Configuration","name": "account_config","fields": [
+                        {type: "fieldset",label:'Attribute',columns:6,name:"account_attributes",array:{min:0,max:100},fields:[
+                            {label: "Label",name: "label"},{label: "Name",name: "name"},{label: "Help Text",name: "help"},{type:"checkbox", name:"array", label:"Multi-Value Attribute", value:false, options:[{label:'Disabled',value:false},{label:'Enabled',value:true}]}
                         ]}
                     ]
                 },
