@@ -168,6 +168,13 @@ class IdentityController extends Controller
         return Account::where('id',$account->id)->first();
     }
 
+    public function update_account(Request $request, Identity $identity, $account_id) {
+        $account = Account::where('id',$account_id)->withTrashed()->first();
+        $account->update($request->all());
+        $identity->recalculate_entitlements();
+        return $account;
+    }
+
     public function delete_account(Identity $identity, Account $account) {
         $account_id = $account->id;
         if (!array_key_exists('error',$account->sync('delete'))) {

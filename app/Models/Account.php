@@ -12,8 +12,8 @@ use DateTimeInterface;
 class Account extends Model
 {
     use SoftDeletes;
-    protected $fillable = ['identity_id','system_id','account_id','status'];
-    protected $casts = ['system_id'=>'string'];
+    protected $fillable = ['identity_id','system_id','account_id','status','attributes'];
+    protected $casts = ['system_id'=>'string','attributes'=>'array'];
 
     public function system(){
         return $this->belongsTo(System::class);

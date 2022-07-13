@@ -44,7 +44,14 @@ ajax.get('/api/systems',function(data) {
 			"name": "config",
 			"showColumn":false,
 			"fields": [
-				{
+                {
+					"type": "fieldset","label": "Account Attributes","name": "account_attributes","fields": [
+                        {type: "fieldset",label:'Attribute',columns:6,name:"attributes",array:{min:0,max:100},fields:[
+                            {label: "Label",name: "label",},{label: "Name",name: "name"},{type:"checkbox", name:"array", label:"Multi-Value Attribute", value:false, options:[{label:'Disabled',value:false},{label:'Enabled',value:true}]}
+                        ]}
+                    ]
+                },
+                {
 					"type": "fieldset","label": "API Configuration","name": "api","fields": [
 						{
 							"type": "fieldset",

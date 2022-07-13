@@ -70,6 +70,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/identities/{identity}/accounts',[IdentityController::class,'get_accounts'])->middleware('can:view_identity_info,App\Models\Identity');
         Route::get('/identities/{identity}/accounts/{account_id}',[IdentityController::class,'get_account'])->middleware('can:view_identity_info,App\Models\Identity');
         Route::post('/identities/{identity}/accounts',[IdentityController::class,'add_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
+        Route::put('/identities/{identity}/accounts/{account_id}',[IdentityController::class,'update_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
         Route::delete('/identities/{identity}/accounts/{account}',[IdentityController::class,'delete_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
         Route::put('/identities/{identity}/accounts/{account_id}/restore',[IdentityController::class,'restore_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
 
