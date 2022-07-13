@@ -505,7 +505,12 @@ var manage_identity = function(identity_id) {
 ajax.get('/api/configuration/',function(data) {
     var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(data,{name:'identity_unique_ids'}).config};
     identity_form_attributes.push(unique_ids_fields);
-    var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes",fields:_.find(data,{name:'identity_attributes'}).config};
+    var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes",fields:
+        _.map(_.find(data,{name:'identity_attributes'}).config,function(item) {
+            if (item.array == true) {item.array = {min:0,max:100}};
+            return item;
+        })
+    };
     identity_form_attributes.push(identity_attributes_fields);
     search_identities_form = new gform(
         {"fields":[

@@ -70,6 +70,10 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
     }).on("model:edit_attributes",function(grid_event) {
         ajax.get('/api/systems/'+grid_event.model.attributes.system_id,function(data) {
             if (_.has(data.config.account_attributes,'attributes') && typeof data.config.account_attributes === 'object') {
+                data.config.account_attributes.attributes = _.map(data.config.account_attributes.attributes,function(item) {
+                    if (item.array == true) {item.array = {min:0,max:100}};
+                    return item;
+                });
                 new gform({
                     "legend":"Edit Account Attributes",
                     "name": "edit_attributes",
