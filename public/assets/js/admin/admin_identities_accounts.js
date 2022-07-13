@@ -69,7 +69,7 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
         }); 
     }).on("model:edit_attributes",function(grid_event) {
         ajax.get('/api/systems/'+grid_event.model.attributes.system_id,function(data) {
-            if (_.has(data.config.account_config,'account_attributes') && typeof data.config.account_config.length === 'object' && data.config.account_config.length > 0) {
+            if (_.has(data.config.account_config,'account_attributes') && data.config.account_config.account_attributes !== null && data.config.account_config.account_attributes.length > 0) {
                 data.config.account_config.account_attributes = _.map(data.config.account_config.account_attributes,function(item) {
                     if (item.array == true) {item.array = {min:0,max:100}};
                     return item;
