@@ -9,12 +9,28 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use App\Models\GroupActionQueue;
 use App\Jobs\UpdateIdentityJob;
+use Illuminate\Support\Facades\DB;
 
 class GroupActionQueueController extends Controller
 {
     public function get_queue(){
-        $queue = GroupActionQueue::with('identity')->get();
-        return $queue;
+        $result = DB::table('group_action_queue')
+            ->select(
+                'group_action_queue.id','group_action_queue.created_at as date',
+                'group_action_queue.action as action',
+                'identities.id as identity_id',
+                DB::raw("concat(first_name,' ',last_name) as identity_name"),
+                'tgroups.name as group_name','tgroups.id as group_id',
+                DB::raw("group_concat(distinct jgroups.name separator ', ') as group_list")
+            )
+            ->leftJoin('groups as tgroups','group_action_queue.group_id','=','tgroups.id')
+            ->leftJoin('identities','group_action_queue.identity_id','=','identities.id')
+            ->leftJoin('group_members as jgroup_members','identities.id','=','jgroup_members.identity_id')
+            ->leftJoin('groups as jgroups','jgroup_members.group_id','=','jgroups.id')
+            ->groupBy('group_action_queue.id','date','action','identity_id','identity_name','group_name','group_id')
+            ->orderBy('group_action_queue.created_at','asc')
+            ->get();
+        return $result;
     }
 
     public function execute(Request $request) {

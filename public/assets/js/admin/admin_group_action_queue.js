@@ -1,10 +1,12 @@
 ajax.get('/api/group_action_queue/',function(data) {
     var group_action_queue_form_fields = [
         {type:"hidden", name:"id"},
+        {type:"hidden", name:"identity_id"},
         {name:"action","label":"Action",type:"select",options:[{label:"Add",value:"add"},{label:"Remove",value:"remove"}]},
-        {type:"identity", name:"identity_id",required:true, label:"Identity", template:"{{#attributes.identity}}{{first_name}} {{last_name}}{{/attributes.identity}}"},
+        {type:"input", name:"identity_name", label:"Identity"},
         {name:"group_id","label":"Group",type:"select",options:"/api/groups",format:{label:"{{name}}", value:"{{id}}"}},
-        {name:"created_at","label":"Date",type:"output",show:false,parse:false}
+        {type:"input", name:"group_list", label:"All Groups"},
+        {name:"date","label":"Date",type:"output"}
     ];
 
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
