@@ -5,7 +5,7 @@ ajax.get('/api/group_action_queue/',function(data) {
         {name:"action","label":"Action",type:"select",options:[{label:"Add",value:"add"},{label:"Remove",value:"remove"}]},
         {type:"input", name:"identity_name", label:"Identity"},
         {name:"group_id","label":"Group",type:"select",options:"/api/groups",format:{label:"{{name}}", value:"{{id}}"}},
-        {type:"input", name:"group_list", label:"All Groups"},
+        {type:"input", name:"group_list", label:"Current Groups"},
         {name:"date","label":"Date",type:"output"}
     ];
 
@@ -15,7 +15,7 @@ ajax.get('/api/group_action_queue/',function(data) {
         entries:[],
         sortBy: 'order',
         actions:actions,
-        count:100,
+        count:1000,
         schema:group_action_queue_form_fields, 
         data: data,
     }).on('execute',function(event) {
