@@ -150,11 +150,16 @@ class Identity extends Authenticatable
             return true;
         }
         $url = $endpoint->config->url.$config->path;
-        $response = EndpointHelper::http_request_maker($endpoint,$config,['username'=>$username],$url);
-        if($response['code'] == $config->available_response) {
+        try {
+            $response = EndpointHelper::http_request_maker($endpoint,$config,['username'=>$username],$url);
+            if($response['code'] == $config->available_response) {
+                return true;
+            } else if($response['code'] == $config->not_available_response) {
+                return false;
+            }
+        } catch (\Throwable $e) {
+            // Failed when performing external check.  Assume Success and Continue
             return true;
-        } else if($response['code'] == $config->not_available_response) {
-            return false;
         }
         return true;
     }
