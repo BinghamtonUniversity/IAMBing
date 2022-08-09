@@ -97,6 +97,7 @@ identitylist_template = `
 `;
 
 identityinfo_column_template = `
+<!-- Accounts -->
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
     {{#auth_user_perms}}
@@ -108,10 +109,19 @@ identityinfo_column_template = `
 </h3></div>
 <div class="panel-body identity-accounts">{{>identity_accounts_template}}</div>
 </div>
+
+<!-- Groups -->
 <div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">Affiliations</h3></div>
-<div class="panel-body identity-affiliations">{{>identity_affiliations_template}}</div>
+    <div class="panel-heading"><h3 class="panel-title">
+        {{#if auth_user_perms.includes("manage_groups") || auth_user_perms.includes("view_groups") }}
+            <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/groups">Manage Groups</a>
+        {{/if}}
+        Groups
+    </h3></div>
+    <div class="panel-body identity-groups">{{>identity_groups_template}}</div>
 </div>
+
+<!-- Entitlements -->
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
     {{#auth_user_perms}}
@@ -124,21 +134,20 @@ identityinfo_column_template = `
 </h3></div>
 <div class="panel-body identity-entitlements">{{>identity_entitlements_template}}</div>
 </div>
+
+<!-- Affiliations -->
 <div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">
-    {{#if auth_user_perms.includes("manage_groups") || auth_user_perms.includes("view_groups") }}
-        <a class="btn btn-primary btn-xs pull-right" href="/identities/{{id}}/groups">Manage Groups</a>
-    {{/if}}
-    Groups
-</h3></div>
-<div class="panel-body identity-groups">{{>identity_groups_template}}</div>
+    <div class="panel-heading"><h3 class="panel-title">Affiliations</h3></div>
+    <div class="panel-body identity-affiliations">{{>identity_affiliations_template}}</div>
 </div>
 
+<!-- Sponsored Identities -->
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">Sponsored Identities</h3></div>
 <div class="panel-body identity-groups">{{>sponsored_identities_template}}</div>
 </div>
 
+<!-- Permissions -->
 <div class="panel panel-default">
 <div class="panel-heading">
     <h3 class="panel-title">Permissions<a class="btn btn-primary btn-xs pull-right" data-toggle="collapse" href=".identity-site-permissions">Manage Permissions</a></h3>
