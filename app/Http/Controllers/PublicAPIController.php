@@ -271,7 +271,7 @@ class PublicAPIController extends Controller {
         } else {
             $search_fields = collect(['default_username']);
         }
-        $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
+        $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email','sponsored','sponsor_identity_id')
         ->where(function ($query) use ($search, $search_fields) {
             if ($search_fields->contains('iamid')) {
                 $query->orWhere('iamid',$search);
