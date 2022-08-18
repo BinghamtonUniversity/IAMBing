@@ -23,6 +23,7 @@ Route::delete('/groups/{name}/member',[PublicAPIController::class,'remove_group_
 Route::post('/groups/{name}/members',[PublicAPIController::class, 'bulk_update_group_members']);
 
 // Identities
+Route::get('/identities/search/{search}',[PublicAPIController::class,'identity_search']);
 Route::get('/identities/{unique_id_type}/{unique_id}',[PublicAPIController::class,'get_identity']);
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identity']);
 Route::post('/identities/bulk_update',[PublicAPIController::class, 'bulk_update_identities']);

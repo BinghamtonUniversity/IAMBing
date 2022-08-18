@@ -260,4 +260,48 @@ class PublicAPIController extends Controller {
         }
         return $counts;
     }
+
+    public function identity_search(Request $request, $search) {
+        if ($request->has('fields')) {
+            if (is_array($request->fields)) {
+                $search_fields = collect($request->fields);
+            } else {
+                $search_fields = collect(explode(',',$request->fields));
+            }
+        } else {
+            $search_fields = collect(['default_username']);
+        }
+        $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
+        ->where(function ($query) use ($search, $search_fields) {
+            if ($search_fields->contains('iamid')) {
+                $query->orWhere('iamid',$search);
+            }
+            if ($search_fields->contains('default_username')) {
+                $query->orWhere('default_username',$search);
+            }
+            if ($search_fields->contains('default_email')) {
+                $query->orWhere('default_email',$search);
+            }
+            if ($search_fields->contains('accounts')) {
+                $query->orWhereHas('accounts', function($q) use ($search){
+                    $q->where('account_id',$search);
+                });
+            }
+            $id_names = $search_fields->diff(['iamid','default_username','default_email','accounts']);
+            foreach($id_names as $id_name) {
+                $query->orWhereHas('identity_unique_ids', function($q) use ($id_name, $search){
+                    $q->where('value',$search);
+                    $q->where('name',$id_name);
+                });
+            }
+        });
+        $matches = $identities->get();
+        if (count($matches) == 0) {
+            return response('Identity Not Found', 404);
+        } else if (count($matches) > 1) {
+            return response('Too Many Matches - Please Refine Search', 400);
+        } else {
+            return $matches[0]->get_api_identity();
+        }
+    }
 }
