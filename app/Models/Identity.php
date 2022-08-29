@@ -319,10 +319,8 @@ class Identity extends Authenticatable
         $future_group_ids = $current_groups->pluck('id')->concat($future_group_ids_add)->unique()->diff($future_group_ids_remove);
         $lost_group_ids = $current_groups->pluck('id')->diff($future_group_ids);
 
-        if ($lost_group_ids->count())
-
         // Possibly should look at entitement overrides, and override dates?
-        $current_entitlements = Entitlement::select('id','name','end_user_visible')->whereHas('identity_entitlements2',function($q) use ($identity) {
+        $current_entitlements = Entitlement::select('id','name')->where('end_user_visible',true)->whereHas('identity_entitlements2',function($q) use ($identity) {
             $q->select('entitlement_id')->where('identity_id',$identity->id)->where('override',false);
         })->get();
         $future_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$future_group_ids)->distinct()->get()->pluck('entitlement_id');
@@ -337,7 +335,7 @@ class Identity extends Authenticatable
         
         return [
             'lost_groups' => $current_groups->whereIn('id',$lost_group_ids)->values()->toArray(), 
-            'lost_entitlements' => $current_entitlements->whereIn('id',$lost_entitlement_ids)->where('end_user_visible',true)->values()->toArray(),
+            'lost_entitlements' => $current_entitlements->whereIn('id',$lost_entitlement_ids)->values()->toArray(),
             'impacted_accounts' => $impacted_accounts->values()->toArray(),
         ];
     }
