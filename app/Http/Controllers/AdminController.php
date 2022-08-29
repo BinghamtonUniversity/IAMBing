@@ -51,7 +51,7 @@ class AdminController extends Controller
             $user_actions[] = ["type"=>"button","label"=>"View Logs","action"=>"view_logs","modifiers"=>"alert-info"];
         }
         if ($identity->can('view_identity_info','App\Identity')){
-            $user_actions[] = ["type"=>"button","label"=>"View Future Impact","action"=>"future_impact","modifiers"=>"alert-info"];
+            $user_actions[] = ["type"=>"button","label"=>"View Future Impact","action"=>"future_impact_msg","modifiers"=>"alert-info"];
         }
         if ($identity->can('impersonate_identities','App\Identity')){
             $user_actions[] = ["type"=>"button","label"=>"Login as Identity","action"=>"login","modifiers"=>"alert-warning"];

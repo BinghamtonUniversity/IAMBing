@@ -399,11 +399,20 @@ var manage_identity = function(identity_id) {
                         mymodal.modal().set({output:'<pre>'+JSON.stringify(data.sync_errors,null,2)+'</pre>'});
                     }
                 });
-            }).on('future_impact',function(form_event) {
+            // }).on('future_impact',function(form_event) {
+            //     form_data = form_event.form.get();
+            //     ajax.get('/api/identities/'+identity_id+'/future_impact',function(data) {
+            //         if (typeof data == 'object') {
+            //             mymodal.modal().set({output:'<pre>'+JSON.stringify(data,null,2)+'</pre>'});
+            //         } else {
+            //             toastr.success("No Future Impact Detected");
+            //         } 
+            //     });
+            }).on('future_impact_msg',function(form_event) {
                 form_data = form_event.form.get();
-                ajax.get('/api/identities/'+identity_id+'/future_impact',function(data) {
-                    if (typeof data == 'object') {
-                        mymodal.modal().set({output:'<pre>'+JSON.stringify(data,null,2)+'</pre>'});
+                ajax.get('/api/identities/'+identity_id+'/future_impact_msg',function(data) {
+                    if (data !== '') {
+                        mymodal.modal().set({output:'<pre>'+data+'</pre>'});
                     } else {
                         toastr.success("No Future Impact Detected");
                     } 

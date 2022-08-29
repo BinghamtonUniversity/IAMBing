@@ -88,6 +88,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         
         // Calculate Future Impact
         Route::get('/identities/{identity}/future_impact',[IdentityController::class,'future_impact'])->middleware('can:view_identity_info,App\Models\Identity');
+        Route::get('/identities/{identity}/future_impact_msg',[IdentityController::class,'future_impact_msg'])->middleware('can:view_identity_info,App\Models\Identity');
 
         //Logs
         Route::get('/identities/{identity}/logs',[LogController::class,'get_identity_logs'])->middleware('can:view,App\Models\Log');
