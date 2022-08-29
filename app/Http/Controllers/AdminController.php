@@ -45,10 +45,13 @@ class AdminController extends Controller
         $user_actions = [];
         if ($identity->can('update_identities','App\Identity')){
             $user_actions[] = ["type"=>"save","label"=>"Update Identity","action"=>"save","modifiers"=>"alert-success"];
-            $user_actions[] = ["type"=>"button","label"=>"Recalculate / Sync","action"=>"recalculate","modifiers"=>"alert-info"];
+            $user_actions[] = ["type"=>"button","label"=>"Recalculate / Sync","action"=>"recalculate","modifiers"=>"alert-success"];
         }
         if($identity->can('view','App\Log')){
             $user_actions[] = ["type"=>"button","label"=>"View Logs","action"=>"view_logs","modifiers"=>"alert-info"];
+        }
+        if ($identity->can('view_identity_info','App\Identity')){
+            $user_actions[] = ["type"=>"button","label"=>"View Future Impact","action"=>"future_impact","modifiers"=>"alert-info"];
         }
         if ($identity->can('impersonate_identities','App\Identity')){
             $user_actions[] = ["type"=>"button","label"=>"Login as Identity","action"=>"login","modifiers"=>"alert-warning"];

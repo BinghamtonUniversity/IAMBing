@@ -301,6 +301,47 @@ class Identity extends Authenticatable
         }
     }
 
+    // This needs to point to a particilar date in the future
+    public function calculate_future_impact() {
+        // This code adds new accounts for any new systems
+        $identity = $this;
+
+        // needs to use future date
+        $future_group_ids_remove  = GroupActionQueue::select('group_id')->where('identity_id',$identity->id)->where('action','remove')->get()->pluck('group_id');
+        if ($future_group_ids_remove->count() === 0) {
+            return false; // Exist prematurely if no impact is found.
+        }
+        $current_groups = Group::select('id','name')->whereHas('members',function($q) use ($identity) {
+            $q->select('group_id')->where('identity_id',$identity->id);
+        })->get();
+        // needs to use future date
+        $future_group_ids_add = GroupActionQueue::select('group_id')->where('identity_id',$identity->id)->where('action','add')->get()->pluck('group_id');
+        $future_group_ids = $current_groups->pluck('id')->concat($future_group_ids_add)->unique()->diff($future_group_ids_remove);
+        $lost_group_ids = $current_groups->pluck('id')->diff($future_group_ids);
+
+        if ($lost_group_ids->count())
+
+        // Possibly should look at entitement overrides, and override dates?
+        $current_entitlements = Entitlement::select('id','name','end_user_visible')->whereHas('identity_entitlements2',function($q) use ($identity) {
+            $q->select('entitlement_id')->where('identity_id',$identity->id)->where('override',false);
+        })->get();
+        $future_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$future_group_ids)->distinct()->get()->pluck('entitlement_id');
+        $lost_entitlement_ids = $current_entitlements->pluck('id')->diff($future_entitlement_ids);
+
+        $impacted_systems = System::select('id','name')->whereHas('entitlements',function($q) use ($lost_entitlement_ids) {
+            $q->select('system_id')->whereIn('id',$lost_entitlement_ids);
+        })->distinct()->get();
+        $impacted_accounts = Account::select('id','account_id','system_id')->with(['system' => function ($query) {
+            $query->select('id', 'name');
+        }])->where('identity_id',$identity->id)->whereIn('system_id',$impacted_systems->pluck('id'))->distinct()->get();
+        
+        return [
+            'lost_groups' => $current_groups->whereIn('id',$lost_group_ids)->values()->toArray(), 
+            'lost_entitlements' => $current_entitlements->whereIn('id',$lost_entitlement_ids)->where('end_user_visible',true)->values()->toArray(),
+            'impacted_accounts' => $impacted_accounts->values()->toArray(),
+        ];
+    }
+
     public function recalculate_entitlements() {
         // This code adds new accounts for any new systems
         $identity = $this;

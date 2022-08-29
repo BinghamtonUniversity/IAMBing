@@ -85,6 +85,10 @@ class IdentityController extends Controller
         return $identity;
     }
 
+    public function future_impact(Request $request, Identity $identity) {
+        return $identity->calculate_future_impact();
+    }
+
     public function search($search_string='') {
         $search_elements_parsed = preg_split('/[\s,]+/',strtolower($search_string));
         $search = []; $identities = [];

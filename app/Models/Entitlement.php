@@ -17,6 +17,10 @@ class Entitlement extends Model
         return $this->hasMany(IdentityEntitlement::class)->withPivot('first_name');
     }
 
+    public function identity_entitlements2(){
+        return $this->hasMany(IdentityEntitlement::class);
+    }
+
     public function system(){
         return $this->belongsTo(System::class);
     }

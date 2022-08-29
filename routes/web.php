@@ -85,6 +85,9 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
         // Recalculate
         Route::get('/identities/{identity}/recalculate',[IdentityController::class,'recalculate'])->middleware('can:update_identities,App\Models\Identity');
+        
+        // Calculate Future Impact
+        Route::get('/identities/{identity}/future_impact',[IdentityController::class,'future_impact'])->middleware('can:view_identity_info,App\Models\Identity');
 
         //Logs
         Route::get('/identities/{identity}/logs',[LogController::class,'get_identity_logs'])->middleware('can:view,App\Models\Log');
