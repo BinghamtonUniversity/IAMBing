@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Entitlement extends Model
 {
-    protected $fillable = ['name','system_id','override_add'];
-    protected $casts = ['override_add'=>'boolean','system_id'=>'string'];
+    protected $fillable = ['name','system_id','override_add','end_user_visible'];
+    protected $casts = ['override_add'=>'boolean','end_user_visible'=>'boolean','system_id'=>'string'];
     
     public function group_entitlements(){
         return $this->hasMany(GroupEntitlement::class,'group_id');

@@ -12,6 +12,7 @@ ajax.get('/api/entitlements',function(data) {
         },
         {type:"text", name:"name", label:"Name",required:true},
         {type:"switch", label: "Allow Manual Override: Add Entitlement",name: "override_add",value:false,options:[{value:false,label:'Disabled'},{value:true,label:'Enabled'}]},
+        {type:"switch", label: "End User Visibility",name: "end_user_visible",value:true,options:[{value:false,label:'Not Visible'},{value:true,label:'Visible'}]},
     ], data: data
     }).on("model:edited",function(grid_event) {
         ajax.put('/api/entitlements/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {

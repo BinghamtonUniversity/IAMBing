@@ -18,6 +18,7 @@ class CreateEntitlementsTable extends Migration
             $table->unsignedBigInteger('system_id')->index();
             $table->string('name');
             $table->boolean('override_add')->default(false);
+            $table->boolean('end_user_visible')->default(true);
             $table->timestamps();
             $table->foreign('system_id')->references('id')->on('systems');
         });
