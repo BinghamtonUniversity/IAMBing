@@ -30,7 +30,6 @@ class IdentityController extends Controller
     }
 
     public function get_identity(Request $request, Identity $identity) {
-        
         $identity = Identity::where('id',$identity->id)->with('groups')->with('accounts')->with('systems')->with('identity_entitlements')->with('sponsored_identities')->with('systems_with_accounts_history')->first();
         $group_ids = GroupMember::select('group_id')->where('identity_id',$identity->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
@@ -39,8 +38,8 @@ class IdentityController extends Controller
         $identity->primary_affiliation = isset($identity->affiliations[0])?$identity->affiliations[0]:null;
         $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->with('entitlement')->get();
         $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->whereNotNull('sponsor_id')->with('sponsor')->with('entitlement')->get();
+        $identity->future_impact = $identity->calculate_future_impact(true);
         return $identity;
-
     }
 
     public function add_identity(Request $request) {
@@ -86,11 +85,23 @@ class IdentityController extends Controller
     }
 
     public function future_impact(Request $request, Identity $identity) {
-        return $identity->calculate_future_impact();
+        if ($request->has('all') && $request->all == 'true') {
+            $end_user_visible_only = false;
+        } else {
+            $end_user_visible_only = true;
+        }
+        $identity->future_impact = $identity->calculate_future_impact($end_user_visible_only);
+        return $identity;
     }
 
     public function future_impact_msg(Request $request, Identity $identity) {
-        return $identity->get_future_impact_message();
+        if ($request->has('all') && $request->all == 'true') {
+            $end_user_visible_only = false;
+        } else {
+            $end_user_visible_only = true;
+        }
+        $identity->future_impact_msg = $identity->get_future_impact_message($end_user_visible_only);
+        return $identity;
     }
 
     public function search($search_string='') {

@@ -302,8 +302,8 @@ class Identity extends Authenticatable
     }
 
     // This needs to point to a particilar date in the future
-    public function get_future_impact_message() {
-        $impact = $this->calculate_future_impact();
+    public function get_future_impact_message($end_user_visible_only=true) {
+        $impact = $this->calculate_future_impact($end_user_visible_only);
         if ($impact === false) {
             return false;
         }
@@ -311,9 +311,7 @@ class Identity extends Authenticatable
         $template = 
 "Dear {{identity.first_name}} {{identity.last_name}},
 
-Your affiliation(s) with Binghamton University have recently changed, 
-and you are no longer considered to be a member of the following 
-population(s) effective the dates specified below:
+Your affiliation(s) with Binghamton University have recently changed, and you are no longer considered to be a member of the following population(s) effective the dates specified below:
 {{#impact.lost_groups}}
     * {{name}} (Date of Change Here)
 {{/impact.lost_groups}}
@@ -329,19 +327,10 @@ belong to you:
     * {{account_id}} ({{system.name}})
 {{/impact.impacted_accounts}}
 
-Please note that any changes to your service entitlements or accounts
-can result in the loss of data (or account deletion if your
-relationship with the University is ending), so we recommend following 
-Binghamton University's best practices for downloading and backing up 
-your files. Link available here: _______
+Please note that any changes to your service entitlements or accounts can result in the loss of data (or account deletion if your relationship with the University is ending), so we recommend following Binghamton University's best practices for downloading and backing up your files. Link available here: _______
 
-Also note that this information above is based on our best available 
-data from BU Brain and Binghamton University's HR Department. If 
-you will be re-establishing your affiliations with Binghamton University
-before the date specified, or if you will be retaining other roles
-which may grant you access to these services, you may be able to
-disregard this email. For more information, you can view Binghamton 
-University's Accounts Policy here: 
+Also note that this information above is based on our best available data from BU Brain and Binghamton University's HR Department. If you will be re-establishing your affiliations with Binghamton University before the date specified, or if you will be retaining other roles which may grant you access to these services, you may be able to disregard this email. 
+For more information, you can view Binghamton University's Accounts Policy here: 
 https://www.binghamton.edu/its/about/governance/policies/univ-accts-policy-public.html
 
 If you have any additional questions pertaining to this email, please
@@ -355,7 +344,7 @@ The Binghamton University Identity and Access Management Team
     }
 
     // This needs to point to a particilar date in the future
-    public function calculate_future_impact() {
+    public function calculate_future_impact($end_user_visible_only=true) {
         // This code adds new accounts for any new systems
         $identity = $this;
 
@@ -373,9 +362,12 @@ The Binghamton University Identity and Access Management Team
         $lost_group_ids = $current_groups->pluck('id')->diff($future_group_ids);
 
         // Possibly should look at entitement overrides, and override dates?
-        $current_entitlements = Entitlement::select('id','name')->where('end_user_visible',true)->whereHas('identity_entitlements2',function($q) use ($identity) {
+        $current_entitlements = Entitlement::select('id','name','end_user_visible')->whereHas('identity_entitlements2',function($q) use ($identity) {
             $q->select('entitlement_id')->where('identity_id',$identity->id)->where('override',false);
         })->get();
+        if ($end_user_visible_only === true) { // Only return End User Visible Entitlements
+            $current_entitlements = $current_entitlements->where('end_user_visible',true);
+        }
         $future_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$future_group_ids)->distinct()->get()->pluck('entitlement_id');
         $lost_entitlement_ids = $current_entitlements->pluck('id')->diff($future_entitlement_ids);
         if ($lost_entitlement_ids->count() === 0) {

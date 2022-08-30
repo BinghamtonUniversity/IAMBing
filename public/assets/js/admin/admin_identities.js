@@ -97,6 +97,11 @@ identitylist_template = `
 `;
 
 identityinfo_column_template = `
+{{#future_impact}}
+    <div class="btn btn-xl btn-danger future-impact-btn" style="width:100%;margin-bottom:15px;font-weight:bold;">
+        Warning: Pending Group Actions
+    </div>
+{{/future_impact}}
 <!-- Accounts -->
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
@@ -399,22 +404,51 @@ var manage_identity = function(identity_id) {
                         mymodal.modal().set({output:'<pre>'+JSON.stringify(data.sync_errors,null,2)+'</pre>'});
                     }
                 });
-            // }).on('future_impact',function(form_event) {
-            //     form_data = form_event.form.get();
-            //     ajax.get('/api/identities/'+identity_id+'/future_impact',function(data) {
-            //         if (typeof data == 'object') {
-            //             mymodal.modal().set({output:'<pre>'+JSON.stringify(data,null,2)+'</pre>'});
-            //         } else {
-            //             toastr.success("No Future Impact Detected");
-            //         } 
-            //     });
+            }).on('future_impact',function(form_event) {
+                form_data = form_event.form.get();
+                ajax.get('/api/identities/'+identity_id+'/future_impact?all=true',function(data) {
+                    if (typeof data.future_impact == 'object') {
+                        var future_impact_template = `
+                        <div class="btn btn-primary pull-right future-impact-msg-btn">View End User Message</div>
+                        <h3 style="margin-top:0px;">Groups</h3>
+                        <div class="alert alert-info">{{first_name}} {{last_name}} has pending removal actions against the following groups:</div>
+                        <ul>
+                        {{#future_impact.lost_groups}}
+                            <li>{{name}} (Date of Change Here)</li>
+                        {{/future_impact.lost_groups}}
+                        </ul>
+
+                        <h3>Entitlements</h3>
+                        <div class="alert alert-info">When groups (above) have been removed, {{first_name}} {{last_name}} will lose the following entitlements:</div>
+                        <ul>
+                        {{#future_impact.lost_entitlements}}
+                            <li>{{name}}</li>
+                        {{/future_impact.lost_entitlements}}
+                        </ul>
+
+                        <h3>Impacted Accounts</h3>
+                        <div class="alert alert-info">Loss of the entitlements (above) will impact the following accounts:</div>
+                        <ul>
+                        {{#future_impact.impacted_accounts}}
+                            <li>{{account_id}} ({{system.name}})</li>
+                        {{/future_impact.impacted_accounts}}
+                        </ul>
+                        `;
+                        var html = Ractive({template:future_impact_template,data:data}).toHTML();
+                        mymodal.modal().set({output:html});
+                    } else {
+                        toastr.success("No Future Impact Detected");
+                    } 
+                });
             }).on('future_impact_msg',function(form_event) {
                 form_data = form_event.form.get();
                 ajax.get('/api/identities/'+identity_id+'/future_impact_msg',function(data) {
-                    if (data !== '') {
-                        mymodal.modal().set({output:'<pre>'+data+'</pre>'});
+                    var warning = `<div class="alert alert-info">Please note that the message below only displays changes to 
+                    entitlements which are end-user visible. The identity may be losing additional entitlements which are not displayed here.</div>`
+                    if (data.future_impact_msg !== '') {
+                        mymodal.modal().set({output:warning+'<pre style="white-space: pre-wrap;">'+data.future_impact_msg+'</pre>'});
                     } else {
-                        toastr.success("No Future Impact Detected");
+                        mymodal.modal().set({output:warning+'<div class="alert alert-info">No Impacts Detected</div>'});
                     } 
                 });
             }).on('view_logs',function(form_event){
@@ -562,6 +596,13 @@ ajax.get('/api/configuration/',function(data) {
     app.click('.identity-action',function(e) {
         identity_form.trigger(e.target.dataset.action);
     }) 
+    app.click('.future-impact-btn',function(e) {
+        identity_form.trigger('future_impact');
+    })
+    app.click('.future-impact-msg-btn',function(e) {
+        mymodal.modal().trigger('close');
+        identity_form.trigger('future_impact_msg');
+    })
     app.click('.account-info-btn',function(e){
         $.ajax({
             url: '/api/identities/'+app.data.identity_id+'/accounts/'+e.target.dataset.id,
