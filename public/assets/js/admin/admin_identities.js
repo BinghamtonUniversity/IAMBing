@@ -443,10 +443,23 @@ var manage_identity = function(identity_id) {
             }).on('future_impact_msg',function(form_event) {
                 form_data = form_event.form.get();
                 ajax.get('/api/identities/'+identity_id+'/future_impact_msg',function(data) {
-                    var warning = `<div class="alert alert-info">Please note that the message below only displays changes to 
-                    entitlements which are end-user visible. The identity may be losing additional entitlements which are not displayed here.</div>`
-                    if (data.future_impact_msg !== '') {
-                        mymodal.modal().set({output:warning+'<pre style="white-space: pre-wrap;">'+data.future_impact_msg+'</pre>'});
+                    if (typeof data.future_impact_msg === 'object') {
+                        data.future_impact_msg.body = data.future_impact_msg.body.replace(/\n/g,'<br>').replace(/\s\s/g,'&nbsp;&nbsp;');
+                        var template =
+`<div class="alert alert-info">
+    Please note that the message below only displays changes to 
+    entitlements which are end-user visible. The identity may be losing additional entitlements 
+    which are not displayed here.
+</div>
+<div class="panel panel-default">
+    <ul class="list-group">
+        <li class="list-group-item"><b>To:</b> {{#recipients}}{{.}}, {{/recipients}}</li>
+        <li class="list-group-item"><b>Subject:</b> {{subject}}</li>
+        <li class="list-group-item">{{{body}}}</li>
+    </ul>
+</div>`;
+                        var html = Ractive({template:template,data:data.future_impact_msg}).toHTML();
+                        mymodal.modal().set({output:html});
                     } else {
                         mymodal.modal().set({output:warning+'<div class="alert alert-info">No Impacts Detected</div>'});
                     } 

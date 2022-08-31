@@ -2,7 +2,7 @@ gform.options = {autoFocus:false};
 $('#adminDataGrid').html(`
     <div class='row'>
         <div class='col-xs-12'>
-            <h3>Default username Template</h3>
+            <h3>Default Username Template</h3>
             <div class="alert alert-info">
                 This is the mustache template for generating default usernames
             </div>
@@ -16,6 +16,15 @@ $('#adminDataGrid').html(`
             </div>
             <div class="default_email_domain"></div>
         </div>
+
+        <div class='col-xs-12'>
+            <h3>Group Action Queue Email Settings</h3>
+            <div class="alert alert-info">
+                This is the email template which will be used when an identity is added to the group action queue would a delayed "remove" action.
+            </div>
+            <div class="action_queue_remove_email"></div>
+        </div>
+
 
         <div class='col-xs-12'>
             <h3>Identity Username Availability Check</h3>
@@ -98,6 +107,64 @@ gforms.default_email_domain = new gform(
         toastr.success('Configuration Updated');
     });
 });
+
+gforms.action_queue_remove_email = new gform(
+    {"fields":[
+        {type:"hidden", name:"id"},
+        {type:"hidden", name:"name", value:'action_queue_remove_email'},
+        {type: "fieldset",label:'Email Configuration',columns:12,name: "config",fields: [
+            {type:"text", name:"recipients", label:"Email Recipients", edit:true,raw:true,value:"{{default_email}}",help:"This is a comma separated list of email addresses defined using mustache syntax against the identity"},
+            {type:"text", name:"subject", label:"Email Subject", edit:true, raw:true, value:"Notification of Account Changes"},
+            {type:"textarea", name:"body", label:"Email Body", edit:true, raw:true,value:
+`{{identity.first_name}} {{identity.last_name}},
+
+Your affiliation(s) have recently changed, and you are no a member of the following population(s) effective the dates specified below:
+{{#impact.lost_groups}}
+    * {{name}} (Date of Change Here)
+{{/impact.lost_groups}}
+
+With this change, you will lose access to the following services:
+{{#impact.lost_entitlements}}
+    * {{name}}
+{{/impact.lost_entitlements}}
+
+These changes will impact the following accounts which currently 
+belong to you:
+{{#impact.impacted_accounts}}
+    * {{account_id}} ({{system.name}})
+{{/impact.impacted_accounts}}`
+            },
+    ]}],
+    "el":".action_queue_remove_email",
+    "actions":[
+        {"type":"save","label":"Save","modifiers":"btn btn-primary"}
+    ]
+}
+).on('save',function(e) {
+    var form_data = e.form.get();
+    ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
+        toastr.success('Configuration Updated');
+    });
+});
+
+gforms.default_email_domain = new gform(
+    {"fields":[
+        {type:"hidden", name:"id"},
+        {type:"hidden", name:"name", value:'default_email_domain'},
+        {type:"text", name:"config", label:"Default Email Domain", edit:true,placeholder:"example.com"},
+    ],
+    "el":".default_email_domain",
+    "actions":[
+        {"type":"save","label":"Save","modifiers":"btn btn-primary"}
+    ]
+}
+).on('save',function(e) {
+    var form_data = e.form.get();
+    ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
+        toastr.success('Configuration Updated');
+    });
+});
+
 
 gforms.identity_attributes = new gform(
     {"fields":[

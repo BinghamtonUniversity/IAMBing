@@ -38,7 +38,7 @@ class IdentityController extends Controller
         $identity->primary_affiliation = isset($identity->affiliations[0])?$identity->affiliations[0]:null;
         $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->with('entitlement')->get();
         $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->whereNotNull('sponsor_id')->with('sponsor')->with('entitlement')->get();
-        $identity->future_impact = $identity->calculate_future_impact(true);
+        $identity->future_impact = $identity->future_impact_calculate(true);
         return $identity;
     }
 
@@ -90,7 +90,7 @@ class IdentityController extends Controller
         } else {
             $end_user_visible_only = true;
         }
-        $identity->future_impact = $identity->calculate_future_impact($end_user_visible_only);
+        $identity->future_impact = $identity->future_impact_calculate($end_user_visible_only);
         return $identity;
     }
 
@@ -100,7 +100,7 @@ class IdentityController extends Controller
         } else {
             $end_user_visible_only = true;
         }
-        $identity->future_impact_msg = $identity->get_future_impact_message($end_user_visible_only);
+        $identity->future_impact_msg = $identity->future_impact_send(false,$end_user_visible_only);
         return $identity;
     }
 

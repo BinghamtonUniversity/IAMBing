@@ -302,49 +302,26 @@ class Identity extends Authenticatable
     }
 
     // This needs to point to a particilar date in the future
-    public function get_future_impact_message($end_user_visible_only=true) {
-        $impact = $this->calculate_future_impact($end_user_visible_only);
+    public function future_impact_send($skip_send=false, $end_user_visible_only=true) {
+        $impact = $this->future_impact_calculate($end_user_visible_only);
         if ($impact === false) {
             return false;
         }
-
-        $template = 
-"Dear {{identity.first_name}} {{identity.last_name}},
-
-Your affiliation(s) with Binghamton University have recently changed, and you are no longer considered to be a member of the following population(s) effective the dates specified below:
-{{#impact.lost_groups}}
-    * {{name}} (Date of Change Here)
-{{/impact.lost_groups}}
-
-With this change, you will lose access to the following services:
-{{#impact.lost_entitlements}}
-    * {{name}}
-{{/impact.lost_entitlements}}
-
-These changes will impact the following accounts which currently 
-belong to you:
-{{#impact.impacted_accounts}}
-    * {{account_id}} ({{system.name}})
-{{/impact.impacted_accounts}}
-
-Please note that any changes to your service entitlements or accounts can result in the loss of data (or account deletion if your relationship with the University is ending), so we recommend following Binghamton University's best practices for downloading and backing up your files. Link available here: _______
-
-Also note that this information above is based on our best available data from BU Brain and Binghamton University's HR Department. If you will be re-establishing your affiliations with Binghamton University before the date specified, or if you will be retaining other roles which may grant you access to these services, you may be able to disregard this email. 
-For more information, you can view Binghamton University's Accounts Policy here: 
-https://www.binghamton.edu/its/about/governance/policies/univ-accts-policy-public.html
-
-If you have any additional questions pertaining to this email, please
-contact helpdesk@binghamton.edu.
-
-Thank you,
-The Binghamton University Identity and Access Management Team
-";
+        $config = Configuration::select('config')->where('name','action_queue_remove_email')->first();
+        if (is_null($config)) {
+            return false;
+        }
         $m = new \Mustache_Engine;
-        return $m->render($template, ['identity'=>$this,'impact'=>$impact]);
+        $email = [];
+        $email['body'] = $m->render($config->config->body, ['identity'=>$this,'impact'=>$impact]);
+        $email['subject'] = $m->render($config->config->subject, ['identity'=>$this,'impact'=>$impact]);
+        $recipients_string = $m->render($config->config->recipients, $this);
+        $email['recipients'] = array_filter(explode(',',str_replace(' ','',$recipients_string)));
+        return $email;
     }
 
     // This needs to point to a particilar date in the future
-    public function calculate_future_impact($end_user_visible_only=true) {
+    public function future_impact_calculate($end_user_visible_only=true) {
         // This code adds new accounts for any new systems
         $identity = $this;
 
