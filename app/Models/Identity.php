@@ -313,7 +313,7 @@ class Identity extends Authenticatable
         }
         $m = new \Mustache_Engine;
         $email = [];
-        $email['body'] = preg_replace("/\n\n+/","\n",$m->render($config->config->body, ['identity'=>$this,'impact'=>$impact]));
+        $email['body'] = preg_replace("/\n\n\n+/","\n\n",$m->render($config->config->body, ['identity'=>$this,'impact'=>$impact]));
         $email['subject'] = $m->render($config->config->subject, ['identity'=>$this,'impact'=>$impact]);
         $recipients_string = $m->render($config->config->recipients, $this);
         $email['recipients'] = array_filter(explode(',',str_replace(' ','',$recipients_string)));
