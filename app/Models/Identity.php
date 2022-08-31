@@ -333,10 +333,21 @@ class Identity extends Authenticatable
         $current_groups = Group::select('id','name')->whereHas('members',function($q) use ($identity) {
             $q->select('group_id')->where('identity_id',$identity->id);
         })->get();
+        
+        $current_groups_arr = $current_groups->values()->toArray();
+        $current_groups_obj = Arr::map($current_groups_arr, function ($value, $key) {
+            return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
+        });
+
         // needs to use future date
         $future_group_ids_add = GroupActionQueue::select('group_id')->where('identity_id',$identity->id)->where('action','add')->get()->pluck('group_id');
         $future_group_ids = $current_groups->pluck('id')->concat($future_group_ids_add)->unique()->diff($future_group_ids_remove);
         $lost_group_ids = $current_groups->pluck('id')->diff($future_group_ids);
+
+        $lost_groups_arr = $current_groups->whereIn('id',$lost_group_ids)->values()->toArray();
+        $lost_groups_obj = Arr::map($lost_groups_arr, function ($value, $key) {
+            return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
+        });
 
         // Possibly should look at entitement overrides, and override dates?
         $current_entitlements = Entitlement::select('id','name','end_user_visible')->whereHas('identity_entitlements2',function($q) use ($identity) {
@@ -357,10 +368,19 @@ class Identity extends Authenticatable
         $impacted_accounts = Account::select('id','account_id','system_id')->with(['system' => function ($query) {
             $query->select('id', 'name');
         }])->where('identity_id',$identity->id)->whereIn('system_id',$impacted_systems->pluck('id'))->distinct()->get();
+
+        $lost_entitlements_arr = $current_entitlements->whereIn('id',$lost_entitlement_ids)->values()->toArray();
+        $lost_entitlements_obj = Arr::map($lost_entitlements_arr, function ($value, $key) {
+            return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
+        });
         
         return [
-            'lost_groups' => $current_groups->whereIn('id',$lost_group_ids)->values()->toArray(), 
-            'lost_entitlements' => $current_entitlements->whereIn('id',$lost_entitlement_ids)->values()->toArray(),
+            'current_groups' => $current_groups_arr,
+            'current_groups_obj' => $current_groups_obj,
+            'lost_groups' => $lost_groups_arr, 
+            'lost_groups_obj' => $lost_groups_obj, 
+            'lost_entitlements' => $lost_entitlements_arr,
+            'lost_entitlements_obj' => $lost_entitlements_obj,
             'impacted_accounts' => $impacted_accounts->values()->toArray(),
         ];
     }
