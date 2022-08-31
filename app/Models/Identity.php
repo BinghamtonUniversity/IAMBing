@@ -313,7 +313,7 @@ class Identity extends Authenticatable
         }
         $m = new \Mustache_Engine;
         $email = [];
-        $email['body'] = $m->render($config->config->body, ['identity'=>$this,'impact'=>$impact]);
+        $email['body'] = preg_replace("/\n\n+/","\n",$m->render($config->config->body, ['identity'=>$this,'impact'=>$impact]));
         $email['subject'] = $m->render($config->config->subject, ['identity'=>$this,'impact'=>$impact]);
         $recipients_string = $m->render($config->config->recipients, $this);
         $email['recipients'] = array_filter(explode(',',str_replace(' ','',$recipients_string)));
@@ -333,9 +333,7 @@ class Identity extends Authenticatable
         $current_groups = Group::select('id','name')->whereHas('members',function($q) use ($identity) {
             $q->select('group_id')->where('identity_id',$identity->id);
         })->get();
-        
-        $current_groups_arr = $current_groups->values()->toArray();
-        $current_groups_obj = Arr::map($current_groups_arr, function ($value, $key) {
+        $current_groups_obj = $current_groups->values()->mapWithKeys(function ($value, $key) {
             return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
         });
 
@@ -344,8 +342,8 @@ class Identity extends Authenticatable
         $future_group_ids = $current_groups->pluck('id')->concat($future_group_ids_add)->unique()->diff($future_group_ids_remove);
         $lost_group_ids = $current_groups->pluck('id')->diff($future_group_ids);
 
-        $lost_groups_arr = $current_groups->whereIn('id',$lost_group_ids)->values()->toArray();
-        $lost_groups_obj = Arr::map($lost_groups_arr, function ($value, $key) {
+        $lost_groups = $current_groups->whereIn('id',$lost_group_ids);
+        $lost_groups_obj = $lost_groups->values()->mapWithKeys(function ($value, $key) {
             return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
         });
 
@@ -369,17 +367,17 @@ class Identity extends Authenticatable
             $query->select('id', 'name');
         }])->where('identity_id',$identity->id)->whereIn('system_id',$impacted_systems->pluck('id'))->distinct()->get();
 
-        $lost_entitlements_arr = $current_entitlements->whereIn('id',$lost_entitlement_ids)->values()->toArray();
-        $lost_entitlements_obj = Arr::map($lost_entitlements_arr, function ($value, $key) {
+        $lost_entitlements = $current_entitlements->whereIn('id',$lost_entitlement_ids)->values();
+        $lost_entitlements_obj = $lost_entitlements->mapWithKeys(function ($value, $key) {
             return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
         });
         
         return [
-            'current_groups' => $current_groups_arr,
+            'current_groups' => $current_groups->toArray(),
             'current_groups_obj' => $current_groups_obj,
-            'lost_groups' => $lost_groups_arr, 
+            'lost_groups' => $lost_groups->toArray(), 
             'lost_groups_obj' => $lost_groups_obj, 
-            'lost_entitlements' => $lost_entitlements_arr,
+            'lost_entitlements' => $lost_entitlements->toArray(),
             'lost_entitlements_obj' => $lost_entitlements_obj,
             'impacted_accounts' => $impacted_accounts->values()->toArray(),
         ];
