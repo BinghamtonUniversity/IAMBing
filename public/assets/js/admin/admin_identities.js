@@ -462,7 +462,7 @@ var manage_identity = function(identity_id) {
                         var html = Ractive({template:template,data:data.future_impact_msg}).toHTML();
                         mymodal.modal().set({output:html});
                     } else {
-                        mymodal.modal().set({output:warning+'<div class="alert alert-info">No Impacts Detected</div>'});
+                        mymodal.modal().set({output:'<div class="alert alert-info">Please note that the message below only displays changes to entitlements which are end-user visible. The identity may be losing additional entitlements which are not displayed here.</div><div class="alert alert-info">No Impacts Detected</div>'});
                     } 
                 });
             }).on('view_logs',function(form_event){
