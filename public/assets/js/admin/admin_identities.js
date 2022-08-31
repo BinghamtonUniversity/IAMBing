@@ -410,6 +410,7 @@ var manage_identity = function(identity_id) {
                     if (typeof data.future_impact == 'object') {
                         var future_impact_template = `
                         <div class="btn btn-primary pull-right future-impact-msg-btn">View End User Message</div>
+                        <br>
                         <h3 style="margin-top:0px;">Groups</h3>
                         <div class="alert alert-info">{{first_name}} {{last_name}} has pending removal actions against the following groups:</div>
                         <ul>

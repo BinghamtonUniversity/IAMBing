@@ -769,3 +769,9 @@ a.list-group-action {
 .identity-edit .gform-footer {
   display:none;
 }
+
+@media (prefers-color-scheme: dark) {
+  output {
+      color: #eaeaea;
+  }
+}
