@@ -16,7 +16,8 @@ class GroupActionQueueController extends Controller
     public function get_queue(){
         $result = DB::table('group_action_queue')
             ->select(
-                'group_action_queue.id','group_action_queue.created_at as date',
+                'group_action_queue.id','group_action_queue.created_at as creation_date',
+                'group_action_queue.scheduled_date as scheduled_date',
                 'group_action_queue.action as action',
                 'identities.id as identity_id',
                 DB::raw("concat(first_name,' ',last_name) as identity_name"),
@@ -27,7 +28,7 @@ class GroupActionQueueController extends Controller
             ->leftJoin('identities','group_action_queue.identity_id','=','identities.id')
             ->leftJoin('group_members as jgroup_members','identities.id','=','jgroup_members.identity_id')
             ->leftJoin('groups as jgroups','jgroup_members.group_id','=','jgroups.id')
-            ->groupBy('group_action_queue.id','date','action','identity_id','identity_name','group_name','group_id')
+            ->groupBy('group_action_queue.id','creation_date','scheduled_date','action','identity_id','identity_name','group_name','group_id')
             ->orderBy('group_action_queue.created_at','asc')
             ->get();
         return $result;
@@ -50,7 +51,7 @@ class GroupActionQueueController extends Controller
     public function download_queue(Request $request){
         $result = GroupActionQueue::with("group")->with("identity")->get();
         $unique_ids = array_column(array_values(Configuration::select('config')->where('name','identity_unique_ids')->first()->toArray())[0],'name');
-        $headers = ['action','first_name','last_name','group_name','date'];
+        $headers = ['action','first_name','last_name','group_name','creation_date','scheduled_date'];
         $headers = array_merge($headers,$unique_ids);
         $rows = [];
 
@@ -61,7 +62,8 @@ class GroupActionQueueController extends Controller
                 "first_name"=>$data->identity->first_name,
                 "last_name"=>$data->identity->last_name,
                 "group_name"=>$data->group->name,
-                "date"=>$data->created_at,
+                "creation_date"=>$data->created_at,
+                "scheduled_date"=>$data->scheduled_date,
             ];
             foreach($unique_ids as $id){
                 $datus[$id] = isset($data->identity->ids[$id])?$data->identity->ids[$id]:null;

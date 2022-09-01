@@ -15,7 +15,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
+use Carbon\Carbon;
 
 class PublicAPIController extends Controller {  
     
@@ -56,6 +56,8 @@ class PublicAPIController extends Controller {
         $api_identities = $request->identities;
         $unique_id = $request->id;
         $group_id = $group->id;
+        $group_add_scheduled_date = is_null($group->delay_add_days)?null:Carbon::now()->addDays($group->delay_add_days);
+        $group_remove_scheduled_date = is_null($group->delay_remove_days)?null:Carbon::now()->addDays($group->delay_remove_days);
         $unique_ids = collect([]);
         foreach($api_identities as $api_identity) {
             $unique_ids[] = $api_identity['ids'][$unique_id];
@@ -78,7 +80,7 @@ class PublicAPIController extends Controller {
         // Identity Doesn't exist.. create them!
         foreach($api_identities as $api_identity) {
             if ($unique_ids_which_dont_exist->contains($api_identity['ids'][$unique_id])) {
-                if ($group->manual_confirmation_add == true) {
+                if ($group->delay_add == true) {
                     // Create the identity, but don't add to group
                     // This is potentially problematic!  Requires second 
                     // sync to add to group!
@@ -102,11 +104,16 @@ class PublicAPIController extends Controller {
         // Identity Exists, but isnt a member... add them to the group!
         $group_actions = collect([]);
         foreach($identity_ids_which_arent_group_members as $identity_id) {
-            if ($group->manual_confirmation_add == true) {
-                $group_actions[] = GroupActionQueue::updateOrCreate(
-                    ['identity_id' => $identity_id, 'group_id' => $group_id],
-                    ['action' => 'add']
-                );                
+            if ($group->delay_add == true) {
+                $group_action = GroupActionQueue::where('identity_id',$identity_id)->where('group_id',$group_id)->first();
+                if (is_null($group_action)) {
+                    $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'add','scheduled_date'=>$group_add_scheduled_date]);
+                } else {
+                    if ($group_action->action != 'add') {
+                        $group_action->update(['action'=>'add','scheduled_date'=>$group_add_scheduled_date]);
+                    }
+                }
+                $group_actions[] = $group_action;              
             } else {
                 UpdateIdentityJob::dispatch([
                     'group_id' => $group_id,
@@ -119,11 +126,20 @@ class PublicAPIController extends Controller {
 
         // Identity Exists, but shouldn't be a member... remove them from the group!
         foreach($should_remove_group_membership as $identity_id) {
-            if ($group->manual_confirmation_remove == true) {
-                $group_actions[] = GroupActionQueue::updateOrCreate(
-                    ['identity_id' => $identity_id, 'group_id' => $group_id],
-                    ['action' => 'remove']
-                );                
+            if ($group->delay_remove == true) {
+                $group_action = GroupActionQueue::where('identity_id',$identity_id)->where('group_id',$group_id)->first();
+                if (is_null($group_action)) {
+                    $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
+                    $identity = Identity::where('id',$identity_id)->first();
+                    $identity->future_impact_send();
+                } else {
+                    if ($group_action->action != 'remove') {
+                        $group_action->update(['action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
+                        $identity = Identity::where('id',$identity_id)->first();
+                        $identity->future_impact_send();    
+                    }
+                }
+                $group_actions[] = $group_action;              
             } else {
                 UpdateIdentityJob::dispatch([
                     'group_id' => $group_id,
@@ -135,7 +151,7 @@ class PublicAPIController extends Controller {
         }
 
         // Delete any action queue outliers for this group
-        if ($group->manual_confirmation_add == true || $group->manual_confirmation_remove == true) {
+        if ($group->delay_add == true || $group->delay_remove == true) {
             GroupActionQueue::where('group_id',$group_id)->whereNotIn('id',$group_actions->pluck('id'))->delete();
         }
 

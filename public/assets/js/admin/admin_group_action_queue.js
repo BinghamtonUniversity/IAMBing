@@ -6,7 +6,8 @@ ajax.get('/api/group_action_queue/',function(data) {
         {type:"input", name:"identity_name", label:"Identity"},
         {name:"group_id","label":"Group",type:"select",options:"/api/groups",format:{label:"{{name}}", value:"{{id}}"}},
         {type:"input", name:"group_list", label:"Current Groups"},
-        {name:"date","label":"Date",type:"output"}
+        {name:"creation_date","label":"Creation Date",type:"output"},
+        {name:"scheduled_date","label":"Scheduled Date",type:"output"}
     ];
 
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',

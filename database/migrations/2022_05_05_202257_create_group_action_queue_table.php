@@ -20,6 +20,7 @@ return new class extends Migration
             $table->enum('action', ['add','remove'])->default('add');
             $table->foreign('identity_id')->references('id')->on('identities');
             $table->foreign('group_id')->references('id')->on('groups');
+            $table->date('scheduled_date')->nullable()->default(null);
             $table->timestamps();
         });
     }

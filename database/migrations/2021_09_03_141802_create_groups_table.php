@@ -21,8 +21,10 @@ class CreateGroupsTable extends Migration
             $table->string('affiliation')->nullable()->default(null);
             $table->unsignedInteger('order')->default(4294967295);
             $table->enum('type',['manual','auto'])->default('auto');
-            $table->boolean('manual_confirmation_add')->default(false);
-            $table->boolean('manual_confirmation_remove')->default(false);
+            $table->boolean('delay_add')->default(false);
+            $table->unsignedInteger('delay_add_days')->nullable()->default(null);
+            $table->boolean('delay_remove')->default(false);
+            $table->unsignedInteger('delay_remove_days')->nullable()->default(null);
             $table->timestamps();
         });
     }

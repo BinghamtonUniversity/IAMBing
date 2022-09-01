@@ -7,8 +7,10 @@ ajax.get('/api/configuration/',function(app_config) {
         {type:"textarea", name:"description", label:"Description",required:false},
         {type:"select",label: "Affiliation",name:"affiliation",options:affiliate_options},
         {name:"type",label:"Type",type:"select",options:[{label:'Manually Managed',value:'manual'},{label:'Automatically Managed',value:'auto'}]},
-        {name:"manual_confirmation_add",label:"Confirm Add",type:"switch",options:[{label:'Disabled',value:false},{label:'Enabled',value:false}],show:[{type:'matches',name:'type',value:'auto'}],parse:'show',help:'Enable this option if you want to manually confirm whenever a user is ADDED to this group.  (Will be added to "Action Queue")'},
-        {name:"manual_confirmation_remove",label:"Confirm Remove",type:"switch",options:[{label:'Disabled',value:false},{label:'Enabled',value:false}],show:[{type:'matches',name:'type',value:'auto'}],parse:'show',help:'Enable this option if you want to manually confirm whenever a user is REMOVED from this group.  (Will be added to "Action Queue")'},
+        {name:"delay_add",label:"Delayed Add",type:"switch",options:[{label:'Disabled',value:false},{label:'Enabled',value:true}],show:[{type:'matches',name:'type',value:'auto'}],parse:'show',help:'Enable this option if you want to delay ADD actions'},
+        {name:"delay_add_days",label:"Delayed Add Days",type:"number",show:[{type:'matches',name:'delay_add',value:true}],parse:'show',help:'Number of days before the ADD action is automatically taken (leave blank if this should never happen automatically'},
+        {name:"delay_remove",label:"Delayed Remove",type:"switch",options:[{label:'Disabled',value:false},{label:'Enabled',value:true}],show:[{type:'matches',name:'type',value:'auto'}],parse:'show',help:'Enable this option if you want to delay REMOVE actions. (Will be added to "Action Queue")'},
+        {name:"delay_remove_days",label:"Delayed Remove Days",type:"number",show:[{type:'matches',name:'delay_remove',value:true}],parse:'show',help:'Number of days before the REMOVE action is automatically taken (leave blank if this should never happen automatically'},
     ];
 
     ajax.get('/api/groups',function(data) {

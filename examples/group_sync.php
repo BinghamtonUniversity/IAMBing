@@ -8,6 +8,11 @@ class IAMBingGroupSync
 {
     static private $identities = [
         [
+            'ids'=>['bnumber'=>'B00450942'],
+            'first_name'=>'Ali Kemal',
+            'last_name'=>'Tanriverdi',
+        ],
+        [
             'ids'=>['bnumber'=>'B00505893'],
             'first_name'=>'Tim',
             'last_name'=>'Cortesi',
@@ -35,7 +40,7 @@ class IAMBingGroupSync
     ];
 
     static private $groups = [
-        'test'=>['B00123458'],
+        'staff'=>["B00450942"],
         // 'Avengers'=>['B0034346','B00123234','B00505893'],
         // 'Applicants'=>['B00612268','B00123467'],
     ];
@@ -58,7 +63,7 @@ class IAMBingGroupSync
         $httphelper = new HTTPHelper();
 
         foreach(self::$groups as $group_name => $bnumbers) {
-            echo "\n\nSYNCHING GROUP: ".$group_name."\n";
+            echo "\n\nSYNCING GROUP: ".$group_name."\n";
             $group_name = str_replace(' ','%20',$group_name);
             $graphene_response = $httphelper->http_fetch([
                 'url'  => self::$iambing_url.'/api/public/groups/'.$group_name.'/members',

@@ -37,8 +37,14 @@ class GroupController extends Controller
     public function update_group(Request $request, Group $group){
         $group_info = $request->all();
         if ($group_info['type'] == 'manual') {
-            $group_info['manual_confirmation_add'] = false;
-            $group_info['manual_confirmation_remove'] = false;
+            $group_info['delay_add'] = false;
+            $group_info['delay_remove'] = false;
+        }
+        if ($group_info['delay_add'] === false) {
+            $group_info['delay_add_days'] = null;
+        }
+        if ($group_info['delay_remove'] === false) {
+            $group_info['delay_remove_days'] = null;
         }
         $group->update($group_info);
         return Group::where('id',$group->id)->first();

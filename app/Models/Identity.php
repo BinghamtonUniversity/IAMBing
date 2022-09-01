@@ -11,6 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 
 class Identity extends Authenticatable
 {
@@ -303,6 +304,7 @@ class Identity extends Authenticatable
 
     // This needs to point to a particilar date in the future
     public function future_impact_send($skip_send=false, $end_user_visible_only=true) {
+        $identity = $this;
         $impact = $this->future_impact_calculate($end_user_visible_only);
         if ($impact === false) {
             return false;
@@ -317,34 +319,46 @@ class Identity extends Authenticatable
         $email['subject'] = $m->render($config->config->subject, ['identity'=>$this,'impact'=>$impact]);
         $recipients_string = $m->render($config->config->recipients, $this);
         $email['recipients'] = array_filter(explode(',',str_replace(' ','',$recipients_string)));
+
+        if (!$skip_send) {
+            Mail::raw($email['body'], function($message) use ($email,$identity) {
+                $message->subject($email['subject']);
+                foreach($email['recipients'] as $recipient) {
+                    $message->to($recipient,$identity->first_name.' '.$identity->last_name);
+                }
+            });
+        }
         return $email;
     }
 
-    // This needs to point to a particilar date in the future
     public function future_impact_calculate($end_user_visible_only=true) {
-        // This code adds new accounts for any new systems
         $identity = $this;
-
-        // needs to use future date
-        $future_group_ids_remove  = GroupActionQueue::select('group_id')->where('identity_id',$identity->id)->where('action','remove')->get()->pluck('group_id');
-        if ($future_group_ids_remove->count() === 0) {
+        $future_groups_remove  = GroupActionQueue::select('group_id','scheduled_date')->where('identity_id',$identity->id)->where('action','remove')->get();
+        if ($future_groups_remove->count() === 0) {
             return false; // Exist prematurely if no impact is found.
         }
         $current_groups = Group::select('id','name')->whereHas('members',function($q) use ($identity) {
             $q->select('group_id')->where('identity_id',$identity->id);
         })->get();
         $current_groups_obj = $current_groups->values()->mapWithKeys(function ($value, $key) {
-            return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
+            return [preg_replace('/\s+/','_',preg_replace("/[^a-z]/",' ',strtolower($value['name']))) => true];
         });
 
-        // needs to use future date
-        $future_group_ids_add = GroupActionQueue::select('group_id')->where('identity_id',$identity->id)->where('action','add')->get()->pluck('group_id');
-        $future_group_ids = $current_groups->pluck('id')->concat($future_group_ids_add)->unique()->diff($future_group_ids_remove);
+        $future_groups_add = GroupActionQueue::select('group_id','scheduled_date')->where('identity_id',$identity->id)->where('action','add')->get();
+        $future_group_ids = $current_groups->pluck('id')->concat($future_groups_add->pluck('group_id'))->unique()->diff($future_groups_remove->pluck('group_id'));
         $lost_group_ids = $current_groups->pluck('id')->diff($future_group_ids);
 
         $lost_groups = $current_groups->whereIn('id',$lost_group_ids);
         $lost_groups_obj = $lost_groups->values()->mapWithKeys(function ($value, $key) {
             return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
+        });
+        // Include Scheduled Deletion Date in Lost Groups Array
+        $lost_groups = $lost_groups->map(function($item,$key) use ($future_groups_remove) {
+            $action = $future_groups_remove->firstWhere('group_id',$item->id);
+            if (!is_null($action) && !is_null($action->scheduled_date)) {
+                $item->scheduled_date = $action->scheduled_date->format('n/j/Y');
+            }
+            return $item;
         });
 
         // Possibly should look at entitement overrides, and override dates?
