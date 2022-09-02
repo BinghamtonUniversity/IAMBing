@@ -210,6 +210,7 @@ class AdminController extends Controller
         }
         if ($identity->can('manage_group_action_queue','App\GroupActionQueue')){
             $user_actions[] = ''; $user_actions[] = '';
+            $user_actions[] = ["name"=>"remove_scheduled_date","label"=>"Remove Scheduled Date","type"=>"warning"];
             $user_actions[] = ["name"=>"execute","label"=>"Execute Actions","type"=>"danger"];
         }
         return view('default.admin',

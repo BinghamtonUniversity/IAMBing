@@ -321,12 +321,16 @@ class Identity extends Authenticatable
         $email['recipients'] = array_filter(explode(',',str_replace(' ','',$recipients_string)));
 
         if (!$skip_send) {
-            Mail::raw($email['body'], function($message) use ($email,$identity) {
-                $message->subject($email['subject']);
-                foreach($email['recipients'] as $recipient) {
-                    $message->to($recipient,$identity->first_name.' '.$identity->last_name);
-                }
-            });
+            try {
+                Mail::raw($email['body'], function($message) use ($email,$identity) {
+                    $message->subject($email['subject']);
+                    foreach($email['recipients'] as $recipient) {
+                        $message->to($recipient,$identity->first_name.' '.$identity->last_name);
+                    }
+                });
+            } catch (\Throwable $e) {
+                // Do Nothing
+            }
         }
         return $email;
     }

@@ -38,7 +38,7 @@ class GroupActionQueueController extends Controller
         $validated = $request->validate([
             'ids' => 'required',
         ]);
-        $group_actions = GroupActionQueue::whereIn('id',$request->ids)->get();
+        $group_actions = GroupActionQueue::whereIn('id',$request->ids)->whereNull('scheduled_date')->get();
         foreach($group_actions as $group_action) {
             UpdateIdentityJob::dispatch([
                 'group_id' => $group_action->group_id,
@@ -48,6 +48,19 @@ class GroupActionQueueController extends Controller
         }
         return $group_actions;
     }
+
+    public function remove_scheduled_date(Request $request) {
+        $validated = $request->validate([
+            'ids' => 'required',
+        ]);
+        $group_actions = GroupActionQueue::whereIn('id',$request->ids)->get();
+        foreach($group_actions as $group_action) {
+            $group_action->scheduled_date = null;
+            $group_action->save();
+        }
+        return $group_actions;
+    }
+
     public function download_queue(Request $request){
         $result = GroupActionQueue::with("group")->with("identity")->get();
         $unique_ids = array_column(array_values(Configuration::select('config')->where('name','identity_unique_ids')->first()->toArray())[0],'name');

@@ -25,6 +25,7 @@ class CreateGroupsTable extends Migration
             $table->unsignedInteger('delay_add_days')->nullable()->default(null);
             $table->boolean('delay_remove')->default(false);
             $table->unsignedInteger('delay_remove_days')->nullable()->default(null);
+            $table->boolean('delay_remove_notify')->default(false);
             $table->timestamps();
         });
     }

@@ -131,12 +131,12 @@ class PublicAPIController extends Controller {
                 if (is_null($group_action)) {
                     $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
                     $identity = Identity::where('id',$identity_id)->first();
-                    $identity->future_impact_send();
+                    if ($group->delay_remove_notify) { $identity->future_impact_send(); }
                 } else {
                     if ($group_action->action != 'remove') {
                         $group_action->update(['action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
                         $identity = Identity::where('id',$identity_id)->first();
-                        $identity->future_impact_send();    
+                        if ($group->delay_remove_notify) { $identity->future_impact_send(); }
                     }
                 }
                 $group_actions[] = $group_action;              

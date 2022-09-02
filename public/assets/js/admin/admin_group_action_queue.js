@@ -38,6 +38,24 @@ ajax.get('/api/group_action_queue/',function(data) {
         },function(data) {
             // Do nothing!
         });
+    }).on('remove_scheduled_date',function(event) {
+        var models = event.grid.getSelected();
+        var action_queue_ids = _.map(models,function(model) {
+            return model.attributes.id
+        })
+        if (action_queue_ids.length == 0) {
+            toastr.error("You must select at least one action from the queue.  Aborting Execution");
+            return;
+        }
+        if (prompt("To remove the scheduled date from all selected actions, type 'remove' in the space provied.  Note: This action cannot be undone!") != 'remove') {
+            toastr.error("Aborting Remove");
+            return;
+        }
+        ajax.post('/api/group_action_queue/remove_scheduled_date',{ids:action_queue_ids},function(data) {
+            toastr.success("Scheduled Date Removed From Selected Actions");
+        },function(data) {
+            // Do nothing!
+        });
     }).on('download',function(event){
         toastr.info("Please wait. Fetching the data...");
         window.open('/group_action_queue/download_csv', '_blank');
