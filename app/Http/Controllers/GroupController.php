@@ -45,6 +45,7 @@ class GroupController extends Controller
         }
         if ($group_info['delay_remove'] === false) {
             $group_info['delay_remove_days'] = null;
+            $group_info['delay_remove_notify'] = false;
         }
         $group->update($group_info);
         return Group::where('id',$group->id)->first();
