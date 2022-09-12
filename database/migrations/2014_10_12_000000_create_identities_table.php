@@ -20,7 +20,7 @@ class CreateIdentitiesTable extends Migration
             $table->boolean('sponsored')->default(false);
             $table->string('first_name')->nullable()->default(null)->index();
             $table->string('last_name')->nullable()->default(null)->index();
-            $table->string('default_username')->nullable()->default(null)->index();
+            $table->string('default_username')->nullable()->default(null)->unique()->index();
             $table->string('default_email')->nullable()->default(null)->index();
             $table->unsignedBigInteger('sponsor_identity_id')->default(null)->nullable()->index();
             $table->rememberToken();
