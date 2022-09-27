@@ -415,7 +415,7 @@ var manage_identity = function(identity_id) {
                         <div class="alert alert-info">{{first_name}} {{last_name}} has pending removal actions against the following groups:</div>
                         <ul>
                         {{#future_impact.lost_groups}}
-                            <li>{{name}} (Date of Change Here)</li>
+                            <li>{{name}} {{#scheduled_date}}({{scheduled_date}}){{/scheduled_date}}</li>
                         {{/future_impact.lost_groups}}
                         </ul>
 
@@ -454,7 +454,7 @@ var manage_identity = function(identity_id) {
 </div>
 <div class="panel panel-default">
     <ul class="list-group">
-        <li class="list-group-item"><b>To:</b> {{#recipients}}{{.}}, {{/recipients}}</li>
+        <li class="list-group-item"><b>To:</b> {{#to}}{{email}}, {{/to}}</li>
         <li class="list-group-item"><b>Subject:</b> {{subject}}</li>
         <li class="list-group-item">{{{body}}}</li>
     </ul>

@@ -28,7 +28,7 @@ ajax.get('/api/group_action_queue/',function(data) {
             toastr.error("You must select at least one action from the queue.  Aborting Execution");
             return;
         }
-        if (prompt("To execute all selected actions, type 'execute' in the space provied.  Note: This action cannot be undone!") != 'execute') {
+        if (prompt("To execute all selected actions, type 'execute' in the space provied.  Note: This action cannot be undone!\n\nPlease note that only unscheduled actions can be manually executed. If you wish to execute a scheduled action, you must first remove the scheduled date.") != 'execute') {
             toastr.error("Aborting Execution");
             return;
         }

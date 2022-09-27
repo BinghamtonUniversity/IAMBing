@@ -120,7 +120,7 @@ gforms.action_queue_remove_email = new gform(
 
 Your affiliation(s) have recently changed, and you are no a member of the following population(s) effective the dates specified below:
 {{#impact.lost_groups}}
-    * {{name}} (Date of Change Here)
+    * {{name}} {{#scheduled_date}}({{scheduled_date}}){{/scheduled_date}}
 {{/impact.lost_groups}}
 
 With this change, you will lose access to the following services:

@@ -11,7 +11,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Mail;
 
 class Identity extends Authenticatable
 {
@@ -303,7 +302,7 @@ class Identity extends Authenticatable
     }
 
     // This needs to point to a particilar date in the future
-    public function future_impact_send($skip_send=false, $end_user_visible_only=true) {
+    public function future_impact_email($end_user_visible_only=true) {
         $identity = $this;
         $impact = $this->future_impact_calculate($end_user_visible_only);
         if ($impact === false) {
@@ -318,19 +317,10 @@ class Identity extends Authenticatable
         $email['body'] = preg_replace("/\n\n\n+/","\n\n",$m->render($config->config->body, ['identity'=>$this,'impact'=>$impact]));
         $email['subject'] = $m->render($config->config->subject, ['identity'=>$this,'impact'=>$impact]);
         $recipients_string = $m->render($config->config->recipients, $this);
-        $email['recipients'] = array_filter(explode(',',str_replace(' ','',$recipients_string)));
-
-        if (!$skip_send) {
-            try {
-                Mail::raw($email['body'], function($message) use ($email,$identity) {
-                    $message->subject($email['subject']);
-                    foreach($email['recipients'] as $recipient) {
-                        $message->to($recipient,$identity->first_name.' '.$identity->last_name);
-                    }
-                });
-            } catch (\Throwable $e) {
-                // Do Nothing
-            }
+        $recipients = array_filter(explode(',',str_replace(' ','',$recipients_string)));
+        $email['to'] = [];
+        foreach($recipients as $recipient) {
+            $email['to'][] = ['email'=>$recipient,'name'=>$identity->first_name.' '.$identity->last_name];
         }
         return $email;
     }

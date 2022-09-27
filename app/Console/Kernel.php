@@ -53,10 +53,15 @@ class Kernel extends ConsoleKernel
         //     }
         // })->name('sponsored_identity_expiration_reminder')->dailyAt(config('app.sponsored_identity_ent_exp_reminder'))->timezone('America/New_York')->onOneServer();
 
+        // Remove Expired Entitlements at 2AM
         $schedule->call(function(){
-            $response = Artisan::call('entitlements:cleanup',['--silent'=>true]);
-        })->name('delete_expired_identity_entitlements')->dailyAt(config('app.delete_expired_identity_entitlements'))->timezone('America/New_York')
-        ->onOneServer();
+            $response = Artisan::call('entitlements:cleanup',['--yes'=>true]);
+        })->name('delete_expired_identity_entitlements')->dailyAt(config('app.delete_expired_identity_entitlements'))->timezone('America/New_York')->onOneServer();
+
+        // Execute Action Queue at 3AM
+        $schedule->call(function(){
+            $response = Artisan::call('actions:execute',['--yes'=>true]);
+        })->name('execute_group_action_queue')->dailyAt(config('app.execute_group_action_queue'))->timezone('America/New_York')->onOneServer();
     }
 
     /**

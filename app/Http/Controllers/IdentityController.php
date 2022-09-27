@@ -100,7 +100,7 @@ class IdentityController extends Controller
         } else {
             $end_user_visible_only = true;
         }
-        $identity->future_impact_msg = $identity->future_impact_send(true,$end_user_visible_only);
+        $identity->future_impact_msg = $identity->future_impact_email($end_user_visible_only);
         return $identity;
     }
 

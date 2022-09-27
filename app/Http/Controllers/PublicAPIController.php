@@ -8,6 +8,7 @@ use App\Models\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Jobs\UpdateIdentityJob;
+use App\Jobs\SendEmailJob;
 use App\Models\Configuration;
 use App\Models\GroupActionQueue;
 use App\Models\System;
@@ -131,12 +132,18 @@ class PublicAPIController extends Controller {
                 if (is_null($group_action)) {
                     $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
                     $identity = Identity::where('id',$identity_id)->first();
-                    if ($group->delay_remove_notify) { $identity->future_impact_send(); }
+                    if ($group->delay_remove_notify) { 
+                        $email = $identity->future_impact_email();
+                        if ($email !== false) { SendEmailJob::dispatch($email); } 
+                    }
                 } else {
                     if ($group_action->action != 'remove') {
                         $group_action->update(['action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
                         $identity = Identity::where('id',$identity_id)->first();
-                        if ($group->delay_remove_notify) { $identity->future_impact_send(); }
+                        if ($group->delay_remove_notify) { 
+                            $email = $identity->future_impact_email();
+                            if ($email !== false) { SendEmailJob::dispatch($email); } 
+                        }
                     }
                 }
                 $group_actions[] = $group_action;              

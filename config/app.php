@@ -15,8 +15,10 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
     'force_https' => env('FORCE_HTTPS',false),
-    'sponsored_identity_ent_exp_reminder'=> env('SPONSORED_IDENTITY_ENT_EXP_REMINDER','2:00'),
-    'delete_expired_identity_entitlements'=>env('DELETE_EXPIRED_IDENTITY_ENT','3:00'),
+    // 'sponsored_identity_ent_exp_reminder'=> env('SPONSORED_IDENTITY_ENT_EXP_REMINDER','2:00'),
+    'delete_expired_identity_entitlements'=>env('DELETE_EXPIRED_IDENTITY_ENT','2:00'),
+    'execute_group_action_queue'=>env('EXECUTE_GROUP_ACTION_QUEUE','3:00'),
+
 
     /*
     |--------------------------------------------------------------------------
