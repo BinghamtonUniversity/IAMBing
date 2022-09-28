@@ -1,5 +1,5 @@
 # Overview
-IAMBing is Binghamton University's Identity & Access Management (IAM) Application Engine.  This application is 'alpha' stage of development and should not be considered for a production deployment.
+IAMBing is a dynamic and highly configurable Identity & Access Management (IAM) engine develped by Binghamton University.  While it was specifically built to meet Binghamton University's IAM needs, its extesible "API First" design should allow it to be utilized and deployed in any number of different environments both inside and outside higher education.
 
 # Developer Installation Instructions
 
