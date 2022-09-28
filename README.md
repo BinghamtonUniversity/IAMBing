@@ -1,5 +1,5 @@
 # Overview
-IAMBing is a dynamic and highly configurable Identity & Access Management (IAM) engine.  While it was specifically built to meet Binghamton University's IAM needs, its extesible "API First" design should allow it to be utilized and deployed in any number of different environments both inside and outside higher education.
+IAMBing is a dynamic and highly configurable Identity & Access Management (IAM) engine.  While it was specifically built to meet Binghamton University's IAM needs, its extensible "API First" design should allow it to be utilized and deployed in any number of different environments both inside and outside higher education.
 
 For more information about deploying IAMBing at your own institution or business, please contact Tim Cortesi: [tcortesi@binghamton.edu](mailto:tcortesi@binghamton.edu)
 
