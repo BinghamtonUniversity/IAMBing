@@ -137,7 +137,7 @@ class AdminController extends Controller
         return view('default.admin',['page'=>'groups_members','ids'=>[$group->id],'title'=>'Manage "'.$group->name.'" Group Members','help'=>
             'Use this page to add / remove identities from the current group.',
             'actions' => [
-                ($group->type==='manual')?["name"=>"create","label"=>"Add Identity"]:'',
+                ($group->type==='manual')?["name"=>"add","label"=>"Add Identity",'type'=>'success']:'',
                 ($group->type==='manual')?["name"=>"bulk_add","label"=>"Bulk Add Identities"]:'','','',
                 ($group->type==='manual')?["name"=>"bulk_remove","label"=>"Bulk Remove Identities","type"=>"danger"]:'',
                 ($group->type==='manual')?["name"=>"delete","label"=>"Remove Identity"]:'',

@@ -101,7 +101,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/groups/{group}',[GroupController::class,'update_group'])->middleware('can:manage_groups,App\Models\Group');
         Route::delete('/groups/{group}',[GroupController::class,'delete_group'])->middleware('can:manage_groups,App\Models\Group');
         Route::get('/groups/{group}/members',[GroupController::class,'get_members'])->middleware('can:manage_group_members,group');
-        Route::post('/groups/{group}/members',[GroupController::class,'add_member'])->middleware('can:manage_group_members,group');
+        Route::post('/groups/{group}/members/{identity}',[GroupController::class,'add_member'])->middleware('can:manage_group_members,group');
         Route::delete('/groups/{group}/members/{identity}',[GroupController::class,'delete_member'])->middleware('can:manage_group_members,group');
         Route::post('/groups/{group}/members_bulk/{unique_id}',[GroupController::class,'bulk_add_members'])->middleware('can:manage_group_members,group');
         Route::delete('/groups/{group}/members_bulk/{unique_id}',[GroupController::class,'bulk_delete_members'])->middleware('can:manage_group_members,group');

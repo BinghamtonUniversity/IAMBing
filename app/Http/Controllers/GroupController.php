@@ -66,21 +66,30 @@ class GroupController extends Controller
     }
 
     public function get_members(Request $request, Group $group){
-        return GroupMember::select('id','identity_id')->where('group_id',$group->id)->with('simple_identity')->get();
+        $identities = Identity::select('id','first_name','last_name')->whereHas('group_memberships',function($q) use ($group) {
+            $q->where('group_id',$group->id);
+        })->get();
+        $identities_modified = [];
+        foreach($identities as $identity) {
+            $identities_modified[] = [
+                'id' => $identity->id,
+                'name' => $identity->first_name.' '.$identity->last_name,
+            ];
+        }   
+        return $identities_modified;      
     }
 
-    public function add_member(Request $request, Group $group){
+    public function add_member(Request $request, Group $group, Identity $identity){
         if ($group->type != 'manual') {
             abort(405, 'You cannot add a member to the group "'.$group->name.'" with type "'.$group->type.'"');
         }
-        $identity = Identity::where('id',$request->identity_id)->first();
         $group_membership = new GroupMember([
            'group_id'=>$group->id,
            'identity_id'=>$identity->id,
         ]);
         $group_membership->save();
         $identity->recalculate_entitlements();
-        return GroupMember::where('id',$group_membership->id)->with('identity')->first();
+        return ['id'=>$identity->id,'name'=>$identity->first_name.' '.$identity->last_name];
     }
 
     public function bulk_add_members(Request $request, Group $group, $unique_id) {

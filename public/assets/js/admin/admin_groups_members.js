@@ -6,7 +6,7 @@ var mymodal = new gform(
     "actions":[]}
 );
 
-ajax.get('/api/groups/'+id+'/members?simple=true',function(data) {
+ajax.get('/api/groups/'+id+'/members',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
     name: 'groups_members',
     search: false,columns: false,upload:false,download:false,title:'Identities',
@@ -15,16 +15,31 @@ ajax.get('/api/groups/'+id+'/members?simple=true',function(data) {
     count:20,
     schema:[
         {type:"hidden", name:"id"},
-        {type:"identity", name:"identity_id",required:true, label:"Identity", template:"{{#attributes.simple_identity}}{{first_name}} {{last_name}}{{/attributes.simple_identity}}{{#attributes.identity}}{{first_name}} {{last_name}}{{/attributes.identity}}"},
+        {name:"name", label:"Identity"},
     ], data: data
-    }).on("model:created",function(grid_event) {
-        ajax.post('/api/groups/'+id+'/members',grid_event.model.attributes,function(data) {
-            grid_event.model.update(data)
-        },function(data) {
-            grid_event.model.undo();
+    }).on("add",function(grid_event) {
+        var bulk_add_modal = new gform(
+            {"fields":[
+                {type:"identity", name:"id",required:true, label:"Identity"},
+            ],
+            "title":"Add Member",
+            "actions":[
+                {"type":"cancel"},
+                {"type":"button","label":"Submit","action":"save","modifiers":"btn btn-success"},
+            ]}
+        ).modal().on('save',function(event) {
+            var data = event.form.get();
+            ajax.post('/api/groups/'+id+'/members/'+data.id,{},function(data) {
+                grid_event.grid.add(data);
+                event.form.trigger('close');
+            },function(data) {
+                // Do Nothing
+            });
+        }).on('cancel',function(event) {
+            event.form.trigger('close');
         });
     }).on("model:deleted",function(grid_event) {
-        ajax.delete('/api/groups/'+id+'/members/'+grid_event.model.attributes.identity_id,{},
+        ajax.delete('/api/groups/'+id+'/members/'+grid_event.model.attributes.id,{},
             function(data) {},
             function(data) {
             grid_event.model.undo();
