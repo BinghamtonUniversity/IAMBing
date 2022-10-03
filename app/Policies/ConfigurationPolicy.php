@@ -25,7 +25,7 @@ class ConfigurationPolicy
     }
 
     public function list_search(Identity $identity){
-        return Permission::where('identity_id',$identity->id)->where(function($q){
+        return $identity->is_group_admin() || Permission::where('identity_id',$identity->id)->where(function($q){
             $q->orWhere('permission','view_identities')
             ->orWhere('permission','manage_identities')
             ->orWhere('permission','manage_identity_permissions')

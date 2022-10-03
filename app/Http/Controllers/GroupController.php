@@ -12,6 +12,7 @@ use App\Models\Entitlement;
 use App\Models\Account;
 use App\Models\Identity;
 use App\Models\System;
+use App\Jobs\UpdateIdentityJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -82,6 +83,30 @@ class GroupController extends Controller
         return GroupMember::where('id',$group_membership->id)->with('identity')->first();
     }
 
+    public function bulk_add_members(Request $request, Group $group, $unique_id) {
+        if (!$request->has('unique_ids')) {
+            abort(400, 'Missing Required Unique IDs');
+        }
+        $unique_ids = explode("\n",$request->unique_ids);
+        $found = [];
+        foreach($unique_ids as $unique_id_value) {
+            $identity = Identity::whereHas('identity_unique_ids', function($q) use ($unique_id, $unique_id_value){
+                $q->where('name',$unique_id)->where('value',$unique_id_value);
+            })->whereDoesntHave('group_memberships',function($q) use ($group) {
+                $q->where('group_id',$group->id);
+            })->first();            
+            if (!is_null($identity)) {
+                $found[] = $unique_id_value;
+                UpdateIdentityJob::dispatch([
+                    'group_id' => $group->id,
+                    'identity_id' => $identity->id,
+                    'action' => 'add'
+                ]);
+            }
+        }
+        return ['identities'=>$found];
+    }
+
     public function delete_member(Group $group,Identity $identity)
     {
         if ($group->type != 'manual') {
@@ -95,6 +120,30 @@ class GroupController extends Controller
         }
         $identity->recalculate_entitlements();
         return true;
+    }
+
+    public function bulk_delete_members(Request $request, Group $group, $unique_id) {
+        if (!$request->has('unique_ids')) {
+            abort(400, 'Missing Required Unique IDs');
+        }
+        $unique_ids = explode("\n",$request->unique_ids);
+        $found = [];
+        foreach($unique_ids as $unique_id_value) {
+            $identity = Identity::whereHas('identity_unique_ids', function($q) use ($unique_id, $unique_id_value){
+                $q->where('name',$unique_id)->where('value',$unique_id_value);
+            })->whereHas('group_memberships',function($q) use ($group) {
+                $q->where('group_id',$group->id);
+            })->first();            
+            if (!is_null($identity)) {
+                $found[] = $unique_id_value;
+                UpdateIdentityJob::dispatch([
+                    'group_id' => $group->id,
+                    'identity_id' => $identity->id,
+                    'action' => 'remove'
+                ]);
+            }
+        }
+        return ['identities'=>$found];
     }
 
     public function get_admins(Request $request, Group $group){

@@ -10,7 +10,15 @@ use Illuminate\Support\Facades\Artisan;
 
 class ConfigurationController extends Controller
 {
-    public function get_configurations(){
+    public function get_configurations(Request $request, $config_name = null){
+        if (!is_null($config_name)) {
+            $configuration = Configuration::select('config')->where('name',$config_name)->first();
+            if (!is_null($configuration)) {
+                return $configuration->config;
+            } else {
+                abort(404, 'Specified Configuration Not Found');
+            }
+        }
         return Configuration::all();
     }
     public function update_configuration(Request $request, $config_name){

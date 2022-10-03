@@ -103,6 +103,8 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/groups/{group}/members',[GroupController::class,'get_members'])->middleware('can:manage_group_members,group');
         Route::post('/groups/{group}/members',[GroupController::class,'add_member'])->middleware('can:manage_group_members,group');
         Route::delete('/groups/{group}/members/{identity}',[GroupController::class,'delete_member'])->middleware('can:manage_group_members,group');
+        Route::post('/groups/{group}/members_bulk/{unique_id}',[GroupController::class,'bulk_add_members'])->middleware('can:manage_group_members,group');
+        Route::delete('/groups/{group}/members_bulk/{unique_id}',[GroupController::class,'bulk_delete_members'])->middleware('can:manage_group_members,group');
         Route::get('/groups/{group}/admins',[GroupController::class,'get_admins'])->middleware('can:manage_group_admins,group');
         Route::post('/groups/{group}/admins',[GroupController::class,'add_admin'])->middleware('can:manage_group_admins,group');
         Route::delete('/groups/{group}/admins/{identity}',[GroupController::class,'delete_admin'])->middleware('can:manage_group_admins,group');
@@ -138,8 +140,8 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::delete('/endpoints/{endpoint}',[EndpointController::class,'delete_endpoint'])->middleware('can:manage_endpoints,App\Models\Endpoint');
 
         /* Configuration Methods */
-        Route::get('/configuration',[ConfigurationController::class,'get_configurations'])->middleware('can:list_search,App\Models\Configuration');
         Route::get('/configuration/refresh/redis',[ConfigurationController::class, 'refresh_redis'])->middleware('can:flush_job_queue,App\Models\Job');
+        Route::get('/configuration/{config_name?}',[ConfigurationController::class,'get_configurations'])->middleware('can:list_search,App\Models\Configuration');
         Route::put('/configuration/{config_name}',[ConfigurationController::class,'update_configuration'])->middleware('can:update,App\Models\Configuration');
 
         /* Logs Methods */
