@@ -98,6 +98,8 @@ ajax.get('/api/groups/'+id+'/members',function(data) {
         }).on('cancel',function(event) {
             event.form.trigger('close');
         });
+    }).on('click',function(event) {
+        window.location = '/identities/'+event.model.attributes.id
     });
 });
 

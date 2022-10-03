@@ -25,6 +25,8 @@ ajax.get('/api/groups/'+id+'/admins?simple=true',function(data) {
             function(data) {
             grid_event.model.undo();
         });
+    }).on('click',function(event) {
+        window.location = '/identities/'+event.model.attributes.identity_id
     })
 });
 
