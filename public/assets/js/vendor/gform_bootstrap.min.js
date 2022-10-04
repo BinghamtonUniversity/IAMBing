@@ -1,143 +1,211 @@
 var gform = function (optionsIn, el) {
     "use strict";
     // const [cultivate] = Object.keys(gform.utils).map(method =>  gform.utils[method](this))
-    this.fieldMethods = _.reduce(gform.field, (result, method, key) => {
+    this.fieldMethods = _.reduce(
+      gform.field,
+      (result, method, key) => {
         result[key] = method(this);
         return result;
-    }, {})
-    this.fieldAttr = (attr, field, ...rest) => (field[attr] || gform.types[field.type || 'text'][attr])
+      },
+      {}
+    );
+    this.fieldAttr = (attr, field, ...rest) =>
+      field[attr] || gform.types[field.type || "text"][attr];
     this.call = (method, field, ...rest) => {
-        field = field || this;
-        let actor = (typeof field[method] == 'function') ? field[method] : gform.types[field.type || 'text'][method];
-        return (typeof actor == 'function') ? actor.call(field, ...rest) : actor;
+      field = field || this;
+      let actor =
+        typeof field[method] == "function"
+          ? field[method]
+          : gform.types[field.type || "text"][method];
+      return typeof actor == "function" ? actor.call(field, ...rest) : actor;
     };
-    this.bind = (method, field, ...rest) => ((field[method] == Object.prototype[method]) ? gform.types[field.type || 'text'][method] : field.method).bind(field, ...rest);
-
-    //event management        
+    this.bind = (method, field, ...rest) =>
+      (field[method] == Object.prototype[method]
+        ? gform.types[field.type || "text"][method]
+        : field.method
+      ).bind(field, ...rest);
+  
+    //event management
     this.updateActions = function (am) {
-
-        // var fieldCount = am.instances.length;//field.parent.filter({array:{ref:field.array.ref}},1).length
-        const { array, id, instances, container } = am;
-        const { max = 5, min } = array;
-        var testFunc = function (selector, status, button) {
-            gform.toggleClass(button.querySelector(selector), 'hidden', status)
-        }
-        if (array.duplicate.enable == "auto") {
-            _.each(container.querySelectorAll('.gform_isArray'), testFunc.bind(null, '[data-ref=' + id + '].actions .gform-add', (instances.length >= max)))
-        }
-        if (array.remove.enable == "auto") {
-            _.each(container.querySelectorAll('.gform_isArray'), testFunc.bind(null, '[data-ref=' + id + '].actions .gform-minus', !(instances.length > min)))
-        }
-        if (array.append.enable == "auto") {
-            testFunc.call(null, '[data-id=' + id + '].gform-append', (instances.length >= (max || 5)), container)
-        }
-
-    }
-
-    var data = _.merge(optionsIn.options || {}, optionsIn)
+      // var fieldCount = am.instances.length;//field.parent.filter({array:{ref:field.array.ref}},1).length
+      const { array, id, instances, container } = am;
+      const { max = 5, min } = array;
+      var testFunc = function (selector, status, button) {
+        gform.toggleClass(button.querySelector(selector), "hidden", status);
+      };
+      if (array.duplicate.enable == "auto") {
+        _.each(
+          container.querySelectorAll(".gform_isArray"),
+          testFunc.bind(
+            null,
+            "[data-ref=" + id + "].actions .gform-add",
+            instances.length >= max
+          )
+        );
+      }
+      if (array.remove.enable == "auto") {
+        _.each(
+          container.querySelectorAll(".gform_isArray"),
+          testFunc.bind(
+            null,
+            "[data-ref=" + id + "].actions .gform-minus",
+            !(instances.length > min)
+          )
+        );
+      }
+      if (array.append.enable == "auto") {
+        testFunc.call(
+          null,
+          "[data-id=" + id + "].gform-append",
+          instances.length >= (max || 5),
+          container
+        );
+      }
+    };
+  
+    var data = _.merge(optionsIn.options || {}, optionsIn);
     var sections = [];
-
+  
     this.methods = data.methods || {};
-
-    this.eventBus = new gform.eventBus({ owner: 'form', item: 'field', handlers: data.events || {} }, this)
+  
+    this.eventBus = new gform.eventBus(
+      { owner: "form", item: "field", handlers: data.events || {} },
+      this
+    );
     this.on = this.eventBus.on;
     this.dispatch = this.eventBus.dispatch;
     this.valid = true;
-
+  
     this.trigger = function (a, b, c) {
-        if (typeof a == 'string') {
-            a = [a];
-        }
-        var events = _.extend([], a);
-
-        if (typeof b == 'object' && 'owner' in b && b.owner instanceof gform) {
-            _.each(a, function (item) {
-                if (item.indexOf(':') == '-1') {
-                    events.unshift(item + ':' + b.name)
-                    events.unshift(item + ':' + b.path)
-                    events.unshift(item + ':' + b.relative)
-
-                    var search = b;
-                    while ('parent' in search && !(search.parent instanceof gform) && typeof search.parent !== 'undefined' && search.parent !== false) {
-                        search = search.parent;
-                        events.push(item + ':' + search.name)
-                        events.push(item + ':' + search.path)
-                        events.push(item + ':' + search.relative)
-                    }
-                    // if(id){
-                    // b = this.find({id:id})
-                    // }
-                }
-            }.bind(this))
-        }
-        this.dispatch(_.uniq(events), b, c);
-    }.bind(this)
-
+      if (typeof a == "string") {
+        a = [a];
+      }
+      var events = _.extend([], a);
+  
+      if (typeof b == "object" && "owner" in b && b.owner instanceof gform) {
+        _.each(
+          a,
+          function (item) {
+            if (item.indexOf(":") == "-1") {
+              events.unshift(item + ":" + b.name);
+              events.unshift(item + ":" + b.path);
+              events.unshift(item + ":" + b.relative);
+  
+              var search = b;
+              while (
+                "parent" in search &&
+                !(search.parent instanceof gform) &&
+                typeof search.parent !== "undefined" &&
+                search.parent !== false
+              ) {
+                search = search.parent;
+                events.push(item + ":" + search.name);
+                events.push(item + ":" + search.path);
+                events.push(item + ":" + search.relative);
+              }
+              // if(id){
+              // b = this.find({id:id})
+              // }
+            }
+          }.bind(this)
+        );
+      }
+      this.dispatch(_.uniq(events), b, c);
+    }.bind(this);
+  
     this.errors = {};
-
+  
     // this.sub = this.on;
-    this.popin = function () {
-
-    }
+    this.popin = function () {};
     // _.map(data.events,function(event,index){
     //     if(!_.isArray(event)){
     //         this.eventBus.handlers[index]=[event];
     //     }
     // }.bind(this))
-    this.on('reset', function (e) {
-        e.form.set(e.form.options.data);
+    this.on("reset", function (e) {
+      e.form.set(e.form.options.data);
     });
-    this.on('clear', function (e) {
-        e.form.set();
+    this.on("clear", function (e) {
+      e.form.set();
     });
-    if (typeof data.collections == 'object') {
-        this.collections = data.collections;
+    if (typeof data.collections == "object") {
+      this.collections = data.collections;
     } else {
-        this.collections = gform.collections;
+      this.collections = gform.collections;
     }
     // this.sub = function (event, handler, delay) {
     //     delay = delay || 0;
     //     this.on(event, _.debounce(handler, delay));
     //     return this;
     // }.bind(this);
-
+  
     //initalize form
     // this.options = _.assignIn({fields:[], legend: '',strict:true, default:gform.default||{}, data:'search', columns:gform.columns,name: gform.getUID()},this.opts, data);
     // this.options2 = _.assign({fields:[], legend: '',strict:true, default:gform.default, data:'search', columns:gform.columns,name: gform.getUID()},this.opts, data);
-    this.options = { fields: [], legend: '', strict: true, data: 'search', columns: gform.columns, name: gform.getUID(), ...this.options, ...data, default: { ...this.options.default, ...data.default } };
-
+    this.options = {
+      fields: [],
+      legend: "",
+      strict: true,
+      data: "search",
+      columns: gform.columns,
+      name: gform.getUID(),
+      ...this.options,
+      ...data,
+      default: { ...this.options.default, ...data.default },
+    };
+  
     // this.options = {fields:[], legend: '',strict:true, data:'search', columns:gform.columns,name: gform.getUID(),...this.options, ...data};
-
-    if (typeof this.options.onSet == 'function') {
-        data = this.options.onSet(data)
+  
+    if (typeof this.options.onSet == "function") {
+      data = this.options.onSet(data);
     }
-
-    //merge actions into fields 
-    if ('actions' in this.options && _.isArray(this.options.actions)) this.options.fields = (this.options.fields || []).concat(this.options.actions);
-
+  
+    //merge actions into fields
+    if ("actions" in this.options && _.isArray(this.options.actions))
+      this.options.fields = (this.options.fields || []).concat(
+        this.options.actions
+      );
+  
     //attempt to retrieve initialization data from various sources hash, url, etc
-    if (typeof this.options.data == 'string') {
-        if (typeof window.location[this.options.data] !== 'undefined') {
-            this.options.data = window.location[this.options.data].substr(1).split('&').map(function (val) { return val.split('='); }).reduce(function (total, current) { total[current[0]] = decodeURIComponent(current[1]); return total; }, {});
-        } else {
-            gform.ajax({
-                path: (this.options.rootpath || '') + this.options.data, success: function (data) {
-                    this.set(data)
-                }.bind(this)
-            })
+    if (typeof this.options.data == "string") {
+      if (typeof window.location[this.options.data] !== "undefined") {
+        this.options.data = window.location[this.options.data]
+          .substr(1)
+          .split("&")
+          .map(function (val) {
+            return val.split("=");
+          })
+          .reduce(function (total, current) {
+            total[current[0]] = decodeURIComponent(current[1]);
+            return total;
+          }, {});
+      } else {
+        let path = this.options.data || "";
+        if (path[0] !== "/") {
+          path = (this.options.rootpath || "") + this.options.data;
         }
+        gform.ajax({
+          path: path,
+          success: function (data) {
+            this.set(data);
+          }.bind(this),
+        });
+      }
     }
-
+  
     //set flag on all root fieldsets as a section
     if (this.options.sections) {
-        _.each(_.filter(this.options.fields, { type: 'fieldset' }), function (item, i) {
-            item.index = i;
-            item.section = true;
-            item.id = item.id || gform.getUID();
-            return item
-        })
+      _.each(
+        _.filter(this.options.fields, { type: "fieldset" }),
+        function (item, i) {
+          item.index = i;
+          item.section = true;
+          item.id = item.id || gform.getUID();
+          return item;
+        }
+      );
     }
-
+  
     // set up the root element
     // this.el = el || data.el;
     // if(typeof this.el == 'string'){
@@ -147,1502 +215,1885 @@ var gform = function (optionsIn, el) {
     // }else{
     //     el = '';
     // }
-
-    this.attach = (el) => {
-        switch (typeof el) {
-            case 'undefined':
-                for (let i = 0; i < sections.length; i++) {
-                    this.el.removeChild(sections[i]);
-                }
-                break;
-            case 'string':
-                el = document.querySelector(el + '');
-            case 'object':
-                if (!el instanceof Node || this.el == el) false;
-                this.el = el
-                for (let i = 0; i < sections.length; i++) {
-                    this.el.appendChild(sections[i]);
-                }
-                this.container = this.el.querySelector('form') || this.el;
-                break;
-        }
-
-    }
+  
+    this.attach = el => {
+      switch (typeof el) {
+        case "undefined":
+          for (let i = 0; i < sections.length; i++) {
+            this.el.removeChild(sections[i]);
+          }
+          break;
+        case "string":
+          el = document.querySelector(el + "");
+        case "object":
+          if (!el instanceof Node || this.el == el) false;
+          this.el = el;
+          for (let i = 0; i < sections.length; i++) {
+            this.el.appendChild(sections[i]);
+          }
+          this.container = this.el.querySelector("form") || this.el;
+          break;
+      }
+    };
     this.attach(el || data.el);
-
-    this.add = (field) => {
-        this._items.push(this.fieldMethods.cultivate({
+  
+    this.add = field => {
+      this._items.push(
+        this.fieldMethods.cultivate(
+          {
             data: this.options.data,
-        }, field));
-        this.reflow();
-    }
-    this.trigger('initialize', this);
-
-    // this.add = gform.createField.bind(this, this, this.options.data||{}, null, null);
-
-    // signature.fields.push(signature.add({type:'signaturePad',required:true,label:"Signature",hideLabel:true,help:_.find(_.find(flow,{name:mappedData.state}).actions,{name:e.field.name}).signature_text||"Please Sign Above",name:"signature"}))
-
-
-    var create = function () {
-        if (typeof this.el == 'undefined') {
-            this.options.renderer = 'modal';
-            this.el = gform.create(gform.render(this.options.template || 'modal_container', this.options))
-            // document.querySelector('body').appendChild(this.el)
-            // gform.addClass(this.el, 'active')
-
-            this.on('close', function (e) {
-                if (typeof e.field == 'undefined') {
-                    e.form.modal('hide');
-                }
-            });
-            // this.sub('cancel', function(e){
-            //     gform.removeClass(e.form.el, 'active')
-            //     // e.form.destroy();
-            //     // document.body.removeChild(e.form.el);
-            //     // delete this.el;
-            // });
-            // this.on('save', function(e){
-            //     // console.log(e.form.toJSON())
-            //     gform.removeClass(e.form.el, 'active')
-            // });
-            // this.el.querySelector('.close').addEventListener('click', function(e){
-            //     this.trigger('cancel', this)}.bind(this)
-            // )
-            document.addEventListener('keyup', function (e) {
-                if (e.key === "Escape") { // escape key maps to keycode `27`
-                    this.trigger('cancel', this)
-                }
-            }.bind(this));
-        }
-        if (this.options.clear && !(this.options.renderer == 'modal')) {
-            this.el.innerHTML = "";
-            // this.el.innerHTML = gform.render(this.options.sections+'_container', this.options);
-            // var temp = gform.create('<div>'+gform.render(this.options.sections+'_container', this.options)+'</div>')
-            let container = gform.create('<div>' + gform.renderString(this.options.container || (gform.stencils[this.options.sections + '_container'] || gform.stencils['_container']), this.options) + '</div>');
-            _.each(container.childNodes, (a, b, node) => {
-                sections.push(node[0]);
-                this.el.appendChild(node[0]);
-            }
-            )
-        }
-        this.container = this.el.querySelector('form') || this.el;
-
-        this.rowManager = gform.rowManager(this);
-
-
-        // this.newadd = this.fieldMethods.cultivate.bind(null, {
-        //     data:this.options.data
-        // });
-        this._items = _.map(this.options.fields, this.fieldMethods.cultivate.bind(null, {
-            data: this.options.data
-        }))
-
-        Object.defineProperty(this, 'items', {
-            get: () => {
-                return this._items
-            }
-        }
+          },
+          field
         )
-        Object.keys(gform.iterators).forEach(i => {
-            this.items[i] = gform.iterators[i].bind(this)
-        })
-
-        Object.defineProperty(this, 'fields', {
-            get: () => {
-                return _.reduce(this._items, (fields, item) => {
-                    if (item instanceof gform.arrayManager) {
-                        fields = fields.concat(item.instances);
-                    } else {
-                        fields.push(item)
-                    }
-                    return fields;
-                }, [])
+      );
+      this.reflow();
+    };
+    this.trigger("initialize", this);
+  
+    // this.add = gform.createField.bind(this, this, this.options.data||{}, null, null);
+  
+    // signature.fields.push(signature.add({type:'signaturePad',required:true,label:"Signature",hideLabel:true,help:_.find(_.find(flow,{name:mappedData.state}).actions,{name:e.field.name}).signature_text||"Please Sign Above",name:"signature"}))
+  
+    var create = function () {
+      if (typeof this.el == "undefined") {
+        this.options.renderer = "modal";
+        this.el = gform.create(
+          gform.render(this.options.template || "modal_container", this.options)
+        );
+        // document.querySelector('body').appendChild(this.el)
+        // gform.addClass(this.el, 'active')
+  
+        this.on("close", function (e) {
+          if (typeof e.field == "undefined") {
+            e.form.modal("hide");
+          }
+        });
+        // this.sub('cancel', function(e){
+        //     gform.removeClass(e.form.el, 'active')
+        //     // e.form.destroy();
+        //     // document.body.removeChild(e.form.el);
+        //     // delete this.el;
+        // });
+        // this.on('save', function(e){
+        //     // console.log(e.form.toJSON())
+        //     gform.removeClass(e.form.el, 'active')
+        // });
+        // this.el.querySelector('.close').addEventListener('click', function(e){
+        //     this.trigger('cancel', this)}.bind(this)
+        // )
+        document.addEventListener(
+          "keyup",
+          function (e) {
+            if (e.key === "Escape") {
+              // escape key maps to keycode `27`
+              this.trigger("cancel", this);
             }
+          }.bind(this)
+        );
+      }
+      if (this.options.clear && !(this.options.renderer == "modal")) {
+        this.el.innerHTML = "";
+        // this.el.innerHTML = gform.render(this.options.sections+'_container', this.options);
+        // var temp = gform.create('<div>'+gform.render(this.options.sections+'_container', this.options)+'</div>')
+        let container = gform.create(
+          "<div>" +
+            gform.renderString(
+              this.options.container ||
+                gform.stencils[this.options.sections + "_container"] ||
+                gform.stencils["_container"],
+              this.options
+            ) +
+            "</div>"
+        );
+        _.each(container.childNodes, (a, b, node) => {
+          sections.push(node[0]);
+          this.el.appendChild(node[0]);
+        });
+      }
+      this.container = this.el.querySelector("form") || this.el;
+  
+      this.rowManager = gform.rowManager(this);
+  
+      // this.newadd = this.fieldMethods.cultivate.bind(null, {
+      //     data:this.options.data
+      // });
+      this._items = _.map(
+        this.options.fields,
+        this.fieldMethods.cultivate.bind(null, {
+          data: this.options.data,
         })
-        // this.fields = _.reduce(this._items,(fields, item)=>{
-        //     if(item.type === "am"){
-        //         fields = fields.concat(item.instances);
-        //     }else{
-        //         fields.push(item)
-        //     }
-        //     return fields;
-        // },[])
-
-        // this.fields = [];
-        // this.fields = _.map(this.options.fields, this.add)
-        // _.each(_.extend([],this.fields), gform.inflate.bind(this, this.options.data||{}))
-
-        // this.reflow()
-        // _.each(this.fields, function(field) {
-        //     field.owner.trigger('change:' + field.name,field.owner, field);
-        // })
-        this.items.each.call(this, gform.addConditions)
-        gform.each.call(this, function (field) {
-            field.owner.trigger('change', field);
-        })
-    }
-    this.infoEl = gform.create(gform.render('_tooltip'))
-    this.infoEl.querySelector('.info-close').addEventListener('click', function (e) {
-        this.el.removeChild(this.infoEl)
-        this.popper.destroy()
+      );
+  
+      Object.defineProperty(this, "items", {
+        get: () => {
+          return this._items;
+        },
+      });
+      Object.keys(gform.iterators).forEach(i => {
+        this.items[i] = gform.iterators[i].bind(this);
+      });
+  
+      Object.defineProperty(this, "fields", {
+        get: () => {
+          return _.reduce(
+            this._items,
+            (fields, item) => {
+              if (item instanceof gform.arrayManager) {
+                fields = fields.concat(item.instances);
+              } else {
+                fields.push(item);
+              }
+              return fields;
+            },
+            []
+          );
+        },
+      });
+      // this.fields = _.reduce(this._items,(fields, item)=>{
+      //     if(item.type === "am"){
+      //         fields = fields.concat(item.instances);
+      //     }else{
+      //         fields.push(item)
+      //     }
+      //     return fields;
+      // },[])
+  
+      // this.fields = [];
+      // this.fields = _.map(this.options.fields, this.add)
+      // _.each(_.extend([],this.fields), gform.inflate.bind(this, this.options.data||{}))
+  
+      // this.reflow()
+      // _.each(this.fields, function(field) {
+      //     field.owner.trigger('change:' + field.name,field.owner, field);
+      // })
+      this.items.each.call(this, gform.addConditions);
+      gform.each.call(this, function (field) {
+        field.owner.trigger("change", field);
+      });
+    };
+    this.infoEl = gform.create(gform.render("_tooltip"));
+    this.infoEl.querySelector(".info-close").addEventListener(
+      "click",
+      function (e) {
+        this.el.removeChild(this.infoEl);
+        this.popper.destroy();
         this.popper = null;
-    }.bind(this));
+      }.bind(this)
+    );
     this.popper = null;
-
-    ['toJSON', 'toString', 'reflow', 'find', 'filter'].map((method) => {
-        this[method] = gform[method].bind(this);
-    })
-
-
+  
+    ["toJSON", "toString", "reflow", "find", "filter"].map(method => {
+      this[method] = gform[method].bind(this);
+    });
+  
     this.restore = create.bind(this);
     this.get = this.toJSON;
-
-    this.set = function (name, value) {
-        if (typeof this.options.onSet == 'function') {
-            value = this.options.onSet(value)
-        }
-        if (typeof name == 'string') {
-            this.find(name).set(value)
-        }
-        if (typeof name == 'object') {
-            _.each(name, function (item, index) {
-                let field = this.items.find(index);
-                if (typeof field == 'undefined' || field == null) return;
-                field.set(item);
-                // var field = this.find(index);
-                // if (typeof field !== 'undefined' && field.fillable) {
-                //     if (field.array && _.isArray(item)) {
-                //         var list = this.filter({ array: { ref: field.array.ref } }, 1)
-
-                //         if (list.length > 1) {
-                //             _.each(list.slice(1), function (field) {
-                //                 var index = _.findIndex(field.parent.fields, { id: field.id });
-                //                 field.parent.fields.splice(index, 1);
-                //             })
-                //         }
-
-                //         if (_.isArray(item)) {
-                //             field.set(item[0]);
-                //         }
-
-                //         // if(!this.owner.options.strict){
-                //         // _.each(field.fields, gform.inflate.bind(this.owner, atts[field.name]|| field.owner.options.data[field.name] || {}) );
-                //         // }else{
-                //         var attr = {};
-                //         attr[field.name] = item;
-                //         gform.inflate.call(this.owner || this, attr, field, _.findIndex(field.parent.fields, { id: field.id }), field.parent.fields);
-                //         // }
-
-                //         // var fieldCount = this.filter({array:{ref:field.array.ref}},1).length
-
-                //         // var testFunc = function(selector,status, button){
-                //         //     gform.toggleClass(button.querySelector(selector),'hidden', status)
-                //         // }
-                //         // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
-                //         // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
-
-                //         field.operator.reflow();
-                //         // this.updateActions(field);
-
-
-
-                //     } else {
-                //         // gform.inflate.bind(this, this.options.data||{})
-                //         if (typeof field !== 'undefined') {
-                //             field.set(item);
-                //         }
-                //     }
-                // }
-            }.bind(this))
-        }
-        // if(typeof name == 'undefined'){
-        if (name == null) {
-            gform.each.call(this, function (field) {
-                field.set('');
-            })
-        }
-        this.trigger('set');
-        return this;
-        // _.find(this.fields, {name: name}).set(value);
-    }.bind(this),
-
-        this.isActive = false;
+  
+    (this.set = function (name, value) {
+      if (typeof this.options.onSet == "function") {
+        value = this.options.onSet(value);
+      }
+      if (typeof name == "string") {
+        this.find(name).set(value);
+      }
+      if (typeof name == "object") {
+        _.each(
+          name,
+          function (item, index) {
+            let field = this.items.find(index);
+            if (typeof field == "undefined" || field == null) return;
+            field.set(item);
+            // var field = this.find(index);
+            // if (typeof field !== 'undefined' && field.fillable) {
+            //     if (field.array && _.isArray(item)) {
+            //         var list = this.filter({ array: { ref: field.array.ref } }, 1)
+  
+            //         if (list.length > 1) {
+            //             _.each(list.slice(1), function (field) {
+            //                 var index = _.findIndex(field.parent.fields, { id: field.id });
+            //                 field.parent.fields.splice(index, 1);
+            //             })
+            //         }
+  
+            //         if (_.isArray(item)) {
+            //             field.set(item[0]);
+            //         }
+  
+            //         // if(!this.owner.options.strict){
+            //         // _.each(field.fields, gform.inflate.bind(this.owner, atts[field.name]|| field.owner.options.data[field.name] || {}) );
+            //         // }else{
+            //         var attr = {};
+            //         attr[field.name] = item;
+            //         gform.inflate.call(this.owner || this, attr, field, _.findIndex(field.parent.fields, { id: field.id }), field.parent.fields);
+            //         // }
+  
+            //         // var fieldCount = this.filter({array:{ref:field.array.ref}},1).length
+  
+            //         // var testFunc = function(selector,status, button){
+            //         //     gform.toggleClass(button.querySelector(selector),'hidden', status)
+            //         // }
+            //         // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
+            //         // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
+  
+            //         field.operator.reflow();
+            //         // this.updateActions(field);
+  
+            //     } else {
+            //         // gform.inflate.bind(this, this.options.data||{})
+            //         if (typeof field !== 'undefined') {
+            //             field.set(item);
+            //         }
+            //     }
+            // }
+          }.bind(this)
+        );
+      }
+      // if(typeof name == 'undefined'){
+      if (name == null) {
+        gform.each.call(this, function (field) {
+          field.set("");
+        });
+      }
+      this.trigger("set");
+      return this;
+      // _.find(this.fields, {name: name}).set(value);
+    }.bind(this)),
+      (this.isActive = false);
     Object.defineProperty(this, "active", {
-        get: () => (this.isActive),
-        enumerable: true
+      get: () => this.isActive,
+      enumerable: true,
     });
     this.destroy = function () {
-        this.isActive = false;
-        this.trigger(['close', 'destroy']);
-        this.el.removeEventListener('click', this.listener)
-
-
-        gform.each.call(this, (field) => {
-            if (typeof gform.types[field.type].destroy == "function") gform.types[field.type].destroy.call(field);
-        })
-        //pub the destroy methods for each field
-        // _.each(function() {if(typeof this.destroy === 'function') {this.destroy();}});
-        //Clean up affected containers
-        while (!!sections.length) {
-            let section = sections.pop();
-            if (this.el.contains(section)) this.el.removeChild(section);
-
-        }
-        if (this.el.contains(this.container)) {
-            this.container.parentElement.removeChild(this.container)
-        }
-        // this.el.innerHTML = "";
-
-
-        // for(var i = this.fieldsets.length-1;i >=0; i--) { $(this.fieldsets[i]).empty(); }
-
-        //Dispatch the destroy method of the renderer we used
-        // if(typeof this.renderer.destroy === 'function') { this.renderer.destroy(); }
-
-        //Remove the global reference to our form
-        delete gform.instances[this.options.name];
-
-        this.trigger('destroyed');
-        delete this.eventBus;
-        return this
+      this.isActive = false;
+      this.trigger(["close", "destroy"]);
+      this.el.removeEventListener("click", this.listener);
+  
+      gform.each.call(this, field => {
+        if (typeof gform.types[field.type].destroy == "function")
+          gform.types[field.type].destroy.call(field);
+      });
+      //pub the destroy methods for each field
+      // _.each(function() {if(typeof this.destroy === 'function') {this.destroy();}});
+      //Clean up affected containers
+      while (!!sections.length) {
+        let section = sections.pop();
+        if (this.el.contains(section)) this.el.removeChild(section);
+      }
+      if (this.el.contains(this.container)) {
+        this.container.parentElement.removeChild(this.container);
+      }
+      // this.el.innerHTML = "";
+  
+      // for(var i = this.fieldsets.length-1;i >=0; i--) { $(this.fieldsets[i]).empty(); }
+  
+      //Dispatch the destroy method of the renderer we used
+      // if(typeof this.renderer.destroy === 'function') { this.renderer.destroy(); }
+  
+      //Remove the global reference to our form
+      delete gform.instances[this.options.name];
+  
+      this.trigger("destroyed");
+      delete this.eventBus;
+      return this;
     };
-
+  
     if (!this.options.private) {
-        if (typeof gform.instances[this.options.name] !== 'undefined' && gform.instances[this.options.name] !== this) {
-            gform.instances[this.options.name].destroy();
-        }
-        gform.instances[this.options.name] = this;
+      if (
+        typeof gform.instances[this.options.name] !== "undefined" &&
+        gform.instances[this.options.name] !== this
+      ) {
+        gform.instances[this.options.name].destroy();
+      }
+      gform.instances[this.options.name] = this;
     }
-    create.call(this)
-
+    create.call(this);
+  
     //setup tab navigation if tabs exist
-    var tabs = this.el.querySelector('ul.tabs')
+    var tabs = this.el.querySelector("ul.tabs");
     if (tabs !== null) {
-        tabs.addEventListener('click', function (e) {
-            if (e.target.nodeName == 'LI') {
-                e.preventDefault();
-                gform.removeClass(this.el.querySelector('ul.tabs .active'), 'active')
-                gform.removeClass(this.el.querySelector('.tab-pane.active'), 'active')
-                gform.addClass(e.target, 'active')
-                gform.addClass(this.el.querySelector(e.target.parentElement.attributes.href.value), 'active')
-            }
-        }.bind(this))
+      tabs.addEventListener(
+        "click",
+        function (e) {
+          if (e.target.nodeName == "LI") {
+            e.preventDefault();
+            gform.removeClass(this.el.querySelector("ul.tabs .active"), "active");
+            gform.removeClass(
+              this.el.querySelector(".tab-pane.active"),
+              "active"
+            );
+            gform.addClass(e.target, "active");
+            gform.addClass(
+              this.el.querySelector(e.target.parentElement.attributes.href.value),
+              "active"
+            );
+          }
+        }.bind(this)
+      );
     }
-
+  
     //handle autofocus
     // if(typeof this.options.autoFocus == 'undefined'){
     //     this.options.autoFocus = gform.options.autoFocus;
     // }
     if (this.options.autoFocus && this.fields.length) {
-        var field = this.find({ visible: true })
-        if (field) {
-            window.setTimeout(gform.types[this.find({ visible: true }).type].focus.bind(this.find({ visible: true })), 0);
-        }
-        // gform.types[this.fields[0].type].focus.call(this.fields[0])
+      var field = this.find({ visible: true });
+      if (field) {
+        window.setTimeout(
+          gform.types[this.find({ visible: true }).type].focus.bind(
+            this.find({ visible: true })
+          ),
+          0
+        );
+      }
+      // gform.types[this.fields[0].type].focus.call(this.fields[0])
     }
-
-
-
-
+  
     // listen for built in events - add, minus, append, and info
     this.listener = function (e) {
-        var field;
-        var target = e.target;
-        var activeField = gform.iterators.find.call(this, { id: document.activeElement.id });
-        if (activeField !== null && e.detail === 0 && !e.pointerType) {
-            if (activeField.am instanceof gform.arrayManager) {
-                target = activeField.el.querySelector('.gform-add') || activeField.am.el.querySelector('.gform-append')
-            } else {
-
-                // let index = activeField.parent.fields.indexOf(activeField);
-                // if (index >= 0 && typeof activeField.parent.fields[index + 1] !== 'undefined') activeField.parent.fields[index + 1].focus();
-
-            }
+      var field;
+      var target = e.target;
+      var activeField = gform.iterators.find.call(this, {
+        id: document.activeElement.id,
+      });
+      if (activeField !== null && e.detail === 0 && !e.pointerType) {
+        if (activeField.am instanceof gform.arrayManager) {
+          target =
+            activeField.el.querySelector(".gform-add") ||
+            activeField.am.el.querySelector(".gform-append");
+        } else {
+          // let index = activeField.parent.fields.indexOf(activeField);
+          // if (index >= 0 && typeof activeField.parent.fields[index + 1] !== 'undefined') activeField.parent.fields[index + 1].focus();
         }
-        if (e.target.classList.value.indexOf('gform-') < 0 && e.target.parentElement && e.target.parentElement.classList.value.indexOf('gform-') >= 0) {
-            target = e.target.parentElement;
+      }
+      if (
+        e.target.classList.value.indexOf("gform-") < 0 &&
+        e.target.parentElement &&
+        e.target.parentElement.classList.value.indexOf("gform-") >= 0
+      ) {
+        target = e.target.parentElement;
+      }
+      if (typeof target.dataset.id !== "undefined") {
+        // console.error('ID not set on element'); return false;
+        field =
+          gform.iterators.find.call(this, { id: target.dataset.id }, 10) || false;
+        if (typeof field == "undefined") {
+          console.error("Field not found with id:" + target.dataset.id);
+          return false;
         }
-        if (typeof target.dataset.id !== 'undefined') {
-            // console.error('ID not set on element'); return false;
-            field = gform.iterators.find.call(this, { id: target.dataset.id }, 10) || false;
-            if (typeof field == 'undefined') { console.error('Field not found with id:' + target.dataset.id); return false; }
+      }
+      if (typeof target.dataset.ref !== "undefined") {
+        // console.error('ID not set on element'); return false;
+        field =
+          gform.iterators.find.call(this, { id: target.dataset.ref }, 10) ||
+          false;
+        if (typeof field == "undefined") {
+          console.error("Field not found with id:" + target.dataset.id);
+          return false;
         }
-        if (typeof target.dataset.ref !== 'undefined') {
-            // console.error('ID not set on element'); return false;
-            field = gform.iterators.find.call(this, { id: target.dataset.ref }, 10) || false;
-            if (typeof field == 'undefined') { console.error('Field not found with id:' + target.dataset.id); return false; }
+      }
+  
+      if (target.classList.contains("gform-add")) {
+        e.stopPropagation();
+        e.preventDefault();
+        var newField = field.am.addField(null, field);
+  
+        if (!newField) return;
+        if (newField.array.duplicate.clone == true) {
+          newField.set(field.get());
+          // if(gform.types[newField].base == "section"){
+          //     newField.trigger(['change','input'],newField)
+          // }
         }
-
-        if (target.classList.contains('gform-add')) {
-            e.stopPropagation();
-            e.preventDefault();
-            var newField = field.am.addField(null, field);
-
-            if (!newField) return;
-            if (newField.array.duplicate.clone == true) {
-                newField.set(field.get())
-                // if(gform.types[newField].base == "section"){
-                //     newField.trigger(['change','input'],newField)
-                // }
-            }
-
-            gform.addConditions.call(field.owner, newField);
-            (('items' in newField) ? newField.items : gform).each.call(newField, gform.addConditions)
-
-            if (newField.owner.fieldAttr('base', newField) == "section" && "fields" in newField && newField.fields.length) {
-                _.each(newField.fields, (field) => field.trigger(['change', 'input'], field))
-                // newField.trigger(['change','input'],newField);
-            }
-            field.am.reflow();
-            gform.types[newField.type].focus.call(newField);
+  
+        gform.addConditions.call(field.owner, newField);
+        ("items" in newField ? newField.items : gform).each.call(
+          newField,
+          gform.addConditions
+        );
+  
+        if (
+          newField.owner.fieldAttr("base", newField) == "section" &&
+          "fields" in newField &&
+          newField.fields.length
+        ) {
+          _.each(newField.fields, field =>
+            field.trigger(["change", "input"], field)
+          );
+          // newField.trigger(['change','input'],newField);
         }
-        if (target.classList.contains('gform-minus')) {
-            e.stopPropagation();
-            e.preventDefault();
-            field.am.removeField(field);
+        field.am.reflow();
+        gform.types[newField.type].focus.call(newField);
+      }
+      if (target.classList.contains("gform-minus")) {
+        e.stopPropagation();
+        e.preventDefault();
+        field.am.removeField(field);
+      }
+      if (target.classList.contains("gform-append")) {
+        e.stopPropagation();
+        e.preventDefault();
+  
+        var newField = field.addField();
+        if (!newField) return;
+  
+        gform.addConditions.call(field.owner, newField);
+        ("items" in newField ? newField.items : gform).each.call(
+          newField,
+          gform.addConditions
+        );
+  
+        this.trigger("appended", newField);
+  
+        field.reflow();
+        gform.types[newField.type].focus.call(newField);
+  
+        // var am = gform.iterators.filter.call(this,{id:target.dataset.ref});
+        // // var field =
+        // if(am.length){
+        //     this.trigger('appended', am[0].addField());
+        //     am[0].reflow()
+        // }
+        // // var field = gform.addField.call(this,
+        //     _.last((this.find({id:target.dataset.parent}) || this).filter({array:{ref:target.dataset.ref}},10))
+        // )
+      }
+      if (target.classList.contains("gform-info")) {
+        e.stopPropagation();
+        e.preventDefault();
+  
+        if (field.infoEl) {
+          var show = true;
+          if (this.popper !== null) {
+            show = this.popper.state.elements.reference != target;
+            this.el.removeChild(this.infoEl);
+            this.popper.destroy();
+            this.popper = null;
+          }
+  
+          if (show) {
+            this.infoEl.querySelector(".tooltip-body").innerHTML = gform.render(
+              "_info",
+              field
+            );
+            this.popper = Popper.createPopper(e.target, this.infoEl, {
+              placement: "top-end",
+              modifiers: [{ name: "offset", options: { offset: [0, 8] } }],
+            });
+            this.el.appendChild(this.infoEl);
+          }
         }
-        if (target.classList.contains('gform-append')) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            var newField = field.addField();
-            if (!newField) return;
-
-            gform.addConditions.call(field.owner, newField);
-            (('items' in newField) ? newField.items : gform).each.call(newField, gform.addConditions)
-
-            this.trigger('appended', newField);
-
-            field.reflow();
-            gform.types[newField.type].focus.call(newField);
-
-            // var am = gform.iterators.filter.call(this,{id:target.dataset.ref});
-            // // var field = 
-            // if(am.length){
-            //     this.trigger('appended', am[0].addField());
-            //     am[0].reflow()
-            // }
-            // // var field = gform.addField.call(this,
-            //     _.last((this.find({id:target.dataset.parent}) || this).filter({array:{ref:target.dataset.ref}},10))
-            // )
-        }
-        if (target.classList.contains('gform-info')) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            if (field.infoEl) {
-                var show = true;
-                if (this.popper !== null) {
-                    show = (this.popper.state.elements.reference != target)
-                    this.el.removeChild(this.infoEl)
-                    this.popper.destroy()
-                    this.popper = null;
-                }
-
-                if (show) {
-                    this.infoEl.querySelector('.tooltip-body').innerHTML = gform.render('_info', field);
-                    this.popper = Popper.createPopper(e.target, this.infoEl, {
-                        placement: 'top-end',
-                        modifiers: [{ name: 'offset', options: { offset: [0, 8] } }]
-                    });
-                    this.el.appendChild(this.infoEl)
-                }
-            }
-        }
-    }.bind(this)
-    this.el.addEventListener('click', this.listener)
-    this.trigger('initialized', this);
+      }
+    }.bind(this);
+    this.el.addEventListener("click", this.listener);
+    this.trigger("initialized", this);
+    this.initialized = true;
     this.isActive = true;
     this.reflow();
     return this;
-}
-gform.types = {
-    'arrayManager': {
-        show: function (state) {
-            this.el.style.display = state ? "block" : "none";
-        }
+  };
+  gform.types = {
+    arrayManager: {
+      show: function (state) {
+        this.el.style.display = state ? "block" : "none";
+      },
     },
-    'input': {
-        base: 'input',
-        defaults: {},
-        resetValue: function () { return this.item.defaultValue || "" },
-        row: function () {
-            return '<div></div>';
+    input: {
+      base: "input",
+      defaults: {},
+      resetValue: function () {
+        return this.item.defaultValue || "";
+      },
+      row: function () {
+        return "<div></div>";
+      },
+      array: {
+        template: data => {
+          var tempEl = document.createElement("span");
+          tempEl.setAttribute("id", "el_" + (data || this).id);
+  
+          gform.addClass(
+            tempEl,
+            gform.columnClasses[
+              (data || this).columns || gform.prototype.options.columns
+            ]
+          );
+          gform.addClass(
+            tempEl,
+            gform.offsetClasses[
+              (data || this).offset || gform.prototype.options.offset
+            ]
+          );
+          // gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
+          //   if(this.owner.options.clear){
+          // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
+          //   }
+          //   tempEl.innerHTML = this.render();
+          tempEl.innerHTML = gform.m(
+            `
+                  <div data-id="{{id}}" class="col-xs-12">
+                    {{#array}}{{#append.enable}}<button data-id="{{id}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add {{label}}{{/append.label}}</button>{{/append.enable}}{{/array}}
+                    {{#array.legend}}<legend>{{array.legend}}</legend>{{/array.legend}}
+                    <div class="array_container"></div>
+                                                                                                                    
+                    {{#array}}{{^append.enable}}<button data-id="{{id}}" class="create btn btn-success gform-append">{{create.label}}{{^create.label}}Click here to create {{label}}{{/create.label}}</button>{{/append.enable}}{{/array}}
+                    </div>`,
+            data || this
+          );
+  
+          return tempEl;
         },
-        array: {
-            template: (data) => {
-                var tempEl = document.createElement("span");
-                tempEl.setAttribute("id", "el_" + (data || this).id);
-
-                gform.addClass(tempEl, gform.columnClasses[(data || this).columns || gform.prototype.options.columns])
-                gform.addClass(tempEl, gform.offsetClasses[(data || this).offset || gform.prototype.options.offset])
-                // gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
-                //   if(this.owner.options.clear){
-                // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
-                //   }
-                //   tempEl.innerHTML = this.render();
-                tempEl.innerHTML = gform.m(`
-              <div data-id="{{id}}" class="col-xs-12">
-                {{#array}}{{#append.enable}}<button data-id="{{id}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add {{label}}{{/append.label}}</button>{{/append.enable}}{{/array}}
-                {{#array.legend}}<legend>{{array.legend}}</legend>{{/array.legend}}
-                <div class="array_container"></div>
-                                                                                                                
-                {{#array}}{{^append.enable}}<button data-id="{{id}}" class="create btn btn-success gform-append">{{create.label}}{{^create.label}}Click here to create {{label}}{{/create.label}}</button>{{/append.enable}}{{/array}}
-                </div>`, data || this)
-
-
-                return tempEl;
-            },
-            max: 5, min: 1,
-            container: ".array_container",
-            duplicate: { enable: 'auto' }, remove: { enable: 'auto' }, append: { enable: false }
-        },
-        setup: function () {
-            this.labelEl = this.el.querySelector('label');
-            gform.types[this.type].setLabel.call(this)
-            this.infoEl = this.el.querySelector('.gform-info');
-        },
-        setLabel: function () {
-            // var label = gform.renderString((this.format||{title:null}).title||this.item.title|| this.item.label||this.label, this)+this.suffix;
-            // if(this.required){
-            //     label+=this.requiredText+this.suffix;
-
-            // }
-            // var labelEl = this.el.querySelector('label');
-            gform.toggleClass(this.labelEl, 'required', this.required)
-
-            if (this.label !== false && typeof this.labelEl !== 'undefined' && this.labelEl !== null) {
-                this.labelEl.innerHTML = gform.renderString((this.format || { title: null }).title || this.item.title || this.item.label || this.label, this) + this.suffix;
-            }
-        },
-        create: function () {
-            var tempEl = document.createElement("span");
-            tempEl.setAttribute("id", "el_" + this.id);
-            gform.addClass(tempEl, gform.columnClasses[this.columns || gform.prototype.options.columns])
-            gform.addClass(tempEl, gform.offsetClasses[this.offset || gform.prototype.options.offset])
-            gform.toggleClass(tempEl, 'gform_isArray', !!this.array)
-            //   if(this.owner.options.clear){
-            // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
-            //   }
-            tempEl.innerHTML = this.render();
-            return tempEl;
-        },
-        render: function () {
-            //   return gform.render(this.type, this);
-            return gform.render(this.type, this).split('value=""').join('value="' + _.escape(this.value) + '"')
-
-        },
-        destroy: function () {
-            this.el.removeEventListener('change', this.onchangeEvent);
-            //   this.el.removeEventListener('change',this.onchange );		
-            this.el.removeEventListener('input', this.onchangeEvent);
-            if (this.el.parentElement !== null && this.el.parentElement.contains(this.el) && !this.el.parentElement.classList.contains(this.owner.options.rowClass)) this.el.parentElement.removeChild(this.el);
-
-
-        },
-        initialize: function () {
-            //   this.iel = this.el.querySelector('input[name="' + this.name + '"]')
-            //   if(this.onchange !== undefined){ this.el.addEventListener('change', this.onchange);}
-            this.onchangeEvent = function (input) {
-                //   this.input = input;
-                this.value = this.get();
-                if (this.el.querySelector('.count') != null) {
-                    var text = (this.value + "").length;
-                    if (this.limit > 1) { text += '/' + this.limit; }
-                    this.el.querySelector('.count').innerHTML = text;
-                }
-                //   this.update({value:this.get()},true);
-                //   gform.types[this.type].focus.call(this)
-                gform.types[this.type].setup.call(this);
-                this.parent.trigger(['change'], this, { input: this.value });
-                if (input) {
-                    this.parent.trigger(['input'], this, { input: this.value });
-                }
-            }.bind(this)
-            this.input = this.input || false;
-            this.el.addEventListener('input', this.onchangeEvent.bind(null, true));
-
-            this.el.addEventListener('change', this.onchangeEvent.bind(null, false));
-            gform.types[this.type].setup.call(this);
-
-        },
-        update: function (item, silent) {
-            var oldDiv = this.el;
-
-            if (typeof item !== 'undefined' && (
-                typeof item.options !== 'undefined' ||
-                typeof item.max !== 'undefined' ||
-                typeof item.action !== 'undefined'
-            )
-                && typeof this.mapOptions !== 'undefined') {
-                delete this.mapOptions;
-                this.item = _.defaults({}, item, this.item);
-
-                // this.item.options = _.assign([],this.item.options,item.options);
-                this.options = _.extend([], this.item.options);
-                this.max = this.item.max;
-                this.min = this.item.min;
-                this.path = this.item.path;
-                this.action = this.item.action;
-            }
-            // else if(typeof this.mapOptions !== 'undefined'){
-            // }
-            if (typeof item === 'object') {
-                _.extend(this, item);
-                this.item = _.extend(this.item, item);
-            }
-            //should be able to remove the or and just use this.item.label
-            // this.label = gform.renderString((item||{}).label||this.item.label, this);
-
-            // var oldDiv = document.getElementById(this.id);
-            // var oldDiv = this.owner.el.querySelector('#'+this.id);
-            var parentNode = oldDiv.parentNode;
-
-            this.destroy();
-            this.el = gform.types[this.type].create.call(this);
-            if (parentNode !== null) {
-                if (parentNode.contains(oldDiv)) {
-                    parentNode.replaceChild(this.el, oldDiv)
-                } else {
-                    parentNode.appendChild(this.el)
-                }
-            }        // gform.types[this.type].initialize.call(this);
-            // gform.types[this.type].show.call(this,this.visible);
-            // gform.types[this.type].edit.call(this,this.editable);
-
-            this.owner.call('initialize', this);
-            this.owner.call('show', this, this.visible);
-            this.owner.call('edit', this, this.editable);
-
-            if (!silent) {
-                this.parent.trigger(['change'], this);
-            }
-            // if(typeof gform.types[this.type].setup == 'function') {
-            //removed because its called in initialize
-            //        gform.types[this.type].setup.call(this);
-            // }
-
-        },
-        get: function () {
-            return ('el' in this) ? this.el.querySelector('input[name="' + this.name + '"]').value : this.internalValue;
-        },
-
-        set: function (value) {
-            if ('el' in this) this.el.querySelector('input[name="' + this.name + '"]').value = value;
-        },
-        toString: function (name, report) {
-            if (!report) {
-                return '<dt>' + this.label + '</dt> <dd>' + (this.value || '<span class="text-muted">(empty)</span>') + '</dd><hr>'
-            } else {
-                return this.value
-            }
-        },
-        display: function () {
-            return (typeof this.value !== 'undefined' && this.value !== '') ? this.value : '(empty)';
-        },
-        satisfied: function (value) {
-            value = value || this.value;
-            if (_.isArray(value)) { return !!value.length; }
-            return (typeof value !== 'undefined' && value !== null && value !== '' && !(typeof value == 'number' && isNaN(value)));
-        },
-        edit: function (state) {
-            this.editable = state;
-
-            this.el.querySelector('[name="' + this.name + '"]').disabled = !state;
-        },
-        show: function (state) {
-            this.el.style.display = state ? "block" : "none";
-        },
-
-        find: function () {
-            return this;
-        },
-        focus: function (timeout) {
-            //   .focus();
-            window.setTimeout(() => {
-                if (this.el.querySelector('input[name="' + this.name + '"]') !== null && typeof this.el.querySelector('input[name="' + this.name + '"]').focus == "function") {
-                    this.el.querySelector('input[name="' + this.name + '"]').focus();
-                    var temp = this.value;
-                    this.set('', true);
-                    this.set(temp);
-                }
-            }, timeout || 0);
-
-
-            //   this.el.querySelector('[name="'+this.name+'"]').select();
+        max: 5,
+        min: 1,
+        container: ".array_container",
+        duplicate: { enable: "auto" },
+        remove: { enable: "auto" },
+        append: { enable: false },
+      },
+      setup: function () {
+        this.labelEl = this.el.querySelector("label");
+        gform.types[this.type].setLabel.call(this);
+        this.infoEl = this.el.querySelector(".gform-info");
+      },
+      setLabel: function () {
+        // var label = gform.renderString((this.format||{title:null}).title||this.item.title|| this.item.label||this.label, this)+this.suffix;
+        // if(this.required){
+        //     label+=this.requiredText+this.suffix;
+  
+        // }
+        // var labelEl = this.el.querySelector('label');
+        gform.toggleClass(this.labelEl, "required", this.required);
+  
+        if (
+          this.label !== false &&
+          typeof this.labelEl !== "undefined" &&
+          this.labelEl !== null
+        ) {
+          this.labelEl.innerHTML =
+            gform.renderString(
+              (this.format || { title: null }).title ||
+                this.item.title ||
+                this.item.label ||
+                this.label,
+              this
+            ) + this.suffix;
         }
-        //display
+      },
+      create: function () {
+        var tempEl = document.createElement("span");
+        tempEl.setAttribute("id", "el_" + this.id);
+        gform.addClass(
+          tempEl,
+          gform.columnClasses[this.columns || gform.prototype.options.columns]
+        );
+        gform.addClass(
+          tempEl,
+          gform.offsetClasses[this.offset || gform.prototype.options.offset]
+        );
+        gform.toggleClass(tempEl, "gform_isArray", !!this.array);
+        //   if(this.owner.options.clear){
+        // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
+        //   }
+        tempEl.innerHTML = this.render();
+        return tempEl;
+      },
+      render: function () {
+        //   return gform.render(this.type, this);
+        return gform
+          .render(this.type, this)
+          .split('value=""')
+          .join('value="' + _.escape(this.value) + '"');
+      },
+      destroy: function () {
+        this.el.removeEventListener("change", this.onchangeEvent);
+        //   this.el.removeEventListener('change',this.onchange );
+        this.el.removeEventListener("input", this.onchangeEvent);
+        if (
+          this.el.parentElement !== null &&
+          this.el.parentElement.contains(this.el) &&
+          !this.el.parentElement.classList.contains(this.owner.options.rowClass)
+        )
+          this.el.parentElement.removeChild(this.el);
+      },
+      initialize: function () {
+        //   this.iel = this.el.querySelector('input[name="' + this.name + '"]')
+        //   if(this.onchange !== undefined){ this.el.addEventListener('change', this.onchange);}
+        this.onchangeEvent = function (input) {
+          //   this.input = input;
+          this.value = this.get();
+          if (this.el.querySelector(".count") != null) {
+            var text = (this.value + "").length;
+            if (this.limit > 1) {
+              text += "/" + this.limit;
+            }
+            this.el.querySelector(".count").innerHTML = text;
+          }
+          //   this.update({value:this.get()},true);
+          //   gform.types[this.type].focus.call(this)
+          gform.types[this.type].setup.call(this);
+          this.parent.trigger(["change"], this, { input: this.value });
+          if (input) {
+            this.parent.trigger(["input"], this, { input: this.value });
+          }
+        }.bind(this);
+        this.input = this.input || false;
+        this.el.addEventListener("input", this.onchangeEvent.bind(null, true));
+  
+        this.el.addEventListener("change", this.onchangeEvent.bind(null, false));
+        gform.types[this.type].setup.call(this);
+      },
+      update: function (item, silent) {
+        var oldDiv = this.el;
+  
+        if (
+          typeof item !== "undefined" &&
+          (typeof item.options !== "undefined" ||
+            typeof item.max !== "undefined" ||
+            typeof item.action !== "undefined") &&
+          typeof this.mapOptions !== "undefined"
+        ) {
+          delete this.mapOptions;
+          this.item = _.defaults({}, item, this.item);
+  
+          // this.item.options = _.assign([],this.item.options,item.options);
+          this.options = _.extend([], this.item.options);
+          this.max = this.item.max;
+          this.min = this.item.min;
+          this.path = this.item.path;
+          this.action = this.item.action;
+        }
+        // else if(typeof this.mapOptions !== 'undefined'){
+        // }
+        if (typeof item === "object") {
+          _.extend(this, item);
+          this.item = _.extend(this.item, item);
+        }
+        //should be able to remove the or and just use this.item.label
+        // this.label = gform.renderString((item||{}).label||this.item.label, this);
+  
+        // var oldDiv = document.getElementById(this.id);
+        // var oldDiv = this.owner.el.querySelector('#'+this.id);
+        var parentNode = oldDiv.parentNode;
+  
+        this.destroy();
+        this.el = gform.types[this.type].create.call(this);
+        if (parentNode !== null) {
+          if (parentNode.contains(oldDiv)) {
+            parentNode.replaceChild(this.el, oldDiv);
+          } else {
+            parentNode.appendChild(this.el);
+          }
+        } // gform.types[this.type].initialize.call(this);
+        // gform.types[this.type].show.call(this,this.visible);
+        // gform.types[this.type].edit.call(this,this.editable);
+  
+        this.owner.call("initialize", this);
+        this.owner.call("show", this, this.visible);
+        this.owner.call("edit", this, this.editable);
+  
+        if (!silent) {
+          this.parent.trigger(["change"], this);
+        }
+        // if(typeof gform.types[this.type].setup == 'function') {
+        //removed because its called in initialize
+        //        gform.types[this.type].setup.call(this);
+        // }
+      },
+      get: function () {
+        return "el" in this
+          ? this.el.querySelector('input[name="' + this.name + '"]').value
+          : this.internalValue;
+      },
+  
+      set: function (value) {
+        if ("el" in this)
+          this.el.querySelector('input[name="' + this.name + '"]').value = value;
+      },
+      toString: function (name, report) {
+        if (!report) {
+          return (
+            "<dt>" +
+            this.label +
+            "</dt> <dd>" +
+            (this.value || '<span class="text-muted">(empty)</span>') +
+            "</dd><hr>"
+          );
+        } else {
+          return this.value;
+        }
+      },
+      display: function () {
+        return typeof this.value !== "undefined" && this.value !== ""
+          ? this.value
+          : "(empty)";
+      },
+      satisfied: function (value) {
+        value = value || this.value;
+        if (_.isArray(value)) {
+          return !!value.length;
+        }
+        return (
+          typeof value !== "undefined" &&
+          value !== null &&
+          value !== "" &&
+          !(typeof value == "number" && isNaN(value))
+        );
+      },
+      edit: function (state) {
+        this.editable = state;
+  
+        this.el.querySelector('[name="' + this.name + '"]').disabled = !state;
+      },
+      show: function (state) {
+        this.el.style.display = state ? "block" : "none";
+      },
+  
+      find: function () {
+        return this;
+      },
+      focus: function (timeout) {
+        //   .focus();
+        window.setTimeout(() => {
+          if (
+            this.el.querySelector('input[name="' + this.name + '"]') !== null &&
+            typeof this.el.querySelector('input[name="' + this.name + '"]')
+              .focus == "function"
+          ) {
+            this.el.querySelector('input[name="' + this.name + '"]').focus();
+            var temp = this.value;
+            this.set("", true);
+            this.set(temp);
+          }
+        }, timeout || 0);
+  
+        //   this.el.querySelector('[name="'+this.name+'"]').select();
+      },
+      //display
     },
     //   'textarea':,
-    'bool': {
-
-        base: 'bool',
-        resetValue: function () { return this.options[0] || false },
-        setup: function () {
-            this.labelEl = this.el.querySelector('label');
-            gform.types[this.type].setLabel.call(this)
-            this.infoEl = this.el.querySelector('.gform-info');
+    bool: {
+      base: "bool",
+      resetValue: function () {
+        return this.options[0] || false;
+      },
+      setup: function () {
+        this.labelEl = this.el.querySelector("label");
+        gform.types[this.type].setLabel.call(this);
+        this.infoEl = this.el.querySelector(".gform-info");
+      },
+  
+      display: function () {
+        //   return (_.find(this.options,{value:this.value})||{label:''}).label
+        return (
+          (_.find(this.options, { value: this.value }) || { label: "" }).label ||
+          this.value
+        );
+      },
+      defaults: {
+        options: [false, true],
+        format: {
+          value: function (e) {
+            return e.value;
+          },
         },
-
-        display: function () {
-            //   return (_.find(this.options,{value:this.value})||{label:''}).label
-            return ((_.find(this.options, { value: this.value }) || { label: '' }).label || this.value);
-        },
-        defaults: { options: [false, true], format: { value: function (e) { return e.value } } },
-        render: function () {
-            //   this.options = gform.mapOptions.call(this,this, this.value);
-            if (!this.strict && this.options[0] == false && this.options[1] == true) {
-                this.value = (!!this.value);
-            }
-            if (typeof this.mapOptions == 'undefined') {
-
-                this.mapOptions = new gform.mapOptions(this, this.value, 0, this.owner.collections)
-                this.mapOptions.on('change', function () {
-                    this.options = this.mapOptions.getoptions()
-                    if (typeof this.options[0].value == 'undefined') { this.options[0].value = false; this.options[0].selected = (this.value == false); }
-                    if (typeof this.options[1].value == 'undefined') { this.options[1].value = true; this.options[1].selected = (this.value == true); }
-
-                    this.update();
-                }.bind(this))
-            }
-            this.options = this.mapOptions.getoptions()
-            if (typeof this.options[0].value == 'undefined') { this.options[0].value = false; this.options[0].selected = (this.value == false); }
-            if (typeof this.options[1].value == 'undefined' || (this.options[0].value == '' && this.options[1].value == '')) { this.options[1].value = true; this.options[1].selected = (this.value == true); }
-            //   this.selected = (this.value == this.options[1].value);
-            return gform.render(this.type, this);
-
-        },
-        setLabel: function () {
-            var label = gform.renderString((this.format || { title: null }).title || this.item.title || this.item.label || this.label, this);
-            if (this.required) {
-                label += this.requiredText + this.suffix;
-            }
-            var labelEl = this.el.querySelector('label[for=' + this.name + ']');
-            if (labelEl !== null) {
-                labelEl.innerHTML = label
-            }
-
-        },
-        initialize: function () {
-            this.onchangeEvent = function (input) {
-                this.value = this.get();
-                (_.find(this.options, { selected: true }) || { selected: null }).selected = false;
-                (_.find(this.options, { value: this.value }) || this.options[0] || { value: "" }).selected = true;
-                gform.types[this.type].setup.call(this);
-
-                this.parent.trigger(input ? 'change' : 'input', this, { input: this.value });
-            }.bind(this)
-            this.el.addEventListener('input', this.onchangeEvent.bind(null, true));
-            this.el.addEventListener('change', this.onchangeEvent.bind(null, false));
-            gform.types[this.type].setup.call(this);
-
-        },
-        set: function (value) {
-            if ('el' in this) this.el.querySelector('input[name="' + this.name + '"]').checked = (value == this.options[1].value);
-        }, edit: function (state) {
-            this.editable = state;
-
-            this.el.querySelector('[name="' + this.name + '"]').disabled = !state;
-        },
-
-        show: function (state) {
-            this.el.style.display = state ? "block" : "none";
-        },
-        get: function () {
-            return ('el' in this) ? this.options[this.el.querySelector('input[name="' + this.name + '"]').checked ? 1 : 0].value : this.initialValue;
-        }, satisfied: function (value) {
-
-            value = value || this.value;
-            return value == this.options[1].value;
-        },
-        toString: function (name, report) {
-            if (!report) {
-                return '<dt>' + (this.label || this.name) + '</dt> <dd>' + (this.display || '<span class="text-muted">(empty)</span>') + '</dd><hr>'
-            } else {
-                return this.value
-            }
-        }
-    },
-    'collection': {
-        base: 'collection',
-        defaults: {
-            format: {
-                label: '{{{label}}}', value: function (item) {
-                    if (item.value !== 'undefined') {
-                        return item.value;
-                    } else {
-                        return (item.label || item.index).toLowerCase().split(' ').join('_');
-                    }
-                }
-            }
-        },
-        function() { return (this.multiple) ? [] : this.item.defaultValue || null },
-        toString: function (name, report) {
-            if (!report) {
-                if (this.multiple) {
-                    if (this.value.length) {
-                        return _.reduce(this.value, function (returnVal, item) {
-                            var lookup = _.find(this.list, { value: item });
-                            if (typeof lookup !== 'undefined') {
-                                returnVal += '<dd>' + lookup.label + '</dd>'
-                            }
-                            return returnVal;
-                        }.bind(this), '<dt>' + this.label + '</dt> ') + '<hr>'
-                    } else {
-                        return '<dt>' + this.label + '</dt> <dd><span class="text-muted">(no selection)</span></dd><hr>';
-                    }
-                } else {
-                    return '<dt>' + this.label + '</dt> <dd>' + ((_.find(this.list, { value: this.value }) || { label: "" }).label || '<span class="text-muted">(no selection)</span>') + '</dd><hr>';
-                }
-            } else {
-                if (this.multiple) {
-                    if (this.value.length) {
-                        return _.reduce(this.value, function (returnVal, item) {
-                            var lookup = _.find(this.list, { value: item });
-                            if (typeof lookup !== 'undefined') {
-                                returnVal.push(lookup.label)
-                            }
-                            return returnVal;
-                        }.bind(this), []) + '<hr>'
-                    } else {
-                        return '';
-                    }
-                } else {
-                    return (_.find(this.list, { value: this.value }) || { label: "" }).label;
-                }
-            }
-        },
-        display: function () {
-            if (this.multiple) {
-                if (this.value.length) {
-                    return '<ul>' + _.reduce(this.value, function (returnVal, item) {
-                        var lookup = _.find(this.list, { value: item });
-                        if (typeof lookup !== 'undefined') {
-                            returnVal += '<li>' + lookup.label + '</li>'
-                        }
-                        return returnVal;
-                    }.bind(this), '') + '</ul>'
-                } else {
-                    return '(no selection)';
-                }
-            } else {
-                return ((_.find(this.list, { value: this.value }) || { label: "" }).label || '(no selection)');
-            }
-        },
-        render: function () {
-
-            if (typeof this.mapOptions == 'undefined') {
-                this.mapOptions = new gform.mapOptions(this, this.value, 0, this.owner.collections)
-                this.mapOptions.on('change', function () {
-
-                    this.options = this.mapOptions.getobject()
-                    this.list = this.mapOptions.getoptions();
-                    if (!this.mapOptions.waiting) {
-                        if (this.multiple) {
-                            if (!_.isArray(this.value)) {
-                                this.value = [this.value]
-                            }
-                            // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
-                            _.each(this.value, function (value) {
-                                (_.find(this.list, { value: value }) || { selected: null }).selected = true;
-                            }.bind(this))
-
-                        } else {
-                            (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                            (_.find(this.list, { value: this.value }) || { value: "" }).selected = true;
-                        }
-                    }
-                    this.update();
-                }.bind(this))
-
-                this.mapOptions.on('collection', function (e) {
-                    e.field.field.owner.trigger("collection", e.field.field)
-                })
-            }
-            this.options = this.mapOptions.getobject();
-            this.list = this.mapOptions.getoptions();
-
-            if (!this.mapOptions.waiting) {
-                if (this.multiple) {
-                    if (!_.isArray(this.value)) {
-                        this.value = [this.value]
-                    }
-                    (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                    _.each(this.value, function (value) {
-                        (_.find(this.list, { value: value }) || { selected: null }).selected = true;
-                    }.bind(this))
-
-                } else {
-                    var search = _.find(this.list, { value: this.value });
-                    if (typeof search == 'undefined') {
-                        if (this.other || false) {
-                            this.value = 'other';
-                        } else {
-                            // this.value = ""
-                        }
-                    }
-                    if ((this.other || false) && typeof _.find(this.list, { value: 'other' }) == 'undefined') {
-                        this.options.push({ label: "Other", value: 'other', })
-                    }
-
-                    (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                    (_.find(this.list, { value: this.value }) || { value: "" }).selected = true;
-                }
-            }
-            return gform.render(this.type, this);
-        },
-        setup: function () {
-
-            if (this.multiple && typeof this.limit !== 'undefinded') {
-                if (this.get().length >= this.limit) {
-                    this.maxSelected = true;
-                    _.each(this.el.querySelector('select').options, function (item) {
-                        item.disabled = !item.selected;
-                    })
-                } else if (this.maxSelected) {
-                    this.maxSelected = false;
-                    _.each(this.el.querySelector('select').options, function (item) {
-                        item.disabled = false;
-                    })
-                }
-                if (this.el.querySelector('.count') != null) {
-                    var text = this.get().length;
-                    if (this.limit > 1) { text += '/' + this.limit; }
-                    this.el.querySelector('.count').innerHTML = text;
-                }
-            }
-            this.labelEl = this.el.querySelector('label');
-            gform.types[this.type].setLabel.call(this)
-            this.infoEl = this.el.querySelector('.gform-info');
-        },
-        initialize: function () {
-            //   if(this.onchange !== undefined){ this.el.addEventListener('change', this.onchange);}
-            this.el.addEventListener('change', function () {
-                this.value = this.get();
-
-                //   (_.find(this.list,{selected:true})||{selected:null}).selected = false;
-                //   (_.find(this.list,{value:this.value})||{selected:null}).selected = true;
-
-                if (this.multiple) {
-                    if (!_.isArray(this.value)) {
-                        this.value = [this.value]
-                    }
-                    // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
-                    _.each(this.value, function (value) {
-                        (_.find(this.list, { value: value }) || { selected: null }).selected = true;
-                    }.bind(this))
-
-                } else {
-                    (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                    (_.find(this.list, { value: this.value }) || { value: "" }).selected = true;
-                }
-
-
-                if (this.el.querySelector('.count') != null) {
-                    var text = this.value.length;
-                    if (this.limit > 1) { text += '/' + this.limit; }
-                    this.el.querySelector('.count').innerHTML = text;
-                }
-
-                gform.types[this.type].setup.call(this);
-                this.parent.trigger(['change', 'input'], this, { input: this.value });
-
-            }.bind(this));
-
-            gform.types[this.type].set.call(this, this.value);
-            //   gform.types[this.type].setLabel.call(this);
-
-            gform.types[this.type].setup.call(this);
-
-        },
-        get: function () {
-            if (!('el' in this)) return this.internalValue;
-            var value = this.el.querySelector('select').value;
-            var search = _.find(this.list, { i: parseInt(value, 10) });
-            if (typeof search == 'undefined') {
-                if (this.other) {
-                    value = "other";
-                } else {
-                    value = null;
-                }
-            } else {
-                value = search.value;
-            }
-
-
-            if (this.multiple) {
-                var that = this;
-                value = _.transform(this.el.querySelector('select').options, function (orig, opt) {
-                    if (opt.selected) {
-                        var option = _.find(that.list, { i: parseInt(opt.value) });
-                        if (typeof option !== 'undefined') {
-                            orig.push(option.value)
-                        }
-                    }
-                }, [])
-            }
-            //   this.option = _.find()
-            return value;
-        },
-        set: function (value) {
-
-            //   _.each(this.options.options, function(option, index){
-            //       if(option.value == value || parseInt(option.value) == parseInt(value)) this.el.querySelector('[name="' + this.name + '"]').selectedIndex = index;
-            //   }.bind(this))
-            if (this.multiple) {
-                if (!_.isArray(value)) {
-                    value = [value]
-                }
-                if (typeof this.limit !== 'undefinded' && (value.length > this.limit)) { return true }
-                if ('el' in this)
-                    _.each(this.el.querySelector('select').options, function (option) {
-                        //  option.selected = (value.indexOf(option.value)>=0)
-                        var search = _.find(this.list, { i: parseInt(option.value) })
-                        option.selected = (typeof search !== 'undefined' && value.indexOf(search.value) >= 0);
-                    }.bind(this))
-            } else {
-                var search = _.find(this.list, { value: value });
-                if ('el' in this) {
-                    if (typeof search !== 'undefined') {
-                        this.el.querySelector('select').value = search.i;
-                    } else {
-                        this.el.querySelector('select').value = null;
-                    }
-                }
-            }
-            if (typeof gform.types[this.type].setup == 'function' && ('el' in this)) { gform.types[this.type].setup.call(this); }
-
-        },
-        focus: function () {
-
-            var search = this.name;
-            if (this.multiple) { search += '[]' }
-            this.el.querySelector('[name="' + search + '"]').focus();
-        }, edit: function (state) {
-            this.editable = state;
-
-            var search = this.name;
-            if (this.multiple) { search += '[]' }
-
-            // this.editable = state||this.editable||true;
-            let target = this.el.querySelector('[name="' + search + '"]');
-            // if (typeof this.mapOptions !== 'undefined' && this.mapOptions.waiting) {
-            //     this.el.querySelector('[name="' + search + '"]').disabled = !this.editable;
-
-            // } else {
-            //     this.el.querySelector('[name="' + search + '"]').disabled = !this.editable;
-
-            // }
-            if (typeof target !== 'undefined' && target !== null) target.disabled = !this.editable
-        },
-        show: function (state) {
-            this.el.style.display = state ? "block" : "none";
-        }
-    },
-    'section': {
-        array: {
-            template: (data) => {
-                var tempEl = document.createElement("span");
-                tempEl.setAttribute("id", "el_" + (data || this).id);
-                gform.addClass(tempEl, gform.columnClasses[(data || this).columns || gform.prototype.options.columns])
-                gform.addClass(tempEl, gform.offsetClasses[(data || this).offset || gform.prototype.options.offset])
-                // gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
-                //   if(this.owner.options.clear){
-                // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
-                //   }
-                //   tempEl.innerHTML = this.render();
-                tempEl.innerHTML = gform.m(`
-            <fieldset data-id="{{id}}" class="col-xs-12">
-              {{#array}}{{#append.enable}}<button data-id="{{id}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add{{/append.label}}</button>{{/append.enable}}{{/array}}
-              {{#array.label}}<legend>{{array.label}}</legend>{{/array.label}}
-              <div class="array_container"></div>
-              {{#array}}{{^append.enable}}<button data-id="{{id}}" class="create btn btn-success gform-append">{{create.label}}{{^create.label}}Click here to create {{label}}{{/create.label}}</button>{{/append.enable}}{{/array}}
-              </fieldset>`, data || this)
-                return tempEl;
-            },
-            max: 20, min: 1,
-            container: ".array_container",
-            duplicate: { enable: 'auto' }, remove: { enable: 'auto' }, append: { enable: false }
-        },
-        resetValue: function () { return this.item.defaultValue || {} },
-
-        base: 'section',
-        filter: function (search, depth) {
-            return gform.filter.call(this, search, depth);
-        },
-        setLabel: function () {
-            // if(!!this.item.label){
-            var label = gform.renderString(this.item.label || this.label, this);
-            if (this.required) {
-                label += this.requiredText + this.suffix;
-            }
-            var labelEl = this.el.querySelector('fieldset#' + this.id + '>legend,fieldset#' + this.id + '>label')
-            if (labelEl !== null) {
-                labelEl.innerHTML = label
-            }
-            this.label = label;
-            // }
-        },
-        create: function () {
-            var tempEl = gform.create(this.render());
-            gform.addClass(tempEl, gform.columnClasses[this.columns || gform.prototype.options.columns])
-            gform.addClass(tempEl, gform.offsetClasses[this.offset || gform.prototype.options.offset])
-            gform.toggleClass(tempEl, 'gform_isArray', !!this.array)
-
-            return tempEl;
-        },
-        initialize: function () {
-            //handle rows
-            this.rowManager = gform.rowManager(this);
-            // this.initialValue = this.value
-            Object.defineProperty(this, "value", {
-                get: function () {
-                    // return true;
-                    return this.get();
-                },
-                enumerable: true
-            });
-            gform.types[this.type].setLabel.call(this);
-        },
-        render: function () {
-            if (this.section) {
-                return gform.render(this.owner.options.sections + '_fieldset', this);
-            } else {
-                return gform.render('_fieldset', this);
-            }
-        },
-        update: function (item, silent) {
-
-            if (typeof item === 'object') {
-                _.extend(this.item, item);
-            }
-            // this.label = gform.renderString((item||{}).label||this.item.label, this);
-
-            // var oldDiv = document.getElementById(this.id);
-            // var oldDiv = this.owner.el.querySelector('#'+this.id);
-
-            var oldDiv = this.el;
-            var parentNode = oldDiv.parentNode;
-
-            this.destroy();
-            this.el = gform.types[this.type].create.call(this);
-            if (parentNode !== null) {
-                if (parentNode.contains(oldDiv)) {
-                    parentNode.replaceChild(this.el, oldDiv)
-                } else {
-                    parentNode.appendChild(this.el)
-                }
-            }
-            this.owner.call('initialize', this);
-            this.owner.call('show', this, this.visible);
-            this.owner.call('edit', this, this.editable);
-
-            this.container = this.el.querySelector('fieldset') || this.el || null;
-
-            this.reflow(this);
-            if (!silent) {
-                //   this.parent.trigger('change:'+this.name, this);
-                //   this.parent.trigger('change', this);
-                this.parent.trigger(['change'], this);
-            }
-        },
-        get: function (name) {
-            //this is not right ----
-            if (typeof name !== 'undefined') {
-                return gform.toJSON.call(this, name);
-            }
-            return _.selectPath(gform.toJSON.call(this), this.map)
-            //   //trying lodash native method
-            //   return _.property(this.map)(gform.toJSON.call(this))
-
-
-
-            //   var value = gform.toJSON.call(this)[this.name];
-            //   return !this.array || typeof value == 'undefined'?value:value[this.index];
-
-            //   return gform.toJSON.call(this, name)[this.name]
-        },
-        toString: function (name, report) {
-            if (!report) {
-                return gform.m('<h4>{{#label}}{{{label}}}{{/label}}</h4><hr><dl style="margin-left:10px">{{{value}}}</dl>', { label: this.label, value: gform.toString.call(this, name) })
-                // return '<h4>'+this.label+'</h4><hr><dl style="margin-left:10px">'+gform.toString.call(this, name)+'</dl>';
-            } else {
-                return gform.toString.call(this, name, report);
-            }
-        },
-        //   display: function() {
-        //     return gform.toString.call(this, name);
-        //   },
-
-        display: function () {
-            return '<div class="list-group-item ">' + this.toString() + '</div>';
-        },
-        set: function (value) {
-            if (_.isEmpty(value)) {
-                gform.each.call(this, function (field) {
-                    field.set('');
-                })
-                this.update({}, true);
-            } else {
-                _.each(value, function (item, index) {
-                    let field = this.items.find(index);
-                    if (typeof field == 'undefined' || field == null) return;
-                    field.set(item);
-                    // var field = this.find(index);
-                    // if (field.array && _.isArray(item)) {
-                    //     var list = this.filter({ array: { ref: field.array.ref } }, 1)
-
-                    //     if (list.length > 1) {
-                    //         _.each(list.slice(1), function (field) {
-                    //             var index = _.findIndex(field.parent.fields, { id: field.id });
-                    //             field.parent.fields.splice(index, 1);
-                    //         })
-                    //     }
-
-                    //     var testFunc = function (selector, status, button) {
-                    //         gform.toggleClass(button.querySelector(selector), 'hidden', status)
-                    //     }
-                    //     if (_.isArray(item)) {
-                    //         field.set(item[0]);
-                    //     }
-
-                    //     /* This is no longer supported */
-
-
-
-                    //     // if(!this.owner.options.strict){
-                    //     // _.each(field.fields, gform.inflate.bind(this.owner, atts[field.name]|| field.owner.options.data[field.name] || {}) );
-                    //     // }else{
-                    //     var attr = {};
-                    //     attr[field.name] = item;
-                    //     gform.inflate.call(this.owner, attr, field, _.findIndex(field.parent.fields, { id: field.id }), field.parent.fields);
-                    //     // }
-
-
-
-                    //     var fieldCount = this.filter({ array: { ref: field.array.ref } }, 1).length
-
-                    //     // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-id="'+field.array.id+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
-                    //     // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-id="'+field.array.id+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
-
-                    //     field.operator.reflow();
-
-
-
-                    // } else {
-                    //     // gform.inflate.bind(this, this.options.data||{})
-                    //     if (typeof field !== 'undefined') {
-                    //         field.set(item);
-                    //     }
-                    // }
-                }.bind(this))
-            }
-            this.render();
-            return true;
-
-        },
-        find: function (name) {
-            return gform.find.call(this, name)
-        },
-        reflow: function (options) {
-            gform.reflow.call(this, options)
-        },
-        focus: function () {
-            if (typeof this.fields !== 'undefined' && this.fields.length) {
-                gform.types[this.fields[0].type].focus.call(this.fields[0]);
-            }
-        },
-        satisfied: function (value) {
-            value = value || this.get();
-            return (typeof value !== 'undefined' && value !== null && value !== '' && !(typeof value == 'object' && _.isEmpty(value)));
-        },
-        trigger: function (a, b, c) {
-            // if(typeof a == 'string' && typeof b == 'object') {
-            //     this.parent.dispatch(a+b.name,b,c);
-            //     this.parent.dispatch(a,b,c);
-            // }else{
-            //     this.dispatch(a,b,c);
-            // }
-            if (typeof a == 'string') {
-                a = [a];
-            }
-            var events = _.extend([], a);
-
-            _.each(a, function (item) {
-                if (item.indexOf(':') == '-1') {
-                    events.unshift(item + ':' + this.name)
-                }
-            }.bind(this))
-            // a.unshift(a+':'+this.name)
-            this.parent.trigger(_.uniq(events), b || this, c);
-
-        },
-        show: function (state) {
-            if (this.owner.options.sections && this.section) {
-                return true;
-            }
-            this.el.style.display = state ? "block" : "none";
-        }
-    },
-    'button': {
-        base: 'button',
-        resetValue: function () { return "" },
-        setLabel: function () {
-            var label = gform.renderString((this.format || { title: null }).title || this.item.title || this.item.label || this.label, this);
-            if (this.required) {
-                label += this.requiredText + this.suffix;
-            }
-            var labelEl = this.el;//.querySelector('button,.btn');
-            if (labelEl !== null) {
-                labelEl.innerHTML = label
-            }
-        },
-        toString: function () { return '' },
-        defaults: { parse: false, columns: 2, target: ".gform-footer", map: false },
-        create: function () {
-            var tempEl = gform.create(this.render());
-            tempEl.setAttribute("id", "el_" + this.id);
-            // tempEl.setAttribute("class", tempEl.className+' '+gform.columnClasses[this.columns]);
-            return tempEl;
-        },
-        initialize: function () {
-            this.action = this.action || (this.label || '').toLowerCase().split(' ').join('_'),
-                this.onclickEvent = function () {
-                    if (this.editable) {
-                        this.parent.trigger('click', this, { action: this.action });
-                        this.parent.trigger(this.action, this);
-                    }
-                }.bind(this)
-            this.el.addEventListener('click', this.onclickEvent);
-            gform.types[this.type].setLabel.call(this);
-
-        },
-        render: function () {
-            return gform.render('button', this);
-        },
-        satisfied: function (value) {
-            return this.editable && this.visible;
-        },
-        update: function (item, silent) {
-
-            if (typeof item === 'object') {
-                _.extend(this, this.item, item);
-            }
-            //   this.label = gform.renderString(this.item.label, this);
-            // this.label = gform.renderString((item||{}).label||this.item.label, this);
-
-            //   var oldDiv = document.getElementById(this.id);
-            //   var oldDiv = this.owner.el.querySelector('#'+this.id);
-
-            var oldDiv = this.el;
-            var parentNode = oldDiv.parentNode;
-
-            this.destroy();
-            this.el = gform.types[this.type].create.call(this);
-            if (parentNode !== null) {
-                if (parentNode.contains(oldDiv)) {
-                    parentNode.replaceChild(this.el, oldDiv)
-                } else {
-                    parentNode.appendChild(this.el)
-                }
-            }
-            //   gform.types[this.type].initialize.call(this);
-            //   gform.types[this.type].show.call(this,this.visible);
-            //   gform.types[this.type].edit.call(this,this.editable);
-
-            this.owner.call('initialize', this);
-            this.owner.call('show', this, this.visible);
-            this.owner.call('edit', this, this.editable);
-
-        },
-        destroy: function () {
-            this.el.removeEventListener('click', this.onclickEvent);
-            if (this.el.parentElement !== null && this.el.parentElement.contains(this.el) && !this.el.parentElement.classList.contains(this.owner.options.rowClass)) this.el.parentElement.removeChild(this.el);
-
-        },
-        get: function (name) {
-            return null
-        },
-        set: function (value) {
-        },
-        edit: function (state) {
-            this.editable = state;
-            this.el.disabled = !state;
-            gform.toggleClass(this.el, 'disabled', !state)
-
-        },
-        show: function (state) {
-            this.el.style.display = state ? "inline-block" : "none";
-        },
-        focus: function () {
-            this.el.focus();
-        }
-    }
-};
-
-// remove the added classes
-gform.types['text'] = gform.types['password'] = gform.types['color'] = gform.types['input'];
-gform.types['number'] = _.extend({}, gform.types['input'], {
-    get: function () {
-        return ('el' in this) ? parseFloat(this.el.querySelector('input[name="' + this.name + '"]').value, 10) : this.internalValue;
-    }, render: function () {
-        return gform.render(this.type, this).split('value=""').join('value="' + this.value + '"')
-    },
-});
-gform.types['hidden'] = _.extend({}, gform.types['input'], {
-    defaults: { columns: false }, toString: function (name, report) {
-
-        if (!report) {
-            return '';
-        } else {
-            return this.value
-        }
-    }
-});
-gform.types['output'] = _.extend({}, gform.types['input'], {
-    defaults: {
-        parse: false
-    },
-    focus: function () { },
-    toString: function (name, report) {
-
-        if (!report) {
-            return '';
-        } else {
-            return this.value
-        }
-    },
-    display: function () {
-        return gform.renderString((this.format || {}).value || '{{{value}}}', _.pick(this, "value",
-            'name',
-            'id',
-            'inline',
-            'valid',
-            'map',
-            'path',
-            'parsable',
-            'reportable',
-            'visible',
-            'parent',
-            'owner',
-            'data',
-            'editable',
-            'parent',
-            'fillable',
-            'array',
-            'columns',
-            'offset',
-            'ischild', 'pre', 'post'
-        ));
-    },
-    render: function () {
-        return gform.render(this.type, this);
-    },
-    get: function () {
-        return this.value;
-    },
-    set: function (value) {
-        this.internalValue = value;
-        if ('el' in this) this.el.querySelector('output').innerHTML = this.display;
-
-
-    },
-});
-
-gform.types['email'] = _.extend({}, gform.types['input'], { defaults: { validate: [{ type: 'valid_email' }] } });
-
-gform.types['textarea'] = _.extend({}, gform.types['input'], {
-    set: function (value) {
-        this.el.querySelector('textarea[name="' + this.name + '"]').value = value;
-    },
-    get: function () {
-        return ('el' in this) ? this.el.querySelector('textarea[name="' + this.name + '"]').value : this.internalValue;
-    },
-    render: function () {
-        //   return gform.render(this.type, this);
-        return gform.render(this.type, this).split('></textarea>').join('>' + _.escape(this.value) + '</textarea>')
-
-    }, focus: function (timeout) {
-        //   .focus();
-        window.setTimeout(function () {
-            if (this.el.querySelector('textarea[name="' + this.name + '"]') !== null && typeof this.el.querySelector('textarea[name="' + this.name + '"]').focus == "function") {
-
-
-                this.el.querySelector('textarea[name="' + this.name + '"]').focus();
-                var temp = this.value;
-                this.set('');
-                this.set(temp);
-            }
-        }.bind(this), timeout || 0);
-
-
-        //   this.el.querySelector('[name="'+this.name+'"]').select();
-    }
-});
-gform.types['switch'] = gform.types['checkbox'] = _.extend({}, gform.types['input'], gform.types['bool']);
-
-gform.types['select'] = _.extend({}, gform.types['input'], gform.types['collection'], {
-    render: function () {
+      },
+      render: function () {
         //   this.options = gform.mapOptions.call(this,this, this.value);
-        if (typeof this.mapOptions == 'undefined') {
-            this.mapOptions = new gform.mapOptions(this, this.value, 0, this.owner.collections)
-            this.mapOptions.on('change', function () {
-
-                this.options = this.mapOptions.getobject()
-                this.list = this.mapOptions.getoptions()
-
-                if ((this.other || false) && typeof _.find(this.list, { value: 'other' }) == 'undefined') {
-                    this.options.push({ label: "Other", value: 'other' })
-                    this.list.push({ label: "Other", value: 'other' })
-                }
-
-                if (typeof this.placeholder == 'string') {
-                    // this.value = this.value || -1
-                    this.options.unshift({ label: this.placeholder, value: '', i: -1, editable: false, visible: false, selected: true })
-                    this.list.unshift({ label: this.placeholder, value: '', i: -1, editable: false, visible: false, selected: true })
-                }
-                if (!this.mapOptions.waiting) {
-
-                    if (this.multiple) {
-
-                        if (!_.isArray(this.value)) {
-                            this.value = [this.value]
-                        }
-                        // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
-                        _.each(this.value, function (value) {
-                            (_.find(this.list, { value: value }) || { selected: null }).selected = true;
-                        }.bind(this))
-
-                    } else {
-                        (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                        // (_.find(this.list,{value:this.value})||{value:""}).selected = true;    
-                        var search = _.find(this.list, { value: this.value });
-                        if (typeof search == 'undefined') {
-                            if (typeof this.placeholder == 'string') {
-                                this.value = '';
-                            } else {
-                                this.value = (this.list[0] || { value: "" }).value
-                                if (this.list.length) {
-                                    this.list[0].selected = true;
-                                }
-                            }
-                        } else {
-                            search.selected = true;
-                        }
+        if (!this.strict && this.options[0] == false && this.options[1] == true) {
+          this.value = !!this.value;
+        }
+        if (typeof this.mapOptions == "undefined") {
+          this.mapOptions = new gform.mapOptions(
+            this,
+            this.value,
+            0,
+            this.owner.collections
+          );
+          this.mapOptions.on(
+            "change",
+            function () {
+              this.options = this.mapOptions.getoptions();
+              if (typeof this.options[0].value == "undefined") {
+                this.options[0].value = false;
+                this.options[0].selected = this.value == false;
+              }
+              if (typeof this.options[1].value == "undefined") {
+                this.options[1].value = true;
+                this.options[1].selected = this.value == true;
+              }
+  
+              this.update();
+            }.bind(this)
+          );
+        }
+        this.options = this.mapOptions.getoptions();
+        if (typeof this.options[0].value == "undefined") {
+          this.options[0].value = false;
+          this.options[0].selected = this.value == false;
+        }
+        if (
+          typeof this.options[1].value == "undefined" ||
+          (this.options[0].value == "" && this.options[1].value == "")
+        ) {
+          this.options[1].value = true;
+          this.options[1].selected = this.value == true;
+        }
+        //   this.selected = (this.value == this.options[1].value);
+        return gform.render(this.type, this);
+      },
+      setLabel: function () {
+        var label = gform.renderString(
+          (this.format || { title: null }).title ||
+            this.item.title ||
+            this.item.label ||
+            this.label,
+          this
+        );
+        if (this.required) {
+          label += this.requiredText + this.suffix;
+        }
+        var labelEl = this.el.querySelector("label[for=" + this.name + "]");
+        if (labelEl !== null) {
+          labelEl.innerHTML = label;
+        }
+      },
+      initialize: function () {
+        this.onchangeEvent = function (input) {
+          this.value = this.get();
+          (
+            _.find(this.options, { selected: true }) || { selected: null }
+          ).selected = false;
+          (
+            _.find(this.options, { value: this.value }) ||
+            this.options[0] || { value: "" }
+          ).selected = true;
+          gform.types[this.type].setup.call(this);
+  
+          this.parent.trigger(input ? "change" : "input", this, {
+            input: this.value,
+          });
+        }.bind(this);
+        this.el.addEventListener("input", this.onchangeEvent.bind(null, true));
+        this.el.addEventListener("change", this.onchangeEvent.bind(null, false));
+        gform.types[this.type].setup.call(this);
+      },
+      set: function (value) {
+        if ("el" in this)
+          this.el.querySelector('input[name="' + this.name + '"]').checked =
+            value == this.options[1].value;
+      },
+      edit: function (state) {
+        this.editable = state;
+  
+        this.el.querySelector('[name="' + this.name + '"]').disabled = !state;
+      },
+  
+      show: function (state) {
+        this.el.style.display = state ? "block" : "none";
+      },
+      get: function () {
+        return "el" in this
+          ? this.options[
+              this.el.querySelector('input[name="' + this.name + '"]').checked
+                ? 1
+                : 0
+            ].value
+          : this.initialValue;
+      },
+      satisfied: function (value) {
+        value = value || this.value;
+        return value == this.options[1].value;
+      },
+      toString: function (name, report) {
+        if (!report) {
+          return (
+            "<dt>" +
+            (this.label || this.name) +
+            "</dt> <dd>" +
+            (this.display || '<span class="text-muted">(empty)</span>') +
+            "</dd><hr>"
+          );
+        } else {
+          return this.value;
+        }
+      },
+    },
+    collection: {
+      base: "collection",
+      defaults: {
+        format: {
+          label: "{{{label}}}",
+          value: function (item) {
+            if (item.value !== "undefined") {
+              return item.value;
+            } else {
+              return (item.label || item.index)
+                .toLowerCase()
+                .split(" ")
+                .join("_");
+            }
+          },
+        },
+      },
+      function() {
+        return this.multiple ? [] : this.item.defaultValue || null;
+      },
+      toString: function (name, report) {
+        if (!report) {
+          if (this.multiple) {
+            if (this.value.length) {
+              return (
+                _.reduce(
+                  this.value,
+                  function (returnVal, item) {
+                    var lookup = _.find(this.list, { value: item });
+                    if (typeof lookup !== "undefined") {
+                      returnVal += "<dd>" + lookup.label + "</dd>";
                     }
+                    return returnVal;
+                  }.bind(this),
+                  "<dt>" + this.label + "</dt> "
+                ) + "<hr>"
+              );
+            } else {
+              return (
+                "<dt>" +
+                this.label +
+                '</dt> <dd><span class="text-muted">(no selection)</span></dd><hr>'
+              );
+            }
+          } else {
+            return (
+              "<dt>" +
+              this.label +
+              "</dt> <dd>" +
+              ((_.find(this.list, { value: this.value }) || { label: "" })
+                .label || '<span class="text-muted">(no selection)</span>') +
+              "</dd><hr>"
+            );
+          }
+        } else {
+          if (this.multiple) {
+            if (this.value.length) {
+              return (
+                _.reduce(
+                  this.value,
+                  function (returnVal, item) {
+                    var lookup = _.find(this.list, { value: item });
+                    if (typeof lookup !== "undefined") {
+                      returnVal.push(lookup.label);
+                    }
+                    return returnVal;
+                  }.bind(this),
+                  []
+                ) + "<hr>"
+              );
+            } else {
+              return "";
+            }
+          } else {
+            return (_.find(this.list, { value: this.value }) || { label: "" })
+              .label;
+          }
+        }
+      },
+      display: function () {
+        if (this.multiple) {
+          if (this.value.length) {
+            return (
+              "<ul>" +
+              _.reduce(
+                this.value,
+                function (returnVal, item) {
+                  var lookup = _.find(this.list, { value: item });
+                  if (typeof lookup !== "undefined") {
+                    returnVal += "<li>" + lookup.label + "</li>";
+                  }
+                  return returnVal;
+                }.bind(this),
+                ""
+              ) +
+              "</ul>"
+            );
+          } else {
+            return "(no selection)";
+          }
+        } else {
+          return (
+            (_.find(this.list, { value: this.value }) || { label: "" }).label ||
+            "(no selection)"
+          );
+        }
+      },
+      render: function () {
+        if (typeof this.mapOptions == "undefined") {
+          this.mapOptions = new gform.mapOptions(
+            this,
+            this.value,
+            0,
+            this.owner.collections
+          );
+          this.mapOptions.on(
+            "change",
+            function () {
+              this.options = this.mapOptions.getobject();
+              this.list = this.mapOptions.getoptions();
+              if (!this.mapOptions.waiting) {
+                if (this.multiple) {
+                  if (!_.isArray(this.value)) {
+                    this.value = [this.value];
+                  }
+                  // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
+                  _.each(
+                    this.value,
+                    function (value) {
+                      (
+                        _.find(this.list, { value: value }) || { selected: null }
+                      ).selected = true;
+                    }.bind(this)
+                  );
+                } else {
+                  (
+                    _.find(this.list, { selected: true }) || { selected: null }
+                  ).selected = false;
+                  (
+                    _.find(this.list, { value: this.value }) || { value: "" }
+                  ).selected = true;
                 }
-                this.update();
-            }.bind(this))
-            this.mapOptions.on('collection', function (e) {
-                e.field.field.owner.trigger("collection", e.field.field)
-            })
-            //   this.mapOptions.on('collection',function(e){
-            //     console.log(this.mapOptions.waiting)
-            //   }.bind(this))
+              }
+              this.update();
+            }.bind(this)
+          );
+  
+          this.mapOptions.on("collection", function (e) {
+            e.field.field.owner.trigger("collection", e.field.field);
+          });
         }
         this.options = this.mapOptions.getobject();
-        this.list = this.mapOptions.getoptions()
-
+        this.list = this.mapOptions.getoptions();
+  
+        if (!this.mapOptions.waiting) {
+          if (this.multiple) {
+            if (!_.isArray(this.value)) {
+              this.value = [this.value];
+            }
+            (
+              _.find(this.list, { selected: true }) || { selected: null }
+            ).selected = false;
+            _.each(
+              this.value,
+              function (value) {
+                (
+                  _.find(this.list, { value: value }) || { selected: null }
+                ).selected = true;
+              }.bind(this)
+            );
+          } else {
+            var search = _.find(this.list, { value: this.value });
+            if (typeof search == "undefined") {
+              if (this.other || false) {
+                this.value = "other";
+              } else {
+                // this.value = ""
+              }
+            }
+            if (
+              (this.other || false) &&
+              typeof _.find(this.list, { value: "other" }) == "undefined"
+            ) {
+              this.options.push({ label: "Other", value: "other" });
+            }
+  
+            (
+              _.find(this.list, { selected: true }) || { selected: null }
+            ).selected = false;
+            (
+              _.find(this.list, { value: this.value }) || { value: "" }
+            ).selected = true;
+          }
+        }
+        return gform.render(this.type, this);
+      },
+      setup: function () {
+        if (this.multiple && typeof this.limit !== "undefinded") {
+          if (this.get().length >= this.limit) {
+            this.maxSelected = true;
+            _.each(this.el.querySelector("select").options, function (item) {
+              item.disabled = !item.selected;
+            });
+          } else if (this.maxSelected) {
+            this.maxSelected = false;
+            _.each(this.el.querySelector("select").options, function (item) {
+              item.disabled = false;
+            });
+          }
+          if (this.el.querySelector(".count") != null) {
+            var text = this.get().length;
+            if (this.limit > 1) {
+              text += "/" + this.limit;
+            }
+            this.el.querySelector(".count").innerHTML = text;
+          }
+        }
+        this.labelEl = this.el.querySelector("label");
+        gform.types[this.type].setLabel.call(this);
+        this.infoEl = this.el.querySelector(".gform-info");
+      },
+      initialize: function () {
+        //   if(this.onchange !== undefined){ this.el.addEventListener('change', this.onchange);}
+        this.el.addEventListener(
+          "change",
+          function () {
+            this.value = this.get();
+  
+            //   (_.find(this.list,{selected:true})||{selected:null}).selected = false;
+            //   (_.find(this.list,{value:this.value})||{selected:null}).selected = true;
+  
+            if (this.multiple) {
+              if (!_.isArray(this.value)) {
+                this.value = [this.value];
+              }
+              // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
+              _.each(
+                this.value,
+                function (value) {
+                  (
+                    _.find(this.list, { value: value }) || { selected: null }
+                  ).selected = true;
+                }.bind(this)
+              );
+            } else {
+              (
+                _.find(this.list, { selected: true }) || { selected: null }
+              ).selected = false;
+              (
+                _.find(this.list, { value: this.value }) || { value: "" }
+              ).selected = true;
+            }
+  
+            if (this.el.querySelector(".count") != null) {
+              var text = this.value.length;
+              if (this.limit > 1) {
+                text += "/" + this.limit;
+              }
+              this.el.querySelector(".count").innerHTML = text;
+            }
+  
+            gform.types[this.type].setup.call(this);
+            this.parent.trigger(["change", "input"], this, { input: this.value });
+          }.bind(this)
+        );
+  
+        gform.types[this.type].set.call(this, this.value);
+        //   gform.types[this.type].setLabel.call(this);
+  
+        gform.types[this.type].setup.call(this);
+      },
+      get: function () {
+        if (!("el" in this)) return this.internalValue;
+        var value = this.el.querySelector("select").value;
+        var search = _.find(this.list, { i: parseInt(value, 10) });
+        if (typeof search == "undefined") {
+          if (this.other) {
+            value = "other";
+          } else {
+            value = null;
+          }
+        } else {
+          value = search.value;
+        }
+  
+        if (this.multiple) {
+          var that = this;
+          value = _.transform(
+            this.el.querySelector("select").options,
+            function (orig, opt) {
+              if (opt.selected) {
+                var option = _.find(that.list, { i: parseInt(opt.value) });
+                if (typeof option !== "undefined") {
+                  orig.push(option.value);
+                }
+              }
+            },
+            []
+          );
+        }
+        //   this.option = _.find()
+        return value;
+      },
+      set: function (value) {
+        //   _.each(this.options.options, function(option, index){
+        //       if(option.value == value || parseInt(option.value) == parseInt(value)) this.el.querySelector('[name="' + this.name + '"]').selectedIndex = index;
+        //   }.bind(this))
+        if (this.multiple) {
+          if (!_.isArray(value)) {
+            value = [value];
+          }
+          if (typeof this.limit !== "undefinded" && value.length > this.limit) {
+            return true;
+          }
+          if ("el" in this)
+            _.each(
+              this.el.querySelector("select").options,
+              function (option) {
+                //  option.selected = (value.indexOf(option.value)>=0)
+                var search = _.find(this.list, { i: parseInt(option.value) });
+                option.selected =
+                  typeof search !== "undefined" &&
+                  value.indexOf(search.value) >= 0;
+              }.bind(this)
+            );
+        } else {
+          var search = _.find(this.list, { value: value });
+          if ("el" in this) {
+            if (typeof search !== "undefined") {
+              this.el.querySelector("select").value = search.i;
+            } else {
+              this.el.querySelector("select").value = null;
+            }
+          }
+        }
+        if (typeof gform.types[this.type].setup == "function" && "el" in this) {
+          gform.types[this.type].setup.call(this);
+        }
+      },
+      focus: function () {
+        var search = this.name;
+        if (this.multiple) {
+          search += "[]";
+        }
+        this.el.querySelector('[name="' + search + '"]').focus();
+      },
+      edit: function (state) {
+        this.editable = state;
+  
+        var search = this.name;
+        if (this.multiple) {
+          search += "[]";
+        }
+  
+        // this.editable = state||this.editable||true;
+        let target = this.el.querySelector('[name="' + search + '"]');
+        // if (typeof this.mapOptions !== 'undefined' && this.mapOptions.waiting) {
+        //     this.el.querySelector('[name="' + search + '"]').disabled = !this.editable;
+  
+        // } else {
+        //     this.el.querySelector('[name="' + search + '"]').disabled = !this.editable;
+  
+        // }
+        if (typeof target !== "undefined" && target !== null)
+          target.disabled = !this.editable;
+      },
+      show: function (state) {
+        this.el.style.display = state ? "block" : "none";
+      },
+    },
+    section: {
+      array: {
+        template: data => {
+          var tempEl = document.createElement("span");
+          tempEl.setAttribute("id", "el_" + (data || this).id);
+          gform.addClass(
+            tempEl,
+            gform.columnClasses[
+              (data || this).columns || gform.prototype.options.columns
+            ]
+          );
+          gform.addClass(
+            tempEl,
+            gform.offsetClasses[
+              (data || this).offset || gform.prototype.options.offset
+            ]
+          );
+          // gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
+          //   if(this.owner.options.clear){
+          // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
+          //   }
+          //   tempEl.innerHTML = this.render();
+          tempEl.innerHTML = gform.m(
+            `
+                <fieldset data-id="{{id}}" class="col-xs-12">
+                  {{#array}}{{#append.enable}}<button data-id="{{id}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add{{/append.label}}</button>{{/append.enable}}{{/array}}
+                  {{#array.label}}<legend>{{array.label}}</legend>{{/array.label}}
+                  <div class="array_container"></div>
+                  {{#array}}{{^append.enable}}<button data-id="{{id}}" class="create btn btn-success gform-append">{{create.label}}{{^create.label}}Click here to create {{label}}{{/create.label}}</button>{{/append.enable}}{{/array}}
+                  </fieldset>`,
+            data || this
+          );
+          return tempEl;
+        },
+        max: 20,
+        min: 1,
+        container: ".array_container",
+        duplicate: { enable: "auto" },
+        remove: { enable: "auto" },
+        append: { enable: false },
+      },
+      resetValue: function () {
+        return this.item.defaultValue || {};
+      },
+  
+      base: "section",
+      filter: function (search, depth) {
+        return gform.filter.call(this, search, depth);
+      },
+      setLabel: function () {
+        // if(!!this.item.label){
+        var label = gform.renderString(this.item.label || this.label, this);
+        if (this.required) {
+          label += this.requiredText + this.suffix;
+        }
+        var labelEl = this.el.querySelector(
+          "fieldset#" + this.id + ">legend,fieldset#" + this.id + ">label"
+        );
+        if (labelEl !== null) {
+          labelEl.innerHTML = label;
+        }
+        this.label = label;
+        // }
+      },
+      create: function () {
+        var tempEl = gform.create(this.render());
+        gform.addClass(
+          tempEl,
+          gform.columnClasses[this.columns || gform.prototype.options.columns]
+        );
+        gform.addClass(
+          tempEl,
+          gform.offsetClasses[this.offset || gform.prototype.options.offset]
+        );
+        gform.toggleClass(tempEl, "gform_isArray", !!this.array);
+  
+        return tempEl;
+      },
+      initialize: function () {
+        //handle rows
+        this.rowManager = gform.rowManager(this);
+        // this.initialValue = this.value
+        Object.defineProperty(this, "value", {
+          get: function () {
+            // return true;
+            return this.get();
+          },
+          enumerable: true,
+        });
+        gform.types[this.type].setLabel.call(this);
+      },
+      render: function () {
+        if (this.section) {
+          return gform.render(this.owner.options.sections + "_fieldset", this);
+        } else {
+          return gform.render("_fieldset", this);
+        }
+      },
+      update: function (item, silent) {
+        if (typeof item === "object") {
+          _.extend(this.item, item);
+        }
+        // this.label = gform.renderString((item||{}).label||this.item.label, this);
+  
+        // var oldDiv = document.getElementById(this.id);
+        // var oldDiv = this.owner.el.querySelector('#'+this.id);
+  
+        var oldDiv = this.el;
+        var parentNode = oldDiv.parentNode;
+  
+        this.destroy();
+        this.el = gform.types[this.type].create.call(this);
+        if (parentNode !== null) {
+          if (parentNode.contains(oldDiv)) {
+            parentNode.replaceChild(this.el, oldDiv);
+          } else {
+            parentNode.appendChild(this.el);
+          }
+        }
+        this.owner.call("initialize", this);
+        this.owner.call("show", this, this.visible);
+        this.owner.call("edit", this, this.editable);
+  
+        this.container = this.el.querySelector("fieldset") || this.el || null;
+  
+        this.reflow(this);
+        if (!silent) {
+          //   this.parent.trigger('change:'+this.name, this);
+          //   this.parent.trigger('change', this);
+          this.parent.trigger(["change"], this);
+        }
+      },
+      get: function (name) {
+        //this is not right ----
+        if (typeof name !== "undefined") {
+          return gform.toJSON.call(this, name);
+        }
+        return _.selectPath(gform.toJSON.call(this), this.map);
+        //   //trying lodash native method
+        //   return _.property(this.map)(gform.toJSON.call(this))
+  
+        //   var value = gform.toJSON.call(this)[this.name];
+        //   return !this.array || typeof value == 'undefined'?value:value[this.index];
+  
+        //   return gform.toJSON.call(this, name)[this.name]
+      },
+      toString: function (name, report) {
+        if (!report) {
+          return gform.m(
+            '<h4>{{#label}}{{{label}}}{{/label}}</h4><hr><dl style="margin-left:10px">{{{value}}}</dl>',
+            { label: this.label, value: gform.toString.call(this, name) }
+          );
+          // return '<h4>'+this.label+'</h4><hr><dl style="margin-left:10px">'+gform.toString.call(this, name)+'</dl>';
+        } else {
+          return gform.toString.call(this, name, report);
+        }
+      },
+      //   display: function() {
+      //     return gform.toString.call(this, name);
+      //   },
+  
+      display: function () {
+        return '<div class="list-group-item ">' + this.toString() + "</div>";
+      },
+      set: function (value) {
+        if (_.isEmpty(value)) {
+          gform.each.call(this, function (field) {
+            field.set("");
+          });
+          this.update({}, true);
+        } else {
+          _.each(
+            value,
+            function (item, index) {
+              let field = this.items.find(index);
+              if (typeof field == "undefined" || field == null) return;
+              field.set(item);
+              // var field = this.find(index);
+              // if (field.array && _.isArray(item)) {
+              //     var list = this.filter({ array: { ref: field.array.ref } }, 1)
+  
+              //     if (list.length > 1) {
+              //         _.each(list.slice(1), function (field) {
+              //             var index = _.findIndex(field.parent.fields, { id: field.id });
+              //             field.parent.fields.splice(index, 1);
+              //         })
+              //     }
+  
+              //     var testFunc = function (selector, status, button) {
+              //         gform.toggleClass(button.querySelector(selector), 'hidden', status)
+              //     }
+              //     if (_.isArray(item)) {
+              //         field.set(item[0]);
+              //     }
+  
+              //     /* This is no longer supported */
+  
+              //     // if(!this.owner.options.strict){
+              //     // _.each(field.fields, gform.inflate.bind(this.owner, atts[field.name]|| field.owner.options.data[field.name] || {}) );
+              //     // }else{
+              //     var attr = {};
+              //     attr[field.name] = item;
+              //     gform.inflate.call(this.owner, attr, field, _.findIndex(field.parent.fields, { id: field.id }), field.parent.fields);
+              //     // }
+  
+              //     var fieldCount = this.filter({ array: { ref: field.array.ref } }, 1).length
+  
+              //     // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-id="'+field.array.id+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
+              //     // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-id="'+field.array.id+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
+  
+              //     field.operator.reflow();
+  
+              // } else {
+              //     // gform.inflate.bind(this, this.options.data||{})
+              //     if (typeof field !== 'undefined') {
+              //         field.set(item);
+              //     }
+              // }
+            }.bind(this)
+          );
+        }
+        this.render();
+        return true;
+      },
+      find: function (name) {
+        return gform.find.call(this, name);
+      },
+      reflow: function (options) {
+        gform.reflow.call(this, options);
+      },
+      focus: function () {
+        if (typeof this.fields !== "undefined" && this.fields.length) {
+          gform.types[this.fields[0].type].focus.call(this.fields[0]);
+        }
+      },
+      satisfied: function (value) {
+        value = value || this.get();
+        return (
+          typeof value !== "undefined" &&
+          value !== null &&
+          value !== "" &&
+          !(typeof value == "object" && _.isEmpty(value))
+        );
+      },
+      trigger: function (a, b, c) {
+        // if(typeof a == 'string' && typeof b == 'object') {
+        //     this.parent.dispatch(a+b.name,b,c);
+        //     this.parent.dispatch(a,b,c);
+        // }else{
+        //     this.dispatch(a,b,c);
+        // }
+        if (typeof a == "string") {
+          a = [a];
+        }
+        var events = _.extend([], a);
+  
+        _.each(
+          a,
+          function (item) {
+            if (item.indexOf(":") == "-1") {
+              events.unshift(item + ":" + this.name);
+            }
+          }.bind(this)
+        );
+        // a.unshift(a+':'+this.name)
+        this.parent.trigger(_.uniq(events), b || this, c);
+      },
+      show: function (state) {
+        if (this.owner.options.sections && this.section) {
+          return true;
+        }
+        this.el.style.display = state ? "block" : "none";
+      },
+    },
+    button: {
+      base: "button",
+      resetValue: function () {
+        return "";
+      },
+      setLabel: function () {
+        var label = gform.renderString(
+          (this.format || { title: null }).title ||
+            this.item.title ||
+            this.item.label ||
+            this.label,
+          this
+        );
+        if (this.required) {
+          label += this.requiredText + this.suffix;
+        }
+        var labelEl = this.el; //.querySelector('button,.btn');
+        if (labelEl !== null) {
+          labelEl.innerHTML = label;
+        }
+      },
+      toString: function () {
+        return "";
+      },
+      defaults: { parse: false, columns: 2, target: ".gform-footer", map: false },
+      create: function () {
+        var tempEl = gform.create(this.render());
+        tempEl.setAttribute("id", "el_" + this.id);
+        // tempEl.setAttribute("class", tempEl.className+' '+gform.columnClasses[this.columns]);
+        return tempEl;
+      },
+      initialize: function () {
+        (this.action =
+          this.action || (this.label || "").toLowerCase().split(" ").join("_")),
+          (this.onclickEvent = function () {
+            if (this.editable) {
+              this.parent.trigger("click", this, { action: this.action });
+              this.parent.trigger(this.action, this);
+            }
+          }.bind(this));
+        this.el.addEventListener("click", this.onclickEvent);
+        gform.types[this.type].setLabel.call(this);
+      },
+      render: function () {
+        return gform.render("button", this);
+      },
+      satisfied: function (value) {
+        return this.editable && this.visible;
+      },
+      update: function (item, silent) {
+        if (typeof item === "object") {
+          _.extend(this, this.item, item);
+        }
+        //   this.label = gform.renderString(this.item.label, this);
+        // this.label = gform.renderString((item||{}).label||this.item.label, this);
+  
+        //   var oldDiv = document.getElementById(this.id);
+        //   var oldDiv = this.owner.el.querySelector('#'+this.id);
+  
+        var oldDiv = this.el;
+        var parentNode = oldDiv.parentNode;
+  
+        this.destroy();
+        this.el = gform.types[this.type].create.call(this);
+        if (parentNode !== null) {
+          if (parentNode.contains(oldDiv)) {
+            parentNode.replaceChild(this.el, oldDiv);
+          } else {
+            parentNode.appendChild(this.el);
+          }
+        }
+        //   gform.types[this.type].initialize.call(this);
+        //   gform.types[this.type].show.call(this,this.visible);
+        //   gform.types[this.type].edit.call(this,this.editable);
+  
+        this.owner.call("initialize", this);
+        this.owner.call("show", this, this.visible);
+        this.owner.call("edit", this, this.editable);
+      },
+      destroy: function () {
+        this.el.removeEventListener("click", this.onclickEvent);
+        if (
+          this.el.parentElement !== null &&
+          this.el.parentElement.contains(this.el) &&
+          !this.el.parentElement.classList.contains(this.owner.options.rowClass)
+        )
+          this.el.parentElement.removeChild(this.el);
+      },
+      get: function (name) {
+        return null;
+      },
+      set: function (value) {},
+      edit: function (state) {
+        this.editable = state;
+        this.el.disabled = !state;
+        gform.toggleClass(this.el, "disabled", !state);
+      },
+      show: function (state) {
+        this.el.style.display = state ? "inline-block" : "none";
+      },
+      focus: function () {
+        this.el.focus();
+      },
+    },
+  };
+  
+  // remove the added classes
+  gform.types["text"] =
+    gform.types["password"] =
+    gform.types["color"] =
+      gform.types["input"];
+  gform.types["number"] = _.extend({}, gform.types["input"], {
+    get: function () {
+      return "el" in this
+        ? parseFloat(
+            this.el.querySelector('input[name="' + this.name + '"]').value,
+            10
+          )
+        : this.internalValue;
+    },
+    render: function () {
+      return gform
+        .render(this.type, this)
+        .split('value=""')
+        .join('value="' + this.value + '"');
+    },
+  });
+  gform.types["hidden"] = _.extend({}, gform.types["input"], {
+    defaults: { columns: false },
+    toString: function (name, report) {
+      if (!report) {
+        return "";
+      } else {
+        return this.value;
+      }
+    },
+  });
+  gform.types["output"] = _.extend({}, gform.types["input"], {
+    defaults: {
+      parse: false,
+    },
+    focus: function () {},
+    toString: function (name, report) {
+      if (!report) {
+        return "";
+      } else {
+        return this.value;
+      }
+    },
+    display: function () {
+      return gform.renderString(
+        (this.format || {}).value || "{{{value}}}",
+        _.pick(
+          this,
+          "value",
+          "name",
+          "id",
+          "inline",
+          "valid",
+          "map",
+          "path",
+          "parsable",
+          "reportable",
+          "visible",
+          "parent",
+          "owner",
+          "data",
+          "editable",
+          "parent",
+          "fillable",
+          "array",
+          "columns",
+          "offset",
+          "ischild",
+          "pre",
+          "post"
+        )
+      );
+    },
+    render: function () {
+      return gform.render(this.type, this);
+    },
+    get: function () {
+      return this.value;
+    },
+    set: function (value) {
+      this.internalValue = value;
+      if ("el" in this) this.el.querySelector("output").innerHTML = this.display;
+    },
+  });
+  
+  gform.types["email"] = _.extend({}, gform.types["input"], {
+    defaults: { validate: [{ type: "valid_email" }] },
+  });
+  
+  gform.types["textarea"] = _.extend({}, gform.types["input"], {
+    set: function (value) {
+      this.el.querySelector('textarea[name="' + this.name + '"]').value = value;
+    },
+    get: function () {
+      return "el" in this
+        ? this.el.querySelector('textarea[name="' + this.name + '"]').value
+        : this.internalValue;
+    },
+    render: function () {
+      //   return gform.render(this.type, this);
+      return gform
+        .render(this.type, this)
+        .split("></textarea>")
+        .join(">" + _.escape(this.value) + "</textarea>");
+    },
+    focus: function (timeout) {
+      //   .focus();
+      window.setTimeout(
+        function () {
+          if (
+            this.el.querySelector('textarea[name="' + this.name + '"]') !==
+              null &&
+            typeof this.el.querySelector('textarea[name="' + this.name + '"]')
+              .focus == "function"
+          ) {
+            this.el.querySelector('textarea[name="' + this.name + '"]').focus();
+            var temp = this.value;
+            this.set("");
+            this.set(temp);
+          }
+        }.bind(this),
+        timeout || 0
+      );
+  
+      //   this.el.querySelector('[name="'+this.name+'"]').select();
+    },
+  });
+  gform.types["switch"] = gform.types["checkbox"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["bool"]
+  );
+  
+  gform.types["select"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["collection"],
+    {
+      render: function () {
+        //   this.options = gform.mapOptions.call(this,this, this.value);
+        if (typeof this.mapOptions == "undefined") {
+          this.mapOptions = new gform.mapOptions(
+            this,
+            this.value,
+            0,
+            this.owner.collections
+          );
+          this.mapOptions.on(
+            "change",
+            function () {
+              this.options = this.mapOptions.getobject();
+              this.list = this.mapOptions.getoptions();
+  
+              if (
+                (this.other || false) &&
+                typeof _.find(this.list, { value: "other" }) == "undefined"
+              ) {
+                this.options.push({ label: "Other", value: "other" });
+                this.list.push({ label: "Other", value: "other" });
+              }
+  
+              if (typeof this.placeholder == "string") {
+                // this.value = this.value || -1
+                this.options.unshift({
+                  label: this.placeholder,
+                  value: "",
+                  i: -1,
+                  editable: false,
+                  visible: false,
+                  selected: true,
+                });
+                this.list.unshift({
+                  label: this.placeholder,
+                  value: "",
+                  i: -1,
+                  editable: false,
+                  visible: false,
+                  selected: true,
+                });
+              }
+              if (!this.mapOptions.waiting) {
+                if (this.multiple) {
+                  if (!_.isArray(this.value)) {
+                    this.value = [this.value];
+                  }
+                  // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
+                  _.each(
+                    this.value,
+                    function (value) {
+                      (
+                        _.find(this.list, { value: value }) || { selected: null }
+                      ).selected = true;
+                    }.bind(this)
+                  );
+                } else {
+                  (
+                    _.find(this.list, { selected: true }) || { selected: null }
+                  ).selected = false;
+                  // (_.find(this.list,{value:this.value})||{value:""}).selected = true;
+                  var search = _.find(this.list, { value: this.value });
+                  if (typeof search == "undefined") {
+                    if (typeof this.placeholder == "string") {
+                      this.value = "";
+                    } else {
+                      this.value = (this.list[0] || { value: "" }).value;
+                      if (this.list.length) {
+                        this.list[0].selected = true;
+                      }
+                    }
+                  } else {
+                    search.selected = true;
+                  }
+                }
+              }
+              this.update();
+            }.bind(this)
+          );
+          this.mapOptions.on("collection", function (e) {
+            e.field.field.owner.trigger("collection", e.field.field);
+          });
+          //   this.mapOptions.on('collection',function(e){
+          //     console.log(this.mapOptions.waiting)
+          //   }.bind(this))
+        }
+        this.options = this.mapOptions.getobject();
+        this.list = this.mapOptions.getoptions();
+  
         // var search = _.find(this.list,{value:this.value});
         // if(typeof search == 'undefined'){
         //     if(this.other||false){
@@ -1655,1578 +2106,1996 @@ gform.types['select'] = _.extend({}, gform.types['input'], gform.types['collecti
         //         }
         //     }
         // }
-
+  
         // if((this.other||false) && typeof _.find(this.list,{value:'other'}) == 'undefined'){
         //     this.options.push({label:"Other", value:'other'})
         //     this.list.push({label:"Other", value:'other'})
         // }
-
-        if (typeof this.placeholder == 'string') {
-            // this.value = this.value || -1
-            this.options.unshift({ label: this.placeholder, value: '', i: -1, editable: false, visible: false, selected: true })
-            this.list.unshift({ label: this.placeholder, value: '', i: -1, editable: false, visible: false, selected: true })
+  
+        if (typeof this.placeholder == "string") {
+          // this.value = this.value || -1
+          this.options.unshift({
+            label: this.placeholder,
+            value: "",
+            i: -1,
+            editable: false,
+            visible: false,
+            selected: true,
+          });
+          this.list.unshift({
+            label: this.placeholder,
+            value: "",
+            i: -1,
+            editable: false,
+            visible: false,
+            selected: true,
+          });
         }
-
+  
         // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
         // (_.find(this.list,{value:this.value})||{value:""}).selected = true;
         if (!this.mapOptions.waiting) {
-            if (this.multiple) {
-                if (!_.isArray(this.value)) {
-                    this.value = [this.value]
-                }
-                (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                _.each(this.value, function (value) {
-                    (_.find(this.list, { value: value }) || { selected: null }).selected = true;
-                }.bind(this))
-
-            } else {
-
-                if ((this.other || false) && typeof _.find(this.list, { value: 'other' }) == 'undefined') {
-                    this.options.push({ label: "Other", value: 'other' })
-                    this.list.push({ label: "Other", value: 'other' })
-                }
-                (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-
-                var search = _.find(this.list, { value: this.value });
-                if (typeof search == 'undefined') {
-                    if (this.other || false) {
-                        this.value = 'other';
-                    } else {
-                        if (typeof this.placeholder == 'string') {
-                            this.value = '';
-                        } else {
-                            this.value = (this.list[0] || { value: "" }).value
-                            if (this.list.length) {
-                                this.list[0].selected = true;
-                            }
-                        }
-                    }
+          if (this.multiple) {
+            if (!_.isArray(this.value)) {
+              this.value = [this.value];
+            }
+            (
+              _.find(this.list, { selected: true }) || { selected: null }
+            ).selected = false;
+            _.each(
+              this.value,
+              function (value) {
+                (
+                  _.find(this.list, { value: value }) || { selected: null }
+                ).selected = true;
+              }.bind(this)
+            );
+          } else {
+            if (
+              (this.other || false) &&
+              typeof _.find(this.list, { value: "other" }) == "undefined"
+            ) {
+              this.options.push({ label: "Other", value: "other" });
+              this.list.push({ label: "Other", value: "other" });
+            }
+            (
+              _.find(this.list, { selected: true }) || { selected: null }
+            ).selected = false;
+  
+            var search = _.find(this.list, { value: this.value });
+            if (typeof search == "undefined") {
+              if (this.other || false) {
+                this.value = "other";
+              } else {
+                if (typeof this.placeholder == "string") {
+                  this.value = "";
                 } else {
-                    search.selected = true;
+                  this.value = (this.list[0] || { value: "" }).value;
+                  if (this.list.length) {
+                    this.list[0].selected = true;
+                  }
                 }
+              }
+            } else {
+              search.selected = true;
             }
+          }
         }
-        return gform.render('select', this);
+        return gform.render("select", this);
+      },
     }
-});
-gform.types['range'] = _.extend({}, gform.types['input'], gform.types['collection'], {
-    get: function () {
-        return ('el' in this) ? (this.el.querySelector('[type=range]') || { value: '' }).value : this.internalValue;
-
-    },
-    set: function (value) {
-        this.el.querySelector('[type=range]').value = value;
+  );
+  gform.types["range"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["collection"],
+    {
+      get: function () {
+        return "el" in this
+          ? (this.el.querySelector("[type=range]") || { value: "" }).value
+          : this.internalValue;
+      },
+      set: function (value) {
+        this.el.querySelector("[type=range]").value = value;
+      },
     }
-});
-
-gform.types['radio'] = _.extend({}, gform.types['input'], gform.types['collection'], {
-    setup: function () {
-        if (this.multiple && typeof this.limit !== 'undefinded') {
-            if (this.get().length >= this.limit) {
-                this.maxSelected = true;
-                _.each(this.el.querySelectorAll('[type=checkbox]'), function (item) {
-                    item.disabled = !item.checked;
-                })
-            } else if (this.maxSelected) {
-                this.maxSelected = false;
-                _.each(this.el.querySelectorAll('[type=checkbox]'), function (item) {
-                    item.disabled = false;
-                })
+  );
+  
+  gform.types["radio"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["collection"],
+    {
+      setup: function () {
+        if (this.multiple && typeof this.limit !== "undefinded") {
+          if (this.get().length >= this.limit) {
+            this.maxSelected = true;
+            _.each(this.el.querySelectorAll("[type=checkbox]"), function (item) {
+              item.disabled = !item.checked;
+            });
+          } else if (this.maxSelected) {
+            this.maxSelected = false;
+            _.each(this.el.querySelectorAll("[type=checkbox]"), function (item) {
+              item.disabled = false;
+            });
+          }
+          if (this.el.querySelector(".count") != null) {
+            var text = this.get().length;
+            if (this.limit > 1) {
+              text += "/" + this.limit;
             }
-            if (this.el.querySelector('.count') != null) {
-                var text = this.get().length;
-                if (this.limit > 1) { text += '/' + this.limit; }
-                this.el.querySelector('.count').innerHTML = text;
-            }
+            this.el.querySelector(".count").innerHTML = text;
+          }
         }
-
+  
         // if(this.other){
         //     this.el.querySelector('input').style.display = (this.value == 'other')?"inline-block":"none";
         // }
-
-        this.labelEl = this.el.querySelector('label');
-        gform.types[this.type].setLabel.call(this)
-        this.infoEl = this.el.querySelector('.gform-info');
-    },
-    render: function () {
-        if (typeof this.item.size !== 'undefined') {
-            this.size = Math.floor(((gform.columns || 12) / this.item.size))
+  
+        this.labelEl = this.el.querySelector("label");
+        gform.types[this.type].setLabel.call(this);
+        this.infoEl = this.el.querySelector(".gform-info");
+      },
+      render: function () {
+        if (typeof this.item.size !== "undefined") {
+          this.size = Math.floor((gform.columns || 12) / this.item.size);
         }
-        if (typeof this.mapOptions == 'undefined') {
-            this.mapOptions = new gform.mapOptions(this, this.value, 0, this.owner.collections)
-            this.mapOptions.on('change', function () {
-                this.options = this.mapOptions.getobject()
-                this.list = this.mapOptions.getoptions()
-                if (this.multiple) {
-                    if (!_.isArray(this.value)) {
-                        this.value = [this.value]
-                    }
-                    // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
-                    _.each(this.value, function (value) {
-                        (_.find(this.list, { value: value }) || { selected: null }).selected = true;
-                    }.bind(this))
-
-                } else {
-                    (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                    (_.find(this.list, { value: this.value }) || { value: "" }).selected = true;
+        if (typeof this.mapOptions == "undefined") {
+          this.mapOptions = new gform.mapOptions(
+            this,
+            this.value,
+            0,
+            this.owner.collections
+          );
+          this.mapOptions.on(
+            "change",
+            function () {
+              this.options = this.mapOptions.getobject();
+              this.list = this.mapOptions.getoptions();
+              if (this.multiple) {
+                if (!_.isArray(this.value)) {
+                  this.value = [this.value];
                 }
-                this.update();
-            }.bind(this))
-
-            this.mapOptions.on('collection', function (e) {
-                e.field.field.owner.trigger("collection", e.field.field)
-            })
+                // (_.find(this.list,{selected:true})||{selected:null}).selected = false;
+                _.each(
+                  this.value,
+                  function (value) {
+                    (
+                      _.find(this.list, { value: value }) || { selected: null }
+                    ).selected = true;
+                  }.bind(this)
+                );
+              } else {
+                (
+                  _.find(this.list, { selected: true }) || { selected: null }
+                ).selected = false;
+                (
+                  _.find(this.list, { value: this.value }) || { value: "" }
+                ).selected = true;
+              }
+              this.update();
+            }.bind(this)
+          );
+  
+          this.mapOptions.on("collection", function (e) {
+            e.field.field.owner.trigger("collection", e.field.field);
+          });
         }
         this.options = this.mapOptions.getobject();
-        this.list = this.mapOptions.getoptions()
+        this.list = this.mapOptions.getoptions();
         if (!this.mapOptions.waiting) {
-            if (this.multiple) {
-                if (!_.isArray(this.value)) {
-                    this.value = [this.value]
-                }
-                (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                _.each(this.value, function (value) {
-                    (_.find(this.list, { value: value }) || { selected: null }).selected = true;
-                }.bind(this))
-
-            } else {
-                var search = _.find(this.list, { value: this.value });
-                if (typeof search == 'undefined') {
-                    if (this.other || false) {
-                        this.value = 'other';
-                    } else {
-                        // this.value = ""
-                    }
-                }
-                if ((this.other || false) && typeof _.find(this.list, { value: 'other' }) == 'undefined') {
-                    this.options.push({ label: "Other", value: 'other', })
-                }
-
-                (_.find(this.list, { selected: true }) || { selected: null }).selected = false;
-                (_.find(this.list, { value: this.value }) || { value: "" }).selected = true;
+          if (this.multiple) {
+            if (!_.isArray(this.value)) {
+              this.value = [this.value];
             }
+            (
+              _.find(this.list, { selected: true }) || { selected: null }
+            ).selected = false;
+            _.each(
+              this.value,
+              function (value) {
+                (
+                  _.find(this.list, { value: value }) || { selected: null }
+                ).selected = true;
+              }.bind(this)
+            );
+          } else {
+            var search = _.find(this.list, { value: this.value });
+            if (typeof search == "undefined") {
+              if (this.other || false) {
+                this.value = "other";
+              } else {
+                // this.value = ""
+              }
+            }
+            if (
+              (this.other || false) &&
+              typeof _.find(this.list, { value: "other" }) == "undefined"
+            ) {
+              this.options.push({ label: "Other", value: "other" });
+            }
+  
+            (
+              _.find(this.list, { selected: true }) || { selected: null }
+            ).selected = false;
+            (
+              _.find(this.list, { value: this.value }) || { value: "" }
+            ).selected = true;
+          }
         }
-
+  
         return gform.render(this.type, this);
-    },
-    get: function () {
-        if (!('el' in this)) { return this.internalValue };
-        if (this.multiple) {
-
-            var that = this;
-            return _.transform(this.el.querySelectorAll('[type="checkbox"]:checked'), function (value, item) {
-                value.push(_.find(that.list, { i: parseInt(item.value) }).value).bind
-            }, [])
-        } else {
-            return (_.find(this.list, { i: parseInt((this.el.querySelector('[type="radio"]:checked') || { value: null }).value) }) || { value: '' }).value;
-            // return (this.el.querySelector('[type="radio"]:checked')||{value:''}).value; 
+      },
+      get: function () {
+        if (!("el" in this)) {
+          return this.internalValue;
         }
-    },
-    set: function (value) {
         if (this.multiple) {
-            if (!_.isArray(value)) {
-                value = [value]
-            }
-            if (typeof this.limit !== 'undefinded' && (value.length > this.limit)) { return true }
-            _.each(this.el.querySelectorAll('[type=checkbox]'), function (option) {
-                //    option.checked = (value.indexOf(option.value)>=0)
-                var search = _.find(this.list, { i: parseInt(option.value) })
-                option.selected = (typeof search !== 'undefined' && value.indexOf(search.value) >= 0);
-                option.checked = (typeof search !== 'undefined' && value.indexOf(search.value) >= 0);
-
-
-            }.bind(this))
-
+          var that = this;
+          return _.transform(
+            this.el.querySelectorAll('[type="checkbox"]:checked'),
+            function (value, item) {
+              value.push(_.find(that.list, { i: parseInt(item.value) }).value)
+                .bind;
+            },
+            []
+          );
         } else {
-            (this.el.querySelector('[value="' + (_.find(this.list, { value: this.value }) || { i: '' }).i + '"]') || {}).checked = false
-
+          return (
+            _.find(this.list, {
+              i: parseInt(
+                (
+                  this.el.querySelector('[type="radio"]:checked') || {
+                    value: null,
+                  }
+                ).value
+              ),
+            }) || { value: "" }
+          ).value;
+          // return (this.el.querySelector('[type="radio"]:checked')||{value:''}).value;
+        }
+      },
+      set: function (value) {
+        if (this.multiple) {
+          if (!_.isArray(value)) {
+            value = [value];
+          }
+          if (typeof this.limit !== "undefinded" && value.length > this.limit) {
+            return true;
+          }
+          _.each(
+            this.el.querySelectorAll("[type=checkbox]"),
+            function (option) {
+              //    option.checked = (value.indexOf(option.value)>=0)
+              var search = _.find(this.list, { i: parseInt(option.value) });
+              option.selected =
+                typeof search !== "undefined" && value.indexOf(search.value) >= 0;
+              option.checked =
+                typeof search !== "undefined" && value.indexOf(search.value) >= 0;
+            }.bind(this)
+          );
+        } else {
+          (
+            this.el.querySelector(
+              '[value="' +
+                (_.find(this.list, { value: this.value }) || { i: "" }).i +
+                '"]'
+            ) || {}
+          ).checked = false;
+  
+          var option = _.find(this.list, { value: value });
+          if (typeof option !== "undefined") {
+            var el = this.el.querySelector('[value="' + option.i + '"]');
+            if (el !== null) {
+              value = value;
+              el.checked = "checked";
+            }
+          } else {
+            value = this.default || null;
             var option = _.find(this.list, { value: value });
-            if (typeof option !== 'undefined') {
-                var el = this.el.querySelector('[value="' + option.i + '"]');
-                if (el !== null) {
-                    value = value;
-                    el.checked = 'checked';
-                }
-            } else {
-
-                value = this.default || null
-                var option = _.find(this.list, { value: value });
-                if (typeof option == 'undefined' && typeof this.defaultIndex !== 'undefined') {
-                    option = _.find(this.list, { index: '' + this.defaultIndex });
-                }
-                if (typeof option !== 'undefined') {
-                    var el = this.el.querySelector('[value="' + option.i + '"]');
-                    if (el !== null) { el.checked = 'checked'; }
-                }
+            if (
+              typeof option == "undefined" &&
+              typeof this.defaultIndex !== "undefined"
+            ) {
+              option = _.find(this.list, { index: "" + this.defaultIndex });
             }
+            if (typeof option !== "undefined") {
+              var el = this.el.querySelector('[value="' + option.i + '"]');
+              if (el !== null) {
+                el.checked = "checked";
+              }
+            }
+          }
         }
-        if (typeof gform.types[this.type].setup == 'function') { gform.types[this.type].setup.call(this); }
-    },
-    edit: function (state) {
+        if (typeof gform.types[this.type].setup == "function") {
+          gform.types[this.type].setup.call(this);
+        }
+      },
+      edit: function (state) {
         this.editable = state;
-
-        _.each(this.el.querySelectorAll('input'), function (item) {
-            item.disabled = !state;
-        })
-    },
-    focus: function () {
+  
+        _.each(this.el.querySelectorAll("input"), function (item) {
+          item.disabled = !state;
+        });
+      },
+      focus: function () {
         this.el.querySelector('[type="radio"],[type="checkbox"]').focus();
+      },
     }
-});
-
-gform.types['scale'] = _.extend({}, gform.types['radio']);
-gform.types['checkboxes'] = _.extend({}, gform.types['radio'], { multiple: true });
-gform.types['_grid_row'] = _.extend({}, gform.types['hidden'], {
+  );
+  
+  gform.types["scale"] = _.extend({}, gform.types["radio"]);
+  gform.types["checkboxes"] = _.extend({}, gform.types["radio"], {
+    multiple: true,
+  });
+  gform.types["_grid_row"] = _.extend({}, gform.types["hidden"], {
     toString: function (name, report) {
-        if (!report) {
-            if (this.multiple) {
-                if (this.value.length) {
-                    return _.reduce(this.value, function (returnVal, item) {
-                        var lookup = _.find(this.list, { value: item });
-                        if (typeof lookup !== 'undefined') {
-                            returnVal += '<span>' + lookup.label + '</span>'
-                        }
-                        return returnVal;
-                    }.bind(this), '<tr><td style="width:20%">' + this.label + '</td><td>') + '</td><tr>'
-                } else {
-                    return '<tr><td style="width:20%">' + this.label + '</td> <td><span class="text-muted">(no selection)</span></td></tr>';
-                }
-            } else {
-                return '<tr><td style="width:20%">' + this.label + '</td> <td>' + ((_.find(this.parent.list, { value: this.parent.value[this.name] }) || { label: "" }).label || '<span class="text-muted">(no selection)</span>') + '</td></tr>';
-            }
+      if (!report) {
+        if (this.multiple) {
+          if (this.value.length) {
+            return (
+              _.reduce(
+                this.value,
+                function (returnVal, item) {
+                  var lookup = _.find(this.list, { value: item });
+                  if (typeof lookup !== "undefined") {
+                    returnVal += "<span>" + lookup.label + "</span>";
+                  }
+                  return returnVal;
+                }.bind(this),
+                '<tr><td style="width:20%">' + this.label + "</td><td>"
+              ) + "</td><tr>"
+            );
+          } else {
+            return (
+              '<tr><td style="width:20%">' +
+              this.label +
+              '</td> <td><span class="text-muted">(no selection)</span></td></tr>'
+            );
+          }
         } else {
-            if (this.multiple) {
-                if (this.value.length) {
-                    return _.reduce(this.value, function (returnVal, item) {
-                        var lookup = _.find(this.list, { value: item });
-                        if (typeof lookup !== 'undefined') {
-                            returnVal.push(lookup.label)
-                        }
-                        return returnVal;
-                    }.bind(this), []) + '<hr>'
-                } else {
-                    return '';
-                }
-            } else {
-                return (_.find(this.list, { value: this.value }) || { label: "" }).label;
-            }
+          return (
+            '<tr><td style="width:20%">' +
+            this.label +
+            "</td> <td>" +
+            ((
+              _.find(this.parent.list, {
+                value: this.parent.value[this.name],
+              }) || { label: "" }
+            ).label || '<span class="text-muted">(no selection)</span>') +
+            "</td></tr>"
+          );
         }
-    },
-})
-gform.types['grid'] = _.extend({}, gform.types['input'], gform.types['section'], gform.types['collection'], {
-    toString: function (name, report) {
-        if (!report) {
-            return '<dt>' + this.label + '</dt><dd><table class="table table-bordered">' + gform.toString.call(this, name) + '</table></dd><hr>';
+      } else {
+        if (this.multiple) {
+          if (this.value.length) {
+            return (
+              _.reduce(
+                this.value,
+                function (returnVal, item) {
+                  var lookup = _.find(this.list, { value: item });
+                  if (typeof lookup !== "undefined") {
+                    returnVal.push(lookup.label);
+                  }
+                  return returnVal;
+                }.bind(this),
+                []
+              ) + "<hr>"
+            );
+          } else {
+            return "";
+          }
         } else {
-            return gform.toString.call(this, name, report);
+          return (_.find(this.list, { value: this.value }) || { label: "" })
+            .label;
         }
+      }
     },
-    render: function () {
+  });
+  gform.types["grid"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["section"],
+    gform.types["collection"],
+    {
+      toString: function (name, report) {
+        if (!report) {
+          return (
+            "<dt>" +
+            this.label +
+            '</dt><dd><table class="table table-bordered">' +
+            gform.toString.call(this, name) +
+            "</table></dd><hr>"
+          );
+        } else {
+          return gform.toString.call(this, name, report);
+        }
+      },
+      render: function () {
         // this.options = gform.mapOptions.call(this,this, this.value);
-        if (typeof this.mapOptions == 'undefined') {
-
-            this.mapOptions = new gform.mapOptions(this, this.value, 0, this.owner.collections)
-
-            this.mapOptions.on('change', function () {
-                this.options = this.mapOptions.getobject()
-                this.list = this.mapOptions.getoptions()
-                this.update();
-            }.bind(this))
+        if (typeof this.mapOptions == "undefined") {
+          this.mapOptions = new gform.mapOptions(
+            this,
+            this.value,
+            0,
+            this.owner.collections
+          );
+  
+          this.mapOptions.on(
+            "change",
+            function () {
+              this.options = this.mapOptions.getobject();
+              this.list = this.mapOptions.getoptions();
+              this.update();
+            }.bind(this)
+          );
         }
-        this.options = this.mapOptions.getobject()
-        this.list = this.mapOptions.getoptions()
-
+        this.options = this.mapOptions.getobject();
+        this.list = this.mapOptions.getoptions();
+  
         this.fields = _.map(this.fields, function (field) {
-            return _.assignIn({
-                name: (gform.renderString(field.label) || '').toLowerCase().split(' ').join('_'),
-                id: gform.getUID(),
-                label: field.id || field.name,
-            }, field)
-
-        })
-
+          return _.assignIn(
+            {
+              name: (gform.renderString(field.label) || "")
+                .toLowerCase()
+                .split(" ")
+                .join("_"),
+              id: gform.getUID(),
+              label: field.id || field.name,
+            },
+            field
+          );
+        });
+  
         return gform.render(this.type, this);
-    },
-    setup: function () {
-        if (this.multiple && typeof this.limit !== 'undefinded') {
-            _.each(this.fields, function (field) {
-                var value = this.value[field.name] || [];
-                if (value.length >= this.limit) {
-                    field.maxSelected = true;
-                    _.each(this.el.querySelectorAll('[type=checkbox][name="' + field.id + '"]'), function (item) {
-                        item.disabled = !item.checked;
-                    })
-                } else if (field.maxSelected) {
-                    field.maxSelected = false;
-                    _.each(this.el.querySelectorAll('[type=checkbox][name="' + field.id + '"]'), function (item) {
-                        item.disabled = false;
-                    })
-                }
-            }.bind(this))
+      },
+      setup: function () {
+        if (this.multiple && typeof this.limit !== "undefinded") {
+          _.each(
+            this.fields,
+            function (field) {
+              var value = this.value[field.name] || [];
+              if (value.length >= this.limit) {
+                field.maxSelected = true;
+                _.each(
+                  this.el.querySelectorAll(
+                    '[type=checkbox][name="' + field.id + '"]'
+                  ),
+                  function (item) {
+                    item.disabled = !item.checked;
+                  }
+                );
+              } else if (field.maxSelected) {
+                field.maxSelected = false;
+                _.each(
+                  this.el.querySelectorAll(
+                    '[type=checkbox][name="' + field.id + '"]'
+                  ),
+                  function (item) {
+                    item.disabled = false;
+                  }
+                );
+              }
+            }.bind(this)
+          );
         } else {
-            _.each(this.fields, function (field) {
-                var el = this.el.querySelector('[name="' + field.id + '"][value="' + (this.value[field.name] || '') + '"]');
-                if (el !== null) {
-                    el.checked = 'checked';
-                }
-            }.bind(this))
+          _.each(
+            this.fields,
+            function (field) {
+              var el = this.el.querySelector(
+                '[name="' +
+                  field.id +
+                  '"][value="' +
+                  (this.value[field.name] || "") +
+                  '"]'
+              );
+              if (el !== null) {
+                el.checked = "checked";
+              }
+            }.bind(this)
+          );
         }
-        this.labelEl = this.el.querySelector('label');
-        gform.types[this.type].setLabel.call(this)
-        this.infoEl = this.el.querySelector('.gform-info');
-    },
-    initialize: function () {
+        this.labelEl = this.el.querySelector("label");
+        gform.types[this.type].setLabel.call(this);
+        this.infoEl = this.el.querySelector(".gform-info");
+      },
+      initialize: function () {
         //   if(this.onchange !== undefined){ this.el.addEventListener('change', this.onchange);}
-        this.el.addEventListener('change', function () {
+        this.el.addEventListener(
+          "change",
+          function () {
             this.value = this.get();
             gform.types[this.type].setup.call(this);
-            this.parent.trigger(['change', 'input'], this, { input: this.value });
-
-        }.bind(this));
+            this.parent.trigger(["change", "input"], this, { input: this.value });
+          }.bind(this)
+        );
         gform.types[this.type].setup.call(this);
         this.rows = [];
-        this.fields = _.map(this.fields, function (item) { item.type = '_grid_row'; return item; })
+        this.fields = _.map(this.fields, function (item) {
+          item.type = "_grid_row";
+          return item;
+        });
         gform.types[this.type].setLabel.call(this);
-
-    },
-    get: function () {
-        if (!('el' in this)) { return this.internalValue };
-
-        if (this.multiple) {
-            return _.transform(this.fields, function (result, field) {
-                result[field.name] = _.transform(this.el.querySelectorAll('[type="checkbox"][name="' + field.id + '"]:checked'), function (value, item) { value.push(item.value) }, [])
-            }.bind(this), {})
-
-        } else {
-            return _.transform(this.fields, function (result, field) { result[field.name] = (this.el.querySelector('[type="radio"][name="' + field.id + '"]:checked') || { value: '' }).value }.bind(this), {})
+      },
+      get: function () {
+        if (!("el" in this)) {
+          return this.internalValue;
         }
-    },
-    set: function (value) {
+  
         if (this.multiple) {
-            _.each(this.fields, function (value, field) {
-                if (typeof this.limit !== 'undefinded' && value != null && (value.length > this.limit)) { return true }
-                _.each(this.el.querySelectorAll('[name="' + field.id + '"][type=checkbox]'), function (value, option) {
-                    option.checked = (value.indexOf(option.value) >= 0)
-                }.bind(this, value[field.name]))
-
-            }.bind(this, value))
+          return _.transform(
+            this.fields,
+            function (result, field) {
+              result[field.name] = _.transform(
+                this.el.querySelectorAll(
+                  '[type="checkbox"][name="' + field.id + '"]:checked'
+                ),
+                function (value, item) {
+                  value.push(item.value);
+                },
+                []
+              );
+            }.bind(this),
+            {}
+          );
         } else {
-            _.each(this.fields, function (field) {
-                var el = this.el.querySelector('[name="' + field.id + '"][value="' + value[field.name] + '"]');
-                if (el !== null) {
-                    el.checked = 'checked';
-                }
-            }.bind(this))
+          return _.transform(
+            this.fields,
+            function (result, field) {
+              result[field.name] = (
+                this.el.querySelector(
+                  '[type="radio"][name="' + field.id + '"]:checked'
+                ) || { value: "" }
+              ).value;
+            }.bind(this),
+            {}
+          );
+        }
+      },
+      set: function (value) {
+        if (this.multiple) {
+          _.each(
+            this.fields,
+            function (value, field) {
+              if (
+                typeof this.limit !== "undefinded" &&
+                value != null &&
+                value.length > this.limit
+              ) {
+                return true;
+              }
+              _.each(
+                this.el.querySelectorAll(
+                  '[name="' + field.id + '"][type=checkbox]'
+                ),
+                function (value, option) {
+                  option.checked = value.indexOf(option.value) >= 0;
+                }.bind(this, value[field.name])
+              );
+            }.bind(this, value)
+          );
+        } else {
+          _.each(
+            this.fields,
+            function (field) {
+              var el = this.el.querySelector(
+                '[name="' + field.id + '"][value="' + value[field.name] + '"]'
+              );
+              if (el !== null) {
+                el.checked = "checked";
+              }
+            }.bind(this)
+          );
         }
         this.internalValue = value;
-        gform.types['grid'].setup.call(this)
-    },
-    focus: function () {
+        gform.types["grid"].setup.call(this);
+      },
+      focus: function () {
         // this.fields[0].name
         this.el.querySelector('[name="' + this.fields[0].id + '"]').focus();
+      },
     }
-});
-gform.types['fieldset'] = _.extend({}, gform.types['input'], gform.types['section'], {
-    // row:function(){
-    //     if(this.array){
-    //         return gform.render('fieldset_array',this);
-    //     }
-    // },
-    // rowSelector:".gform-template_row",
-    // array:{max:5,min:1,duplicate:{enable:'auto'},remove:{enable:'auto'},append:{enable:false},...gform.types['input'].array}
-
-});
-// gform.types['template'] = _.extend({}, gform.types['input'], gform.types['section'],{
-//     array:{
-//         template:(data)=>{
-//             var tempEl = document.createElement("span");
-//             tempEl.setAttribute("id", "el_"+(data||this).id);
-//             gform.addClass(tempEl,gform.columnClasses[(data||this).columns])
-//             gform.addClass(tempEl,gform.offsetClasses[(data||this).offset])
-//             gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
-//             //   if(this.owner.options.clear){
-//                 // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
-//             //   }
-//             //   tempEl.innerHTML = this.render();
-//               tempEl.innerHTML =  gform.m(`
-//               <fieldset data-id="{{id}}" class="col-xs-12">
-//                 {{#array}}{{#append.enable}}<button data-ref="{{refid}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add{{/append.label}}</button>{{/append.enable}}{{/array}}
-//                 <legend>{{array.label}}</legend>
-//                 <div class="array_container"></div>
-//                 {{#array}}{{^append.enable}}<button data-ref="{{refid}}" class="create btn btn-success gform-append">{{append.label}}{{^append.label}}Click here to create first{{/append.label}}</button>{{/append.enable}}{{/array}}
-//                 </fieldset>`,data||this)
-//               return tempEl;
-//         },
-//         container:".array_container",
-//         max:5,min:1,duplicate:{enable:false},remove:{enable:true},append:{enable:true}
-//       },
-//     row:function(){
-//         return gform.render('template',this);
-//     },
-//     // set: function(value){
-//     //     if(value == null || value == ''){
-//     //         gform.each.call(this, function(field) {
-//     //             field.set('');
-//     //         })
-//     //         this.update({},true);
-//     //     }else{
-//     //         _.each(value,function(item,index){
-//     //             var field = this.find(index);
-//     //             if(field.array && _.isArray(item)){
-//     //                 var list = this.filter({array:{ref:field.array.ref}},1)
-
-//     //                 if(list.length > 1){
-//     //                     _.each(list.slice(1),function(field){
-//     //                         var index = _.findIndex(field.parent.fields,{id:field.id});
-//     //                         field.parent.fields.splice(index, 1);
-//     //                     })
-//     //                 }
-
-//     //                 var testFunc = function(selector,status, button){
-//     //                     gform.toggleClass(button.querySelector(selector),'hidden', status)
-//     //                 }
-//     //                 if(_.isArray(item)){
-//     //                     field.set(item[0]);
-//     //                 }
-
-//     //                 // if(!this.owner.options.strict){
-//     //                     // _.each(field.fields, gform.inflate.bind(this.owner, atts[field.name]|| field.owner.options.data[field.name] || {}) );
-//     //                 // }else{
-//     //                     var attr = {};
-//     //                     attr[field.name] = item;
-//     //                     gform.inflate.call(this.owner,attr,field,_.findIndex(field.parent.fields,{id:field.id}),field.parent.fields);
-//     //                 // }
-//     //                 var fieldCount = this.filter({array:{ref:field.array.ref}},1).length
-
-//     //                 _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
-//     //                 _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
-
-//     //                 field.operator.reflow();
-
-
-
-//     //             }else{
-//     //                 // gform.inflate.bind(this, this.options.data||{})
-//     //                 if(typeof field !== 'undefined'){
-//     //                     field.set(item);
-//     //                 }
-//     //             }
-//     //         }.bind(this))
-//     //     }
-//     //     return true;
-
-//     //   },
-//     rowSelector:".gform-template_row",
-//     initialize: function() {
-//         this.rows = [];
-//         this.initialValue = this.value
-
-//         this.owner.on('appended', function(id,e){
-//             if(id == e.field.id){
-//                 e.field.el.click();
-//             }
-//         }.bind(null,this.id));
-//         this.owner.on('close', function(id,e){
-//             if(typeof e.field !== 'undefined' && id == e.field.id){
-//                 e.field.modal('hide')
-//                 e.field.modalEl.querySelector('.gform-modal_body').removeChild(e.field.container);
-//                 e.field.container.removeEventListener('click', e.form.listener)
-
-//                 e.field.value = e.field.get();
-//                 e.field.update();
-//                 e.form.trigger('done', this);   
-//             }
-//         }.bind(null,this.id));
-//         Object.defineProperty(this, "value",{
-//             get: function(){
-//                 // return true;
-//                 if(!('el' in this)){return this.internalValue};
-
-//                 return this.get();
-//             }
-//         });
-//         gform.types[this.type].setLabel.call(this);
-
-//     },    
-//     display: function() {
-//         // return gform.m((this.format||{template:"{{{value}}}"}).template,_.extend({}, gform.stencils, this));
-//         return gform.renderString((this.format||{template:"{{{value}}}"}).display, _.pick(this, "value",
-//         'label',
-//         'name',
-//         'id',
-//         'inline',
-//         'valid',
-//         'map',
-//         'path',
-//         'parsable',
-//         'reportable',
-//         'visible',
-//         'parent',
-//         'editable',
-//         'parent',
-//         'fillable',
-//         'array',
-//         'columns',
-//         'offset',
-//         'ischild','pre','post'
-//         ) );
-//     },
-//     render: function() {
-//         return gform.m(gform.render('template_item',this),this)
-//     },
-//     edit: function(e){
-//         var target = (e.target.classList.value.indexOf('gform-')<0 && e.target.parentElement.classList.value.indexOf('gform-')>=0)?e.target.parentElement:e.target;
-
-//         if(!target.classList.contains('gform-minus') && !target.classList.contains('gform-add') && (this.el.querySelector('.gform-edit') == null || (this.el.querySelector('.gform-edit') && target.classList.contains('gform-edit') || this.el.querySelector('.gform-edit').contains(target)))){
-//             e.preventDefault();
-
-//             this.modalEl = gform.create(gform.render("modal_container",{body:'<div class="gform-modal_body"></div>',footer:gform.render('child_modal_footer'),legend:this.label,name:"preview"}))
-
-//             // document.body.appendChild(this.modalEl);
-//             this.container.addEventListener('click', this.owner.listener)
-//             // gform.removeClass(this.modalEl,'modal-hide');
-//             // gform.prototype.modal.call(this)
-//             this.modalEl.querySelector('.gform-modal_body').appendChild(this.container);
-
-//             this.modal = gform.prototype.modal.bind(this);
-//             this.modal();
-//             this.find({visible:true}).focus(this.owner.modalDelay);
-//             // window.setTimeout(gform.types[this.find({visible:true}).type].focus.bind(this.find({visible:true})), 0); 
-
-//             // var closeFunc = function(){
-//             //     e.stopPropagation();
-//             //     e.preventDefault();
-//             //     gform.prototype.modal.call(this,'hide')
-
-//             //     this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
-//             //     this.container.removeEventListener('click', this.owner.listener)
-
-//             //     this.value = this.get();
-//             //     this.update();
-//             //     this.owner.trigger('done', this);                
-//             // }.bind(this);
-
-//             // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
-//             // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
-//             // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
-
-//             this.modalEl.querySelector('.done').addEventListener('click', function(e){
-//                 this.owner.trigger('close',this);
-//             }.bind(this));
-//             this.modalEl.querySelector('.gform-footer .gform-minus').addEventListener('click', function(){
-//                 e.stopPropagation();
-//                 e.preventDefault();
-//                 // gform.prototype.modal.call(this,'hide')
-//                 this.modal('hide');
-
-//                 this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
-//                 this.container.removeEventListener('click', this.owner.listener)
-//                 gform.removeField.call(this.owner,this);
-//             }.bind(this));
-//         }
-//     },
-//     create: function() {
-//         var tempEl = gform.create(this.render());
-//         gform.toggleClass(tempEl,'gform_isArray',!!this.array)
-//         this.container = gform.create('<fieldset></fieldset>');
-
-//         tempEl.addEventListener('click', gform.types.template.edit.bind(this))
-
-//         return tempEl;
-//     },
-//     update: function(item, silent) {
-//         if(typeof item === 'object') {
-//             _.extend(this.item,item);
-//         }
-//         // this.label = gform.renderString((item||{}).label||this.item.label, this);
-//         gform.types[this.type].setLabel.call(this);
-
-
-//         this.el.querySelector('.gform-template_container').innerHTML = gform.types[this.type].display.call(this);// gform.m(this.format.template, _.extend({}, gform.stencils, this))
-//         if(!silent) {
-//             this.parent.trigger(['change'], this);
-//         }
-//     }
-// });
-
-
-
-gform.types['template'] = _.extend({}, gform.types['input'], gform.types['section'], {
-    array: {
+  );
+  gform.types["fieldset"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["section"],
+    {
+      // row:function(){
+      //     if(this.array){
+      //         return gform.render('fieldset_array',this);
+      //     }
+      // },
+      // rowSelector:".gform-template_row",
+      // array:{max:5,min:1,duplicate:{enable:'auto'},remove:{enable:'auto'},append:{enable:false},...gform.types['input'].array}
+    }
+  );
+  // gform.types['template'] = _.extend({}, gform.types['input'], gform.types['section'],{
+  //     array:{
+  //         template:(data)=>{
+  //             var tempEl = document.createElement("span");
+  //             tempEl.setAttribute("id", "el_"+(data||this).id);
+  //             gform.addClass(tempEl,gform.columnClasses[(data||this).columns])
+  //             gform.addClass(tempEl,gform.offsetClasses[(data||this).offset])
+  //             gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
+  //             //   if(this.owner.options.clear){
+  //                 // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
+  //             //   }
+  //             //   tempEl.innerHTML = this.render();
+  //               tempEl.innerHTML =  gform.m(`
+  //               <fieldset data-id="{{id}}" class="col-xs-12">
+  //                 {{#array}}{{#append.enable}}<button data-ref="{{refid}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add{{/append.label}}</button>{{/append.enable}}{{/array}}
+  //                 <legend>{{array.label}}</legend>
+  //                 <div class="array_container"></div>
+  //                 {{#array}}{{^append.enable}}<button data-ref="{{refid}}" class="create btn btn-success gform-append">{{append.label}}{{^append.label}}Click here to create first{{/append.label}}</button>{{/append.enable}}{{/array}}
+  //                 </fieldset>`,data||this)
+  //               return tempEl;
+  //         },
+  //         container:".array_container",
+  //         max:5,min:1,duplicate:{enable:false},remove:{enable:true},append:{enable:true}
+  //       },
+  //     row:function(){
+  //         return gform.render('template',this);
+  //     },
+  //     // set: function(value){
+  //     //     if(value == null || value == ''){
+  //     //         gform.each.call(this, function(field) {
+  //     //             field.set('');
+  //     //         })
+  //     //         this.update({},true);
+  //     //     }else{
+  //     //         _.each(value,function(item,index){
+  //     //             var field = this.find(index);
+  //     //             if(field.array && _.isArray(item)){
+  //     //                 var list = this.filter({array:{ref:field.array.ref}},1)
+  
+  //     //                 if(list.length > 1){
+  //     //                     _.each(list.slice(1),function(field){
+  //     //                         var index = _.findIndex(field.parent.fields,{id:field.id});
+  //     //                         field.parent.fields.splice(index, 1);
+  //     //                     })
+  //     //                 }
+  
+  //     //                 var testFunc = function(selector,status, button){
+  //     //                     gform.toggleClass(button.querySelector(selector),'hidden', status)
+  //     //                 }
+  //     //                 if(_.isArray(item)){
+  //     //                     field.set(item[0]);
+  //     //                 }
+  
+  //     //                 // if(!this.owner.options.strict){
+  //     //                     // _.each(field.fields, gform.inflate.bind(this.owner, atts[field.name]|| field.owner.options.data[field.name] || {}) );
+  //     //                 // }else{
+  //     //                     var attr = {};
+  //     //                     attr[field.name] = item;
+  //     //                     gform.inflate.call(this.owner,attr,field,_.findIndex(field.parent.fields,{id:field.id}),field.parent.fields);
+  //     //                 // }
+  //     //                 var fieldCount = this.filter({array:{ref:field.array.ref}},1).length
+  
+  //     //                 _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
+  //     //                 _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
+  
+  //     //                 field.operator.reflow();
+  
+  //     //             }else{
+  //     //                 // gform.inflate.bind(this, this.options.data||{})
+  //     //                 if(typeof field !== 'undefined'){
+  //     //                     field.set(item);
+  //     //                 }
+  //     //             }
+  //     //         }.bind(this))
+  //     //     }
+  //     //     return true;
+  
+  //     //   },
+  //     rowSelector:".gform-template_row",
+  //     initialize: function() {
+  //         this.rows = [];
+  //         this.initialValue = this.value
+  
+  //         this.owner.on('appended', function(id,e){
+  //             if(id == e.field.id){
+  //                 e.field.el.click();
+  //             }
+  //         }.bind(null,this.id));
+  //         this.owner.on('close', function(id,e){
+  //             if(typeof e.field !== 'undefined' && id == e.field.id){
+  //                 e.field.modal('hide')
+  //                 e.field.modalEl.querySelector('.gform-modal_body').removeChild(e.field.container);
+  //                 e.field.container.removeEventListener('click', e.form.listener)
+  
+  //                 e.field.value = e.field.get();
+  //                 e.field.update();
+  //                 e.form.trigger('done', this);
+  //             }
+  //         }.bind(null,this.id));
+  //         Object.defineProperty(this, "value",{
+  //             get: function(){
+  //                 // return true;
+  //                 if(!('el' in this)){return this.internalValue};
+  
+  //                 return this.get();
+  //             }
+  //         });
+  //         gform.types[this.type].setLabel.call(this);
+  
+  //     },
+  //     display: function() {
+  //         // return gform.m((this.format||{template:"{{{value}}}"}).template,_.extend({}, gform.stencils, this));
+  //         return gform.renderString((this.format||{template:"{{{value}}}"}).display, _.pick(this, "value",
+  //         'label',
+  //         'name',
+  //         'id',
+  //         'inline',
+  //         'valid',
+  //         'map',
+  //         'path',
+  //         'parsable',
+  //         'reportable',
+  //         'visible',
+  //         'parent',
+  //         'editable',
+  //         'parent',
+  //         'fillable',
+  //         'array',
+  //         'columns',
+  //         'offset',
+  //         'ischild','pre','post'
+  //         ) );
+  //     },
+  //     render: function() {
+  //         return gform.m(gform.render('template_item',this),this)
+  //     },
+  //     edit: function(e){
+  //         var target = (e.target.classList.value.indexOf('gform-')<0 && e.target.parentElement.classList.value.indexOf('gform-')>=0)?e.target.parentElement:e.target;
+  
+  //         if(!target.classList.contains('gform-minus') && !target.classList.contains('gform-add') && (this.el.querySelector('.gform-edit') == null || (this.el.querySelector('.gform-edit') && target.classList.contains('gform-edit') || this.el.querySelector('.gform-edit').contains(target)))){
+  //             e.preventDefault();
+  
+  //             this.modalEl = gform.create(gform.render("modal_container",{body:'<div class="gform-modal_body"></div>',footer:gform.render('child_modal_footer'),legend:this.label,name:"preview"}))
+  
+  //             // document.body.appendChild(this.modalEl);
+  //             this.container.addEventListener('click', this.owner.listener)
+  //             // gform.removeClass(this.modalEl,'modal-hide');
+  //             // gform.prototype.modal.call(this)
+  //             this.modalEl.querySelector('.gform-modal_body').appendChild(this.container);
+  
+  //             this.modal = gform.prototype.modal.bind(this);
+  //             this.modal();
+  //             this.find({visible:true}).focus(this.owner.modalDelay);
+  //             // window.setTimeout(gform.types[this.find({visible:true}).type].focus.bind(this.find({visible:true})), 0);
+  
+  //             // var closeFunc = function(){
+  //             //     e.stopPropagation();
+  //             //     e.preventDefault();
+  //             //     gform.prototype.modal.call(this,'hide')
+  
+  //             //     this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
+  //             //     this.container.removeEventListener('click', this.owner.listener)
+  
+  //             //     this.value = this.get();
+  //             //     this.update();
+  //             //     this.owner.trigger('done', this);
+  //             // }.bind(this);
+  
+  //             // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
+  //             // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
+  //             // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
+  
+  //             this.modalEl.querySelector('.done').addEventListener('click', function(e){
+  //                 this.owner.trigger('close',this);
+  //             }.bind(this));
+  //             this.modalEl.querySelector('.gform-footer .gform-minus').addEventListener('click', function(){
+  //                 e.stopPropagation();
+  //                 e.preventDefault();
+  //                 // gform.prototype.modal.call(this,'hide')
+  //                 this.modal('hide');
+  
+  //                 this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
+  //                 this.container.removeEventListener('click', this.owner.listener)
+  //                 gform.removeField.call(this.owner,this);
+  //             }.bind(this));
+  //         }
+  //     },
+  //     create: function() {
+  //         var tempEl = gform.create(this.render());
+  //         gform.toggleClass(tempEl,'gform_isArray',!!this.array)
+  //         this.container = gform.create('<fieldset></fieldset>');
+  
+  //         tempEl.addEventListener('click', gform.types.template.edit.bind(this))
+  
+  //         return tempEl;
+  //     },
+  //     update: function(item, silent) {
+  //         if(typeof item === 'object') {
+  //             _.extend(this.item,item);
+  //         }
+  //         // this.label = gform.renderString((item||{}).label||this.item.label, this);
+  //         gform.types[this.type].setLabel.call(this);
+  
+  //         this.el.querySelector('.gform-template_container').innerHTML = gform.types[this.type].display.call(this);// gform.m(this.format.template, _.extend({}, gform.stencils, this))
+  //         if(!silent) {
+  //             this.parent.trigger(['change'], this);
+  //         }
+  //     }
+  // });
+  
+  gform.types["template"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["section"],
+    {
+      array: {
         columns: -1,
-        template: (data) => {
-            //   data.labels =_.map(data.field.fields, item=>(item.array)?item.array.label||item.label:item.label||item.name);
-            //   row:function(){
-            //     return gform.render('template',this);
-            // },
-
-            return gform.create(gform.render('template', data));
+        template: data => {
+          //   data.labels =_.map(data.field.fields, item=>(item.array)?item.array.label||item.label:item.label||item.name);
+          //   row:function(){
+          //     return gform.render('template',this);
+          // },
+  
+          return gform.create(gform.render("template", data));
         },
         container: ".col-xs-12",
         rowClass: "list-group",
         // rowTemplate:'<div class="list-group"></div>',
-        max: 5, min: 1, duplicate: { enable: true }, remove: { enable: true }, append: { enable: true }, sortable: { enable: true }
-
-    },
-    setLabel: function () {
+        max: 5,
+        min: 1,
+        duplicate: { enable: true },
+        remove: { enable: true },
+        append: { enable: true },
+        sortable: { enable: true },
+      },
+      setLabel: function () {
         // if(!!this.item.label){
         var label = gform.renderString(this.item.label || this.label, this);
         if (this.required) {
-            label += this.requiredText + this.suffix;
+          label += this.requiredText + this.suffix;
         }
-        var labelEl = this.el.querySelector('fieldset#' + this.id + '>legend,fieldset#' + this.id + '>label')
+        var labelEl = this.el.querySelector(
+          "fieldset#" + this.id + ">legend,fieldset#" + this.id + ">label"
+        );
         if (labelEl !== null) {
-            labelEl.innerHTML = label
+          labelEl.innerHTML = label;
         }
         this.label = label;
         this.render();
         // }
-    },
-    edit: function (e) {
-        if (e === this ||
-            (!e.target.classList.contains('gform-minus') &&
-                !e.target.classList.contains('gform-add') && !e.target.parentNode.classList.contains('gform-minus') &&
-                !e.target.parentNode.classList.contains('gform-add'))
+      },
+      edit: function (e) {
+        if (
+          e === this ||
+          (!e.target.classList.contains("gform-minus") &&
+            !e.target.classList.contains("gform-add") &&
+            !e.target.parentNode.classList.contains("gform-minus") &&
+            !e.target.parentNode.classList.contains("gform-add"))
         ) {
-            // e.preventDefault();
-            this.modalEl = gform.create(gform.render("modal_container", { body: '<div class="gform-modal_body"></div>', footer: gform.render('child_modal_footer'), legend: this.label, name: "preview" }))
-            this.container.addEventListener('click', this.owner.listener)
-            // gform.removeClass(this.modalEl,'modal-hide');
-            // gform.prototype.modal.call(this)
-            this.modalEl.querySelector('.gform-modal_body').appendChild(this.container);
-
-            this.modal = gform.prototype.modal.bind(this);
-            this.modal();
-            this.find({ visible: true }).focus(this.owner.modalDelay);
-
-            // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
-            // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
-            // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
-            this.modalEl.querySelector('.done').addEventListener('click', () => {
-                // this.owner.trigger('close',this);
-
-                this.render();
-                this.modal("hide")
-            });
-
-            this.modalEl.querySelector('.gform-footer .gform-minus').addEventListener('click', function (e) {
+          // e.preventDefault();
+          this.modalEl = gform.create(
+            gform.render("modal_container", {
+              body: '<div class="gform-modal_body"></div>',
+              footer: gform.render("child_modal_footer"),
+              legend: this.label,
+              name: "preview",
+            })
+          );
+          this.container.addEventListener("click", this.owner.listener);
+          // gform.removeClass(this.modalEl,'modal-hide');
+          // gform.prototype.modal.call(this)
+          this.modalEl
+            .querySelector(".gform-modal_body")
+            .appendChild(this.container);
+  
+          this.modal = gform.prototype.modal.bind(this);
+          this.modal();
+          this.find({ visible: true }).focus(this.owner.modalDelay);
+  
+          // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
+          // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
+          // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
+          this.modalEl.querySelector(".done").addEventListener("click", () => {
+            // this.owner.trigger('close',this);
+  
+            this.render();
+            this.modal("hide");
+          });
+  
+          this.modalEl
+            .querySelector(".gform-footer .gform-minus")
+            .addEventListener(
+              "click",
+              function (e) {
                 // e.stopPropagation();
                 // e.preventDefault();
-                this.modal('hide');
-                this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
-                this.container.removeEventListener('click', this.owner.listener)
-                this.am.removeField(this)
-
-            }.bind(this));
+                this.modal("hide");
+                this.modalEl
+                  .querySelector(".gform-modal_body")
+                  .removeChild(this.container);
+                this.container.removeEventListener("click", this.owner.listener);
+                this.am.removeField(this);
+              }.bind(this)
+            );
         }
-    },
-    create: function () {
-
+      },
+      create: function () {
         // var tempEl = gform.create('<div class="list-group-item"></div>');
         var tempEl = gform.create('<div class="list-group-item"></div>');
-
-        gform.addClass(tempEl, 'gform-edit');
+  
+        gform.addClass(tempEl, "gform-edit");
         // this.render(tempEl);
         tempEl.setAttribute("id", "el_" + this.id);
         // gform.toggleClass(tempEl,'gform_isArray',!!this.array)
-        this.container = gform.create('<fieldset></fieldset>');
-
-        tempEl.removeEventListener('click', gform.types.template.edit.bind(this))
-        tempEl.addEventListener('click', gform.types.template.edit.bind(this))
+        this.container = gform.create("<fieldset></fieldset>");
+  
+        tempEl.removeEventListener("click", gform.types.template.edit.bind(this));
+        tempEl.addEventListener("click", gform.types.template.edit.bind(this));
         this.render(tempEl);
         return tempEl;
         // return "";
         // return this.render();
-    },
-    focus: function (e) {
-        this.owner.call('edit', this)
-    },
-    // templateSelector:"tbody",
-    render: function (el) {
+      },
+      focus: function (e) {
+        this.owner.call("edit", this);
+      },
+      // templateSelector:"tbody",
+      render: function (el) {
         el = el || this.el;
         while (el.firstElementChild) {
-            el.removeChild(el.firstElementChild)
+          el.removeChild(el.firstElementChild);
         }
         // this.value = this.get();
-
+  
         // el.innerHTML = "";
         switch (typeof this.format.template) {
-            case 'string':
-                el.innerHTML = gform.renderString(this.format.template, this);
-
-                break;
-            case 'function':
-                el.innerHTML = this.format.template.call(null, this);
-                break;
-            default:
-                el.innerHTML = gform.render('template_item', this);
+          case "string":
+            el.innerHTML = gform.renderString(this.format.template, this);
+  
+            break;
+          case "function":
+            el.innerHTML = this.format.template.call(null, this);
+            break;
+          default:
+            el.innerHTML = gform.render("template_item", this);
         }
         return el;
-    },
-    display: function () {
+      },
+      display: function () {
         // return gform.m((this.format||{template:"{{{value}}}"}).template,_.extend({}, gform.stencils, this));
-        return gform.renderString((this.format.template || '<div><h3>{{{label}}}</h3><dl class="dl-horizontal">{{#_items}}<dt>{{{label}}}</dt><dd>{{{display}}}</dd>{{/_items}}</dl></div>'), _.pick(this, "value",
-            'label',
-            'name',
-            'id',
-            'inline',
-            'valid',
-            'map',
-            'path',
-            'parsable',
-            'reportable',
-            'visible',
-            'parent',
-            'editable',
-            'parent',
-            'fillable',
-            'array',
-            'columns',
-            'offset',
-            'ischild', 'pre', 'post', '_items'
-        ));
+        return gform.renderString(
+          this.format.template ||
+            '<div><h3>{{{label}}}</h3><dl class="dl-horizontal">{{#_items}}<dt>{{{label}}}</dt><dd>{{{display}}}</dd>{{/_items}}</dl></div>',
+          _.pick(
+            this,
+            "value",
+            "label",
+            "name",
+            "id",
+            "inline",
+            "valid",
+            "map",
+            "path",
+            "parsable",
+            "reportable",
+            "visible",
+            "parent",
+            "editable",
+            "parent",
+            "fillable",
+            "array",
+            "columns",
+            "offset",
+            "ischild",
+            "pre",
+            "post",
+            "_items"
+          )
+        );
+      },
     }
-}
-)
-
-
-
-
-
-// gform.types['table'] = _.extend({}, gform.types['input'], gform.types['section'],{
-//     array:{
-//         template:(data)=>{
-//             var tempEl = document.createElement("span");
-//             tempEl.setAttribute("id", "el_"+(data||this).id);
-//             gform.addClass(tempEl,gform.columnClasses[(data||this).columns])
-//             gform.addClass(tempEl,gform.offsetClasses[(data||this).offset])
-//             gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
-//             //   if(this.owner.options.clear){
-//                 // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
-//             //   }
-//             //   tempEl.innerHTML = this.render();
-//               tempEl.innerHTML =  gform.m(`
-//               <fieldset data-id="{{id}}" class="col-xs-12">
-//                 {{#array}}{{#append.enable}}<button data-ref="{{refid}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add{{/append.label}}</button>{{/append.enable}}{{/array}}
-//                 <legend>{{array.label}}</legend>
-//                 <div class="array_container"></div>
-//                 {{#array}}{{^append.enable}}<button data-ref="{{refid}}" class="create btn btn-success gform-append">{{append.label}}{{^append.label}}Click here to create first{{/append.label}}</button>{{/append.enable}}{{/array}}
-//                 </fieldset>`,data||this)
-//               return tempEl;
-//         },
-//         container:".array_container",
-//         max:5,min:1,duplicate:{enable:false},remove:{enable:false},append:{enable:true},sortable:{enable:true}
-//       },
-//     row:function(){
-//         this.labels =_.filter(this.fields,function(item){
-//             return !item.sibling
-//         });//_.uniq(_.map(this.fields,'label'))
-//         return gform.render('table',this);
-//     },
-//     toString: function(name, report) {
-//         if(!report){
-//           if(this.sibling){
-//             return "";
-//           }else{
-//               var mystring = _.reduce(this.parent.filter(this.name),function(initial, field){
-//                 var mynode = document.createElement("tr");
-//                 field.render(mynode);
-//                 initial+= mynode.outerHTML
-//                 return initial;
-//               },""
-//               )
-//             return gform.m('<h4>{{#label}}{{{label}}}{{/label}}</h4><dl style="margin-left:10px"><table class="table"><thead><tr>{{#field.fields}}<th>{{{label}}}</th>{{/field.fields}}</tr></thead><tbody>{{{value}}}</tbody></table></dl>',{label:this.label,value:mystring,field:this})
-//           }
-
-//         }else{
-//           return gform.toString.call(this, name,report);
-//         }
-//     },
-//     rowSelector:"tbody",
-//     initialize: function() {
-//         this.rows = [];
-//         this.initialValue = this.value
-
-//         this.owner.on('appended', function(id,e){
-//             if(id == e.field.id){
-//                 e.field.el.click();
-//             }
-//         }.bind(null,this.id));
-
-//         this.owner.on('close', function(id,e){
-
-//             if(typeof e.field !== 'undefined' && id == e.field.id){
-//                 e.field.owner.valid = true;
-//                 e.field.owner.validate.call(e.field,true)
-//                 if(e.field.owner.valid){
-//                     e.field.modal('hide')
-//                     e.field.modalEl.querySelector('.gform-modal_body').removeChild(e.field.container);
-//                     e.field.container.removeEventListener('click', e.form.listener)
-
-//                     e.field.value = e.field.get();
-//                     e.field.update();
-//                     if(e.field.array.sortable.enable && typeof $ !== 'undefined' && typeof $.bootstrapSortable !== 'undefined'){
-//                         $.bootstrapSortable({ applyLast: true });
-//                     }
-
-//                     e.form.trigger('done', this);   
-//                 }
-//             }
-
-//         }.bind(null,this.id));
-
-//         Object.defineProperty(this, "value",{
-//             get: function(){
-//                 // return true;
-//                 return this.get();
-//             }
-//         });
-//         gform.types[this.type].setLabel.call(this);
-
-
-//       },     
-//     render: function(el) {
-//         el = el||this.el;
-
-//         el.innerHTML = "";
-
-//         /* Edit button on row*/
-//         // var cell = document.createElement("td");
-//         // var cellText = gform.create('<button class="btn btn-info btn-xs gform-edit"><i class="fa fa-pencil"></i> Edit</button>');
-//         // cell.appendChild(cellText);
-//         // el.appendChild(cell);
-
-//         _.each(this.fields,function(field){
-//             var renderable = "";
-//             if(typeof (this.value||{})[field.name] !== 'undefined' && (this.value||{})[field.name] !== ''){
-//                 renderable = (this.value||{})[field.name];
-//             }else if(typeof field.value !== 'undefined' && field.value !== ''){
-//                 renderable = field.value;
-//             }
-//             var cellText = document.createTextNode(renderable);
-
-//             // if(typeof field.display !== 'undefined'){
-//                 if(typeof field.display == 'string'){
-//                     cellText = gform.create(field.display);
-//                 }else if(typeof field.display == 'function'){
-//                     cellText = gform.create(field.display.call(this));
-//                 }
-//             // }
-
-//             if(field.sibling){
-//                 el.querySelector('#'+field.array.ref).appendChild(cellText);
-//             }else{
-//                 var cell = document.createElement("td");
-//                 if(typeof field.array !== 'undefined'){
-//                     cell.setAttribute("id", field.array.ref);
-//                 }
-
-//                 cell.appendChild(cellText);
-
-//                 el.appendChild(cell);
-//             }
-
-//         }.bind(this))
-
-//     },     
-//     display: function(){
-//            return this.toString();
-//     },
-//     edit:function(e){
-//             if(
-//                 !e.target.classList.contains('gform-minus') && 
-//                 !e.target.classList.contains('gform-add')
-//             ){
-//                 e.preventDefault();
-//                 this.modalEl = gform.create(gform.render("modal_container",{body:'<div class="gform-modal_body"></div>',footer:gform.render('child_modal_footer'),legend:this.label,name:"preview"}))
-//                 this.container.addEventListener('click', this.owner.listener)
-//                 // gform.removeClass(this.modalEl,'modal-hide');
-//                 // gform.prototype.modal.call(this)
-//                 this.modalEl.querySelector('.gform-modal_body').appendChild(this.container);
-
-//                 this.modal = gform.prototype.modal.bind(this);
-//                 this.modal();
-//                 this.find({visible:true}).focus(this.owner.modalDelay);
-
-//                 // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
-//                 // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
-//                 // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
-//                 this.modalEl.querySelector('.done').addEventListener('click', function(e){
-//                     this.owner.trigger('close',this);
-//                 }.bind(this));
-
-//                 this.modalEl.querySelector('.gform-footer .gform-minus').addEventListener('click', function(){
-//                     e.stopPropagation();
-//                     e.preventDefault();
-//                     this.modal('hide');
-//                     this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
-//                     this.container.removeEventListener('click', this.owner.listener)
-//                     gform.removeField.call(this.owner,this);
-//                 }.bind(this));
-//             }
-//         },
-//     create: function() {
-//         var tempEl = document.createElement("tr");
-//         gform.addClass(tempEl,'gform-edit');
-//         this.render(tempEl);
-//         tempEl.setAttribute("id", "el_"+this.id);
-//         gform.toggleClass(tempEl,'gform_isArray',!!this.array)
-//         this.container = gform.create('<fieldset></fieldset>');
-
-//         tempEl.removeEventListener('click', gform.types.table.edit.bind(this))
-//         tempEl.addEventListener('click', gform.types.table.edit.bind(this))
-
-//         return tempEl;
-//     },
-//     update: function(item, silent) {
-//         if(typeof item === 'object') {
-//             _.extend(this.item,item);
-//         }
-//         // this.label = gform.renderString((item||{}).label||this.item.label, this);
-//         gform.types[this.type].setLabel.call(this);
-
-//         this.render();
-//         if(!silent) {
-//             this.parent.trigger(['change'], this);
-//         }
-//     }
-// });
-
-
-gform.types['table'] = _.extend({}, gform.types['input'], gform.types['section'], {
-    array: {
+  );
+  
+  // gform.types['table'] = _.extend({}, gform.types['input'], gform.types['section'],{
+  //     array:{
+  //         template:(data)=>{
+  //             var tempEl = document.createElement("span");
+  //             tempEl.setAttribute("id", "el_"+(data||this).id);
+  //             gform.addClass(tempEl,gform.columnClasses[(data||this).columns])
+  //             gform.addClass(tempEl,gform.offsetClasses[(data||this).offset])
+  //             gform.toggleClass(tempEl,'gform_isArray',!!(data||this).array)
+  //             //   if(this.owner.options.clear){
+  //                 // tempEl.setAttribute("class", gform.columnClasses[this.columns]+' '+gform.offsetClasses[this.offset]);
+  //             //   }
+  //             //   tempEl.innerHTML = this.render();
+  //               tempEl.innerHTML =  gform.m(`
+  //               <fieldset data-id="{{id}}" class="col-xs-12">
+  //                 {{#array}}{{#append.enable}}<button data-ref="{{refid}}" class="btn btn-success gform-append float-right">{{append.label}}{{^append.label}}Add{{/append.label}}</button>{{/append.enable}}{{/array}}
+  //                 <legend>{{array.label}}</legend>
+  //                 <div class="array_container"></div>
+  //                 {{#array}}{{^append.enable}}<button data-ref="{{refid}}" class="create btn btn-success gform-append">{{append.label}}{{^append.label}}Click here to create first{{/append.label}}</button>{{/append.enable}}{{/array}}
+  //                 </fieldset>`,data||this)
+  //               return tempEl;
+  //         },
+  //         container:".array_container",
+  //         max:5,min:1,duplicate:{enable:false},remove:{enable:false},append:{enable:true},sortable:{enable:true}
+  //       },
+  //     row:function(){
+  //         this.labels =_.filter(this.fields,function(item){
+  //             return !item.sibling
+  //         });//_.uniq(_.map(this.fields,'label'))
+  //         return gform.render('table',this);
+  //     },
+  //     toString: function(name, report) {
+  //         if(!report){
+  //           if(this.sibling){
+  //             return "";
+  //           }else{
+  //               var mystring = _.reduce(this.parent.filter(this.name),function(initial, field){
+  //                 var mynode = document.createElement("tr");
+  //                 field.render(mynode);
+  //                 initial+= mynode.outerHTML
+  //                 return initial;
+  //               },""
+  //               )
+  //             return gform.m('<h4>{{#label}}{{{label}}}{{/label}}</h4><dl style="margin-left:10px"><table class="table"><thead><tr>{{#field.fields}}<th>{{{label}}}</th>{{/field.fields}}</tr></thead><tbody>{{{value}}}</tbody></table></dl>',{label:this.label,value:mystring,field:this})
+  //           }
+  
+  //         }else{
+  //           return gform.toString.call(this, name,report);
+  //         }
+  //     },
+  //     rowSelector:"tbody",
+  //     initialize: function() {
+  //         this.rows = [];
+  //         this.initialValue = this.value
+  
+  //         this.owner.on('appended', function(id,e){
+  //             if(id == e.field.id){
+  //                 e.field.el.click();
+  //             }
+  //         }.bind(null,this.id));
+  
+  //         this.owner.on('close', function(id,e){
+  
+  //             if(typeof e.field !== 'undefined' && id == e.field.id){
+  //                 e.field.owner.valid = true;
+  //                 e.field.owner.validate.call(e.field,true)
+  //                 if(e.field.owner.valid){
+  //                     e.field.modal('hide')
+  //                     e.field.modalEl.querySelector('.gform-modal_body').removeChild(e.field.container);
+  //                     e.field.container.removeEventListener('click', e.form.listener)
+  
+  //                     e.field.value = e.field.get();
+  //                     e.field.update();
+  //                     if(e.field.array.sortable.enable && typeof $ !== 'undefined' && typeof $.bootstrapSortable !== 'undefined'){
+  //                         $.bootstrapSortable({ applyLast: true });
+  //                     }
+  
+  //                     e.form.trigger('done', this);
+  //                 }
+  //             }
+  
+  //         }.bind(null,this.id));
+  
+  //         Object.defineProperty(this, "value",{
+  //             get: function(){
+  //                 // return true;
+  //                 return this.get();
+  //             }
+  //         });
+  //         gform.types[this.type].setLabel.call(this);
+  
+  //       },
+  //     render: function(el) {
+  //         el = el||this.el;
+  
+  //         el.innerHTML = "";
+  
+  //         /* Edit button on row*/
+  //         // var cell = document.createElement("td");
+  //         // var cellText = gform.create('<button class="btn btn-info btn-xs gform-edit"><i class="fa fa-pencil"></i> Edit</button>');
+  //         // cell.appendChild(cellText);
+  //         // el.appendChild(cell);
+  
+  //         _.each(this.fields,function(field){
+  //             var renderable = "";
+  //             if(typeof (this.value||{})[field.name] !== 'undefined' && (this.value||{})[field.name] !== ''){
+  //                 renderable = (this.value||{})[field.name];
+  //             }else if(typeof field.value !== 'undefined' && field.value !== ''){
+  //                 renderable = field.value;
+  //             }
+  //             var cellText = document.createTextNode(renderable);
+  
+  //             // if(typeof field.display !== 'undefined'){
+  //                 if(typeof field.display == 'string'){
+  //                     cellText = gform.create(field.display);
+  //                 }else if(typeof field.display == 'function'){
+  //                     cellText = gform.create(field.display.call(this));
+  //                 }
+  //             // }
+  
+  //             if(field.sibling){
+  //                 el.querySelector('#'+field.array.ref).appendChild(cellText);
+  //             }else{
+  //                 var cell = document.createElement("td");
+  //                 if(typeof field.array !== 'undefined'){
+  //                     cell.setAttribute("id", field.array.ref);
+  //                 }
+  
+  //                 cell.appendChild(cellText);
+  
+  //                 el.appendChild(cell);
+  //             }
+  
+  //         }.bind(this))
+  
+  //     },
+  //     display: function(){
+  //            return this.toString();
+  //     },
+  //     edit:function(e){
+  //             if(
+  //                 !e.target.classList.contains('gform-minus') &&
+  //                 !e.target.classList.contains('gform-add')
+  //             ){
+  //                 e.preventDefault();
+  //                 this.modalEl = gform.create(gform.render("modal_container",{body:'<div class="gform-modal_body"></div>',footer:gform.render('child_modal_footer'),legend:this.label,name:"preview"}))
+  //                 this.container.addEventListener('click', this.owner.listener)
+  //                 // gform.removeClass(this.modalEl,'modal-hide');
+  //                 // gform.prototype.modal.call(this)
+  //                 this.modalEl.querySelector('.gform-modal_body').appendChild(this.container);
+  
+  //                 this.modal = gform.prototype.modal.bind(this);
+  //                 this.modal();
+  //                 this.find({visible:true}).focus(this.owner.modalDelay);
+  
+  //                 // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
+  //                 // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
+  //                 // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
+  //                 this.modalEl.querySelector('.done').addEventListener('click', function(e){
+  //                     this.owner.trigger('close',this);
+  //                 }.bind(this));
+  
+  //                 this.modalEl.querySelector('.gform-footer .gform-minus').addEventListener('click', function(){
+  //                     e.stopPropagation();
+  //                     e.preventDefault();
+  //                     this.modal('hide');
+  //                     this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
+  //                     this.container.removeEventListener('click', this.owner.listener)
+  //                     gform.removeField.call(this.owner,this);
+  //                 }.bind(this));
+  //             }
+  //         },
+  //     create: function() {
+  //         var tempEl = document.createElement("tr");
+  //         gform.addClass(tempEl,'gform-edit');
+  //         this.render(tempEl);
+  //         tempEl.setAttribute("id", "el_"+this.id);
+  //         gform.toggleClass(tempEl,'gform_isArray',!!this.array)
+  //         this.container = gform.create('<fieldset></fieldset>');
+  
+  //         tempEl.removeEventListener('click', gform.types.table.edit.bind(this))
+  //         tempEl.addEventListener('click', gform.types.table.edit.bind(this))
+  
+  //         return tempEl;
+  //     },
+  //     update: function(item, silent) {
+  //         if(typeof item === 'object') {
+  //             _.extend(this.item,item);
+  //         }
+  //         // this.label = gform.renderString((item||{}).label||this.item.label, this);
+  //         gform.types[this.type].setLabel.call(this);
+  
+  //         this.render();
+  //         if(!silent) {
+  //             this.parent.trigger(['change'], this);
+  //         }
+  //     }
+  // });
+  
+  gform.types["table"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["section"],
+    {
+      array: {
         // columns:-1,
-        template: (data) => {
-            return gform.create(gform.render('table', { ref: data.id, labels: _.map(data.field.fields, item => (item.array) ? item.array.label || item.label : item.label || item.name), ...data.field }));
+        template: data => {
+          return gform.create(
+            gform.render("table", {
+              ref: data.id,
+              labels: _.map(data.field.fields, item =>
+                item.array
+                  ? item.array.label || item.label
+                  : item.label || item.name
+              ),
+              ...data.field,
+            })
+          );
         },
         container: "table",
         rowTemplate: "<table><tbody></tbody></table>",
         rowSelector: "tbody",
         rowClass: "table-row",
-        max: 20, min: 0, duplicate: { enable: false }, remove: { enable: false }, append: { enable: true }, sortable: { enable: true }
-    },
-    edit: function (e) {
-        if (e === this ||
-            !e.target.classList.contains('gform-minus') &&
-            !e.target.classList.contains('gform-add')
+        max: 20,
+        min: 0,
+        duplicate: { enable: false },
+        remove: { enable: false },
+        append: { enable: true },
+        sortable: { enable: true },
+      },
+      edit: function (e) {
+        if (
+          e === this ||
+          (!e.target.classList.contains("gform-minus") &&
+            !e.target.classList.contains("gform-add"))
         ) {
-            // e.preventDefault();
-            this.modalEl = gform.create(gform.render("modal_container", { body: '<div class="gform-modal_body"></div>', footer: gform.render('child_modal_footer'), legend: this.label, name: "preview" }))
-            this.container.addEventListener('click', this.owner.listener)
-            // gform.removeClass(this.modalEl,'modal-hide');
-            // gform.prototype.modal.call(this)
-            this.modalEl.querySelector('.gform-modal_body').appendChild(this.container);
-
-            this.modal = gform.prototype.modal.bind(this);
-            this.modal();
-            this.find({ visible: true }).focus(this.owner.modalDelay);
-
-            // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
-            // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
-            // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
-            this.modalEl.querySelector('.done').addEventListener('click', () => {
-                // this.owner.trigger('close',this);
-
-                this.action = 'done';
-                this.modal("hide")
+          // e.preventDefault();
+          this.modalEl = gform.create(
+            gform.render("modal_container", {
+              body: '<div class="gform-modal_body"></div>',
+              footer: gform.render("child_modal_footer"),
+              legend: this.label,
+              name: "preview",
+            })
+          );
+          this.container.addEventListener("click", this.owner.listener);
+          // gform.removeClass(this.modalEl,'modal-hide');
+          // gform.prototype.modal.call(this)
+          this.modalEl
+            .querySelector(".gform-modal_body")
+            .appendChild(this.container);
+  
+          this.modal = gform.prototype.modal.bind(this);
+          this.modal();
+          this.find({ visible: true }).focus(this.owner.modalDelay);
+  
+          // this.modalEl.querySelector('.close').addEventListener('click', closeFunc);
+          // this.modalEl.querySelector('.modal-background').addEventListener('click', closeFunc);
+          // this.modalEl.querySelector('.done').addEventListener('click', closeFunc);
+          this.modalEl.querySelector(".done").addEventListener("click", () => {
+            // this.owner.trigger('close',this);
+  
+            this.action = "done";
+            this.modal("hide");
+          });
+  
+          this.modalEl
+            .querySelector(".gform-footer .gform-minus")
+            .addEventListener("click", () => {
+              // e.stopPropagation();
+              // e.preventDefault();
+  
+              this.action = "remove";
+              this.modal("hide");
             });
-
-            this.modalEl.querySelector('.gform-footer .gform-minus').addEventListener('click', () => {
-                // e.stopPropagation();
-                // e.preventDefault();
-
-                this.action = 'remove';
-                this.modal('hide');
-
-            });
-            $(this.modalEl).on('hidden.bs.modal', function (e) {
-                console.log(this.action)
-                switch (this.action) {
-                    case 'remove':
-                        this.modalEl.querySelector('.gform-modal_body').removeChild(this.container);
-                        this.container.removeEventListener('click', this.owner.listener)
-                        this.am.removeField(this);
-                        break;
-                    case 'done':
-                    case 'closed':
-                    default:
-
-                        this.render();
-
-                }
-            }.bind(this))
+          $(this.modalEl).on(
+            "hidden.bs.modal",
+            function (e) {
+              console.log(this.action);
+              switch (this.action) {
+                case "remove":
+                  this.modalEl
+                    .querySelector(".gform-modal_body")
+                    .removeChild(this.container);
+                  this.container.removeEventListener(
+                    "click",
+                    this.owner.listener
+                  );
+                  this.am.removeField(this);
+                  break;
+                case "done":
+                case "closed":
+                default:
+                  this.render();
+              }
+            }.bind(this)
+          );
         }
-    },
-    create: function () {
-
+      },
+      create: function () {
         var tempEl = document.createElement("tr");
-        gform.addClass(tempEl, 'gform-edit');
+        gform.addClass(tempEl, "gform-edit");
         // this.render(tempEl);
         tempEl.setAttribute("id", "el_" + this.id);
         // gform.toggleClass(tempEl,'gform_isArray',!!this.array)
-        this.container = gform.create('<fieldset></fieldset>');
-
-        tempEl.removeEventListener('click', gform.types.table.edit.bind(this))
-        tempEl.addEventListener('click', gform.types.table.edit.bind(this))
+        this.container = gform.create("<fieldset></fieldset>");
+  
+        tempEl.removeEventListener("click", gform.types.table.edit.bind(this));
+        tempEl.addEventListener("click", gform.types.table.edit.bind(this));
         this.render(tempEl);
         return tempEl;
         // return "";
         // return this.render();
-    },
-    focus: function (e) {
-        this.owner.call('edit', this)
-    },
-    render: function (el) {
+      },
+      focus: function (e) {
+        this.owner.call("edit", this);
+      },
+      render: function (el) {
         el = el || this.el;
         while (el.firstElementChild) {
-            el.removeChild(el.firstElementChild)
+          el.removeChild(el.firstElementChild);
         }
         el.innerHTML = "";
-
-        _.reduce(this._items, (el, field) => {
+  
+        _.reduce(
+          this._items,
+          (el, field) => {
             var renderable = "";
-            if (typeof (this.value || {})[field.name] !== 'undefined' && (this.value || {})[field.name] !== '') {
-                renderable = (this.value || {})[field.name];
-            } else if (typeof field.value !== 'undefined' && field.value !== '') {
-                renderable = field.value;
+            if (
+              typeof (this.value || {})[field.name] !== "undefined" &&
+              (this.value || {})[field.name] !== ""
+            ) {
+              renderable = (this.value || {})[field.name];
+            } else if (typeof field.value !== "undefined" && field.value !== "") {
+              renderable = field.value;
             }
             var cellText = document.createTextNode(renderable);
-
-            if (typeof field.display !== 'undefined') {
-                if (typeof field.display == 'string') {
-                    cellText = gform.create(field.display);
-                } else if (typeof field.display == 'function') {
-                    cellText = gform.create(field.display.call(this));
-                }
+  
+            if (typeof field.display !== "undefined") {
+              if (typeof field.display == "string") {
+                cellText = gform.create(field.display);
+              } else if (typeof field.display == "function") {
+                cellText = gform.create(field.display.call(this));
+              }
             }
             var cell = document.createElement("td");
-            if (typeof field.array !== 'undefined') {
-                cell.setAttribute("id", field.array.ref);
+            if (typeof field.array !== "undefined") {
+              cell.setAttribute("id", field.array.ref);
             }
             cell.appendChild(cellText);
             el.appendChild(cell);
             return el;
-        }, el)
-
+          },
+          el
+        );
+      },
     }
-}
-)
-
-
-
-
-gform.types['custom_radio'] = _.extend({}, gform.types['input'], gform.types['collection'], {
-    set: function (value) {
+  );
+  
+  gform.types["custom_radio"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["collection"],
+    {
+      set: function (value) {
         var target = this.el.querySelector('[data-value="' + value + '"]');
         if (target !== null) {
-            target.click();
+          target.click();
         }
-    },
-    defaults: {
-        selectedClass: 'btn btn-success',
-        defaultClass: 'btn btn-default',
-    },
-    get: function () {
-        if (!('el' in this)) { return this.internalValue };
-
-        return (this.el.querySelector('.' + this.selectedClass.split(' ').join('.')) || ({ dataset: { value: "" } })).dataset.value;
-    },
-    toggle: function (e) {
-        var elem = this.el.querySelector('.' + this.selectedClass.split(' ').join('.'));
-        gform.toggleClass(elem, this.selectedClass, false)
-        gform.toggleClass(elem, this.defaultClass, true)
-        gform.toggleClass(e.target, this.defaultClass, false)
-        gform.toggleClass(e.target, this.selectedClass, true)
-        this.owner.trigger('change', this);
-        this.owner.trigger('input', this);
-    },
-    initialize: function () {
-        var anchors = this.el.querySelectorAll('a, button');
+      },
+      defaults: {
+        selectedClass: "btn btn-success",
+        defaultClass: "btn btn-default",
+      },
+      get: function () {
+        if (!("el" in this)) {
+          return this.internalValue;
+        }
+  
+        return (
+          this.el.querySelector(
+            "." + this.selectedClass.split(" ").join(".")
+          ) || { dataset: { value: "" } }
+        ).dataset.value;
+      },
+      toggle: function (e) {
+        var elem = this.el.querySelector(
+          "." + this.selectedClass.split(" ").join(".")
+        );
+        gform.toggleClass(elem, this.selectedClass, false);
+        gform.toggleClass(elem, this.defaultClass, true);
+        gform.toggleClass(e.target, this.defaultClass, false);
+        gform.toggleClass(e.target, this.selectedClass, true);
+        this.owner.trigger("change", this);
+        this.owner.trigger("input", this);
+      },
+      initialize: function () {
+        var anchors = this.el.querySelectorAll("a, button");
         for (const anchor of anchors) {
-            anchor.removeEventListener('click', gform.types[this.type].toggle.bind(this));
-            anchor.addEventListener('click', gform.types[this.type].toggle.bind(this));
-
+          anchor.removeEventListener(
+            "click",
+            gform.types[this.type].toggle.bind(this)
+          );
+          anchor.addEventListener(
+            "click",
+            gform.types[this.type].toggle.bind(this)
+          );
         }
         // this.el.querySelectorAll('a').removeEventListener('click', gform.types[this.type].toggle.bind(this));
         gform.types[this.type].setLabel.call(this);
-
+      },
     }
-});
-
-//   gform.types['custom_check'] = _.extend({}, gform.types['input'], gform.types['bool'], {
-//     set: function(value) {
-//         this.el.querySelector('[data-value="'+value+'"]').click();
-//     },		
-//     defaults: {
-//         selectedClass: 'btn btn-success ',
-//         defaultClass: 'btn btn-default',
-//     },
-//     get: function() {
-//         return (this.el.querySelector('.' +  this.selectedClass.split(' ').join('.'))||({dataset:{value:""}})).dataset.value;
-//     },
-//     initialize: function() {
-//         this.$el = $(this.el.querySelector('.custom-group'));
-//         this.$el.children('a').off();
-//         // this.el.addEventListener('input', this.onchangeEvent.bind(null,true));
-
-//         this.$el.children('a').on('click', function(e){
-//             this.$el.children('.' + this.selectedClass.split(' ').join('.')).toggleClass(this.selectedClass + ' ' + this.defaultClass);
-//             $(e.target).closest('a').toggleClass(this.selectedClass + ' ' + this.defaultClass);
-
-
-//             this.owner.trigger('change', this);
-//             this.owner.trigger('input', this);
-//         }.bind(this));
-//     }
-//   });
-
-
-
-//tags
-//upload
-//base64
-/* Templating  */
-gform.m = function (n, t, e, r) { var i, o = gform.m, a = ""; function f(n, t) { return n = null != (n = n[(t = t.pop ? t : t.split(".")).shift()]) ? n : "", 0 in t ? f(n, t) : n } t = Array.isArray(t) ? t : t ? [t] : [], t = r ? 0 in t ? [] : [1] : t; for (i = 0; i < t.length; i++) { var s, l = "", p = 0, g = "object" == typeof t[i] ? t[i] : {}; (g = Object.assign({}, e, g))[""] = { "": t[i] }, n.replace(/([\s\S]*?)({{((\/)|(\^)|#)(.*?)}}|$)/g, function (n, t, e, r, i, c, u) { p ? l += p && !i || 1 < p ? n : t : (a += t.replace(/{{{(.*?)}}}|{{(!?)(&?)(>?)(.*?)}}/g, function (n, t, e, r, i, c) { return t ? f(g, t) : r ? f(g, c) : i ? o(f(g, c), g) : e ? "" : new Option(f(g, c)).innerHTML }), s = c), i ? --p || (u = f(g, u), /^f/.test(typeof u) ? a += u.call(g, l, function (n) { return o(n, g) }) : a += o(l, u, g, s), l = "") : ++p }) } return a }
-
-gform.render = function (template, options) {
-    return gform.renderString(gform.stencils[template || 'text'] || gform.stencils['text'], _.extend({}, gform.stencils, options))
-}
-gform.create = function (text, selector) {
-    return document.createRange().createContextualFragment(text).querySelector(selector || '*') || document.createRange().createContextualFragment(text).firstChild
-}
-gform.renderString = function (string, options) {
-    return gform.m(string || '', _.extend({
-        math: function (ms, render) {
-            return math.eval(render(ms), _.omit(this, 'toString'))
-        },
-        moment: function (name, render) {
-            var parts = name.split('|')
+  );
+  
+  //   gform.types['custom_check'] = _.extend({}, gform.types['input'], gform.types['bool'], {
+  //     set: function(value) {
+  //         this.el.querySelector('[data-value="'+value+'"]').click();
+  //     },
+  //     defaults: {
+  //         selectedClass: 'btn btn-success ',
+  //         defaultClass: 'btn btn-default',
+  //     },
+  //     get: function() {
+  //         return (this.el.querySelector('.' +  this.selectedClass.split(' ').join('.'))||({dataset:{value:""}})).dataset.value;
+  //     },
+  //     initialize: function() {
+  //         this.$el = $(this.el.querySelector('.custom-group'));
+  //         this.$el.children('a').off();
+  //         // this.el.addEventListener('input', this.onchangeEvent.bind(null,true));
+  
+  //         this.$el.children('a').on('click', function(e){
+  //             this.$el.children('.' + this.selectedClass.split(' ').join('.')).toggleClass(this.selectedClass + ' ' + this.defaultClass);
+  //             $(e.target).closest('a').toggleClass(this.selectedClass + ' ' + this.defaultClass);
+  
+  //             this.owner.trigger('change', this);
+  //             this.owner.trigger('input', this);
+  //         }.bind(this));
+  //     }
+  //   });
+  
+  //tags
+  //upload
+  //base64
+  /* Templating  */
+  gform.m = function (n, t, e, r) {
+    var i,
+      o = gform.m,
+      a = "";
+    function f(n, t) {
+      return (
+        (n = null != (n = n[(t = t.pop ? t : t.split(".")).shift()]) ? n : ""),
+        0 in t ? f(n, t) : n
+      );
+    }
+    (t = Array.isArray(t) ? t : t ? [t] : []), (t = r ? (0 in t ? [] : [1]) : t);
+    for (i = 0; i < t.length; i++) {
+      var s,
+        l = "",
+        p = 0,
+        g = "object" == typeof t[i] ? t[i] : {};
+      ((g = Object.assign({}, e, g))[""] = { "": t[i] }),
+        n.replace(
+          /([\s\S]*?)({{((\/)|(\^)|#)(.*?)}}|$)/g,
+          function (n, t, e, r, i, c, u) {
+            p
+              ? (l += (p && !i) || 1 < p ? n : t)
+              : ((a += t.replace(
+                  /{{{(.*?)}}}|{{(!?)(&?)(>?)(.*?)}}/g,
+                  function (n, t, e, r, i, c) {
+                    return t
+                      ? f(g, t)
+                      : r
+                      ? f(g, c)
+                      : i
+                      ? o(f(g, c), g)
+                      : e
+                      ? ""
+                      : new Option(f(g, c)).innerHTML;
+                  }
+                )),
+                (s = c)),
+              i
+                ? --p ||
+                  ((u = f(g, u)),
+                  /^f/.test(typeof u)
+                    ? (a += u.call(g, l, function (n) {
+                        return o(n, g);
+                      }))
+                    : (a += o(l, u, g, s)),
+                  (l = ""))
+                : ++p;
+          }
+        );
+    }
+    return a;
+  };
+  
+  gform.render = function (template, options) {
+    return gform.renderString(
+      gform.stencils[template || "text"] || gform.stencils["text"],
+      _.extend({}, gform.stencils, options)
+    );
+  };
+  gform.create = function (text, selector) {
+    return (
+      document
+        .createRange()
+        .createContextualFragment(text)
+        .querySelector(selector || "*") ||
+      document.createRange().createContextualFragment(text).firstChild
+    );
+  };
+  gform.renderString = function (string, options) {
+    return gform.m(
+      string || "",
+      _.extend(
+        {
+          math: function (ms, render) {
+            return math.eval(render(ms), _.omit(this, "toString"));
+          },
+          moment: function (name, render) {
+            var parts = name.split("|");
             var date = moment(render(parts.shift()));
-            return (parts[0] == "fromNow") ? date.fromNow() : date.format(parts[0])
-        }
-    }, this.methods, options))
-}
-/* End Templating */
-
-/* Class modifications  */
-gform.addClass = function (elem, classes) {
-    if (typeof classes !== 'undefined' && classes.length && typeof elem !== 'undefined' && !!elem) {
-        elem.className = _.chain(elem.className).split(/[\s]+/).union(classes.split(' ')).join(' ').value();
+            return parts[0] == "fromNow" ? date.fromNow() : date.format(parts[0]);
+          },
+        },
+        this.methods,
+        options
+      )
+    );
+  };
+  /* End Templating */
+  
+  /* Class modifications  */
+  gform.addClass = function (elem, classes) {
+    if (
+      typeof classes !== "undefined" &&
+      classes.length &&
+      typeof elem !== "undefined" &&
+      !!elem
+    ) {
+      elem.className = _.chain(elem.className)
+        .split(/[\s]+/)
+        .union(classes.split(" "))
+        .join(" ")
+        .value();
     }
-};
-gform.hasClass = function (elem, classes) {
-    if (typeof classes !== 'undefined' && classes.length && typeof elem !== 'undefined' && !!elem) {
-        return (elem.className.indexOf(classes) !== -1);
+  };
+  gform.hasClass = function (elem, classes) {
+    if (
+      typeof classes !== "undefined" &&
+      classes.length &&
+      typeof elem !== "undefined" &&
+      !!elem
+    ) {
+      return elem.className.indexOf(classes) !== -1;
     }
-};
-gform.removeClass = function (elem, classes) {
-    if (typeof classes !== 'undefined' && classes.length && typeof elem !== 'undefined' && !!elem) {
-        elem.className = _.chain(elem.className).split(/[\s]+/).difference(classes.split(' ')).join(' ').value();
+  };
+  gform.removeClass = function (elem, classes) {
+    if (
+      typeof classes !== "undefined" &&
+      classes.length &&
+      typeof elem !== "undefined" &&
+      !!elem
+    ) {
+      elem.className = _.chain(elem.className)
+        .split(/[\s]+/)
+        .difference(classes.split(" "))
+        .join(" ")
+        .value();
     }
-};
-gform.toggleClass = function (elem, classes, status) {
+  };
+  gform.toggleClass = function (elem, classes, status) {
     if (status) {
-        gform.addClass(elem, classes)
+      gform.addClass(elem, classes);
     } else {
-        gform.removeClass(elem, classes)
+      gform.removeClass(elem, classes);
     }
-};
-/* End Class modifications  */
-
-gform.xhrPool = [];
-gform.ajax = function (options) {
+  };
+  /* End Class modifications  */
+  
+  gform.xhrPool = [];
+  gform.ajax = function (options) {
     var request = new XMLHttpRequest();
     request.onreadystatechange = function () {
-
-        if (request.readyState === 4) {
-            if (request.status === 200) {
-                let data = [];
-                try {
-                    data = JSON.parse(request.response);
-                } catch (e) {
-                    data = _.pick(request, 'statusText', 'responseText');
-                } finally {
-                    gform.xhrPool = _.filter(gform.xhrPool, x => x != request);
-                    options.success(data)
-                }
-            } else {
-                // console.log(request.responseText);
-                if (typeof options.error == 'function') { options.error(request.responseText) };
-            }
+      if (request.readyState === 4) {
+        if (request.status === 200) {
+          let data = [];
+          try {
+            data = JSON.parse(request.response);
+          } catch (e) {
+            data = _.pick(request, "statusText", "responseText");
+          } finally {
+            gform.xhrPool = _.filter(gform.xhrPool, x => x != request);
+            options.success(data);
+          }
+        } else {
+          // console.log(request.responseText);
+          if (typeof options.error == "function") {
+            options.error(request.responseText);
+          }
         }
-    }
-    request.open(options.verb || 'GET', options.path);
+      }
+    };
+    request.open(options.verb || "GET", options.path);
     if (options.sourceID) {
-        var current = _.find(gform.xhrPool, { id: (options.sourceID) })
-        if (current) {
-            current.abort();
-            gform.xhrPool = _.filter(gform.xhrPool, x => x != current);
-        }
-        request.id = options.sourceID
-        gform.xhrPool.push(request);
+      var current = _.find(gform.xhrPool, { id: options.sourceID });
+      if (current) {
+        current.abort();
+        gform.xhrPool = _.filter(gform.xhrPool, x => x != current);
+      }
+      request.id = options.sourceID;
+      gform.xhrPool.push(request);
     }
     request.send();
-}
-
-
-gform._lookup = (field, args, _lookup) => {
-    if (typeof args.name == 'undefined' || !args.name) return field;
-
+  };
+  
+  gform._lookup = (field, args, _lookup) => {
+    if (typeof args.name == "undefined" || !args.name) return field;
+  
     var looker = false;
     var searchField = field;
-
-    if (args.name.indexOf('/') == 0) {
-        looker = searchField.owner.find({ path: args.name }, args.depth || 10);
+  
+    if (args.name.indexOf("/") == 0) {
+      looker = searchField.owner.find({ path: args.name }, args.depth || 10);
     } else {
-        let searchObj = args.name.split('.')
-        let searchString = searchObj.shift();
-
-        while (!looker && typeof searchField.parent !== 'undefined') {// && !(searchField instanceof gform)) {
-            searchField = searchField.parent;
-            var matches = searchField.items.filter({ name: searchString }, args.depth || 10);
-            if (!matches.length) matches = searchField.items.filter({ path: searchString }, args.depth || 10);
-
-            if (matches.length) {
-                looker = _.orderBy(matches, 'parsable', 'desc')[0]
+      let searchObj = args.name.split(".");
+      let searchString = searchObj.shift();
+  
+      while (!looker && typeof searchField.parent !== "undefined") {
+        // && !(searchField instanceof gform)) {
+        searchField = searchField.parent;
+        var matches = searchField.items.filter(
+          { name: searchString },
+          args.depth || 10
+        );
+        if (!matches.length)
+          matches = searchField.items.filter(
+            { path: searchString },
+            args.depth || 10
+          );
+  
+        if (matches.length) {
+          looker = _.orderBy(matches, "parsable", "desc")[0];
+        }
+      }
+      if (looker && searchObj.length) {
+        looker = _.reduce(
+          searchObj,
+          (looker, search) => {
+            if ("items" in looker) {
+              let matches = looker.items.filter(
+                { name: search },
+                args.depth || 10
+              );
+              if (matches.length) {
+                looker = _.orderBy(matches, "parsable", "desc")[0];
+              }
             }
-        }
-        if (looker && searchObj.length) {
-            looker = _.reduce(searchObj, (looker, search) => {
-                if ('items' in looker) {
-                    let matches = looker.items.filter({ name: search }, args.depth || 10);
-                    if (matches.length) {
-                        looker = _.orderBy(matches, 'parsable', 'desc')[0]
-                    }
-                }
-                return looker;
-            }, looker)
-        }
+            return looker;
+          },
+          looker
+        );
+      }
     }
     if (!looker && field.name == args.name) looker = field;
-
+  
     return looker;
-}
-gform.patch = function (object, patch, action) {
+  };
+  gform.patch = function (object, patch, action) {
     if (!_.isArray(patch)) {
-        patch = [patch];
+      patch = [patch];
     }
-    return _.reduce(patch, function (original, task) {
+    return _.reduce(
+      patch,
+      function (original, task) {
         if (typeof task.map !== "string" || original == null) {
-            return original;
+          return original;
         }
         // var stack = task.map.split('...')
-
+  
         // stack.splice(stack.length-1,1,...stack[stack.length-1].split('[]'))
-
+  
         var stack = _.toPath(task.map);
         var object = original;
         while (stack.length > 1) {
-            var target = stack.shift();
-
-            if (typeof object[target] !== 'object') {
-                if (isFinite(stack[0])) {
-                    // stack[0] = parseInt(stack[0]);
-                    if (!_.isArray(object[target])) {
-                        object[target] = [];
-                    }
-                } else {
-                    object[target] = {};
-                }
+          var target = stack.shift();
+  
+          if (typeof object[target] !== "object") {
+            if (isFinite(stack[0])) {
+              // stack[0] = parseInt(stack[0]);
+              if (!_.isArray(object[target])) {
+                object[target] = [];
+              }
+            } else {
+              object[target] = {};
             }
-            if (object[target] != null) {
-                object = object[target];
-            }
-
+          }
+          if (object[target] != null) {
+            object = object[target];
+          }
         }
-        var target = stack.shift()
+        var target = stack.shift();
         if (task.action == "delete") {
-            if (_.isArray(object)) {
-                object.splice(target, 1);
-            } else {
-                delete object[target];
-                object = _.compact(object);
-            }
+          if (_.isArray(object)) {
+            object.splice(target, 1);
+          } else {
+            delete object[target];
+            object = _.compact(object);
+          }
         } else {
-            // if('toJSON' in task){
-            //     object[target] = task.toJSON
-            // }else{
-            //     object[target] = task.value;
-            // }
-            let value = ('toJSON' in task) ? task.toJSON : task.value;
-            if (target && typeof value !== "undefined")
-                object[target] = value;
-
-            // if(object[target] == null)delete object[target];
-            // let val = ('toJSON' in task)?task.toJSON:task.value;
-            // if(val !== null) object[target] = val;
-
+          // if('toJSON' in task){
+          //     object[target] = task.toJSON
+          // }else{
+          //     object[target] = task.value;
+          // }
+          let value = "toJSON" in task ? task.toJSON : task.value;
+          if (target && typeof value !== "undefined") object[target] = value;
+  
+          // if(object[target] == null)delete object[target];
+          // let val = ('toJSON' in task)?task.toJSON:task.value;
+          // if(val !== null) object[target] = val;
         }
-
+  
         return original;
-
-    }, object || {})
-}
-
-_.mixin({
+      },
+      object || {}
+    );
+  };
+  
+  _.mixin({
     score: function (base, abbr, offset) {
-
-        offset = offset || 0; // TODO: I think this is unused... remove
-
-        if (abbr.length === 0) return 0.9;
-        if (abbr.length > base.length) return 0.0;
-
-        for (var i = abbr.length; i > 0; i--) {
-            var sub_abbr = abbr.substring(0, i);
-            var index = base.indexOf(sub_abbr);
-
-            if (index < 0) continue;
-            if (index + abbr.length > base.length + offset) continue;
-
-            var next_string = base.substring(index + sub_abbr.length);
-            var next_abbr = null;
-
-            if (i >= abbr.length) {
-                next_abbr = '';
-            } else {
-                next_abbr = abbr.substring(i);
-            }
-            // Changed to fit new (jQuery) format (JSK)
-            var remaining_score = _.score(next_string, next_abbr, offset + index);
-
-            if (remaining_score > 0) {
-                var score = base.length - next_string.length;
-
-                if (index !== 0) {
-                    var c = base.charCodeAt(index - 1);
-                    if (c == 32 || c == 9) {
-                        for (var j = (index - 2); j >= 0; j--) {
-                            c = base.charCodeAt(j);
-                            score -= ((c == 32 || c == 9) ? 1 : 0.15);
-                        }
-                    } else {
-                        score -= index;
-                    }
-                }
-
-                score += remaining_score * next_string.length;
-                score /= base.length;
-                return (score);
-            }
+      offset = offset || 0; // TODO: I think this is unused... remove
+  
+      if (abbr.length === 0) return 0.9;
+      if (abbr.length > base.length) return 0.0;
+  
+      for (var i = abbr.length; i > 0; i--) {
+        var sub_abbr = abbr.substring(0, i);
+        var index = base.indexOf(sub_abbr);
+  
+        if (index < 0) continue;
+        if (index + abbr.length > base.length + offset) continue;
+  
+        var next_string = base.substring(index + sub_abbr.length);
+        var next_abbr = null;
+  
+        if (i >= abbr.length) {
+          next_abbr = "";
+        } else {
+          next_abbr = abbr.substring(i);
         }
-        // return(0.0);
-        return (false);
+        // Changed to fit new (jQuery) format (JSK)
+        var remaining_score = _.score(next_string, next_abbr, offset + index);
+  
+        if (remaining_score > 0) {
+          var score = base.length - next_string.length;
+  
+          if (index !== 0) {
+            var c = base.charCodeAt(index - 1);
+            if (c == 32 || c == 9) {
+              for (var j = index - 2; j >= 0; j--) {
+                c = base.charCodeAt(j);
+                score -= c == 32 || c == 9 ? 1 : 0.15;
+              }
+            } else {
+              score -= index;
+            }
+          }
+  
+          score += remaining_score * next_string.length;
+          score /= base.length;
+          return score;
+        }
+      }
+      // return(0.0);
+      return false;
     },
     selectPath: function (object, path, target) {
-        if (typeof path == 'string') {
-            return _.property(path)(object)
-        }
-        if (typeof path == 'object') {
-            return Object.keys(path).reduce((result, key) => {
-                result[key] = _.selectPath(object, path[key]);
-                return result
-            }, target || {})
-        }
-
-        // return _.propertyOf(object)(path) 
-        // I believe both of the above are equivilent
-
-        //   //trying lodash native method
-        if (typeof object == 'undefined') return undefined;
-        var obj = object;
-        if (typeof object.toJSON == "function") {
-            obj = object.toJSON()
-        } else {
-            obj = _.extend({}, obj)
-        }
-        return _.reduce(_.toPath(path), (i, map) => {
-            if (typeof i == 'object' && i !== null) {
-                return i[map];
-            } else {
-                return undefined;
-            }
-        }, obj)
-    }
-});
-
-
-
-
-
-
-gform.eventBus = function (options, owner) {
-    this.options = options || { owner: 'form', item: 'field' };
+      if (typeof path == "string") {
+        return _.property(path)(object);
+      }
+      if (typeof path == "object") {
+        return Object.keys(path).reduce((result, key) => {
+          result[key] = _.selectPath(object, path[key]);
+          return result;
+        }, target || {});
+      }
+  
+      // return _.propertyOf(object)(path)
+      // I believe both of the above are equivilent
+  
+      //   //trying lodash native method
+      if (typeof object == "undefined") return undefined;
+      var obj = object;
+      if (typeof object.toJSON == "function") {
+        obj = object.toJSON();
+      } else {
+        obj = _.extend({}, obj);
+      }
+      return _.reduce(
+        _.toPath(path),
+        (i, map) => {
+          if (typeof i == "object" && i !== null) {
+            return i[map];
+          } else {
+            return undefined;
+          }
+        },
+        obj
+      );
+    },
+  });
+  
+  gform.eventBus = function (options, owner) {
+    this.options = options || { owner: "form", item: "field" };
     this.owner = owner || this;
     this.on = function (event, handler, ref) {
-        if (typeof event != 'undefined') {
-
-            var events = event.split(/(?:,| )+/); //.split(' ');
-            // if (typeof this.handlers[event] !== 'object') {
-            // this.handlers[event] = [];
-            // }
-            _.each(events, function (ref, event) {
-                this.handlers[event] = this.handlers[event] || [];
-                if (typeof handler == 'function') {
-                    this.handlers[event].push(handler);
-                    if (typeof ref == 'object') {
-                        ref.push(handler);
-
-                    }
-                } else {
-                    if (typeof this.owner.methods[handler] == 'function') {
-                        this.handlers[event].push(this.owner.methods[handler]);
-                    }
-                }
-            }.bind(this, ref))
-        }
-        return this.owner;
+      if (typeof event != "undefined") {
+        var events = event.split(/(?:,| )+/); //.split(' ');
+        // if (typeof this.handlers[event] !== 'object') {
+        // this.handlers[event] = [];
+        // }
+        _.each(
+          events,
+          function (ref, event) {
+            this.handlers[event] = this.handlers[event] || [];
+            if (typeof handler == "function") {
+              this.handlers[event].push(handler);
+              if (typeof ref == "object") {
+                ref.push(handler);
+              }
+            } else {
+              if (typeof this.owner.methods[handler] == "function") {
+                this.handlers[event].push(this.owner.methods[handler]);
+              }
+            }
+          }.bind(this, ref)
+        );
+      }
+      return this.owner;
     }.bind(this);
     if (_.isArray(options.handlers)) {
-        this.handlers = {};
-        _.each(options.handlers, function (item) {
-            if (item !== null && 'event' in item && 'handler' in item) this.on(item.event, item.handler)
-        }.bind(this))
+      this.handlers = {};
+      _.each(
+        options.handlers,
+        function (item) {
+          if (item !== null && "event" in item && "handler" in item)
+            this.on(item.event, item.handler);
+        }.bind(this)
+      );
     } else {
-        this.handlers = _.extend({}, options.handlers);
+      this.handlers = _.extend({}, options.handlers);
     }
-
-    _.each(this.handlers, function (a, b, c) {
-        if (typeof a == 'function') {
-            c[b] = [a];
-        } else if (typeof a == 'string') {
-            if (typeof this[a] == 'function') {
-                c[b] = [this[a]];
+  
+    _.each(
+      this.handlers,
+      function (a, b, c) {
+        if (typeof a == "function") {
+          c[b] = [a];
+        } else if (typeof a == "string") {
+          if (typeof this[a] == "function") {
+            c[b] = [this[a]];
+          } else {
+            if (typeof this.owner[a] == "function") {
+              c[b] = [this.owner[a]];
             } else {
-                if (typeof this.owner[a] == 'function') {
-                    c[b] = [this.owner[a]];
+              if (
+                "methods" in this.owner &&
+                typeof this.owner.methods[a] == "function"
+              ) {
+                c[b] = [this.owner.methods[a]];
+              } else {
+                if (typeof window[a] == "function") {
+                  c[b] = [window[a]];
                 } else {
-                    if ('methods' in this.owner && typeof this.owner.methods[a] == 'function') {
-                        c[b] = [this.owner.methods[a]];
-                    } else {
-                        if (typeof window[a] == 'function') {
-                            c[b] = [window[a]];
-                        } else {
-                            c[b] = null;
-                        }
-                    }
+                  c[b] = null;
                 }
+              }
             }
+          }
         }
-    }.bind(this))
-
+      }.bind(this)
+    );
+  
     this.dispatch = function (e, f, a) {
-        a = a || {};
-        a[this.options.owner] = this.owner;
-        if (typeof f !== 'undefined') {
-            a[this.options.item] = f;
-        }
-        a.default = true;
-        a.continue = true;
-        a.preventDefault = function () { this.default = false; }.bind(a)
-        a.stopPropagation = function () { this.continue = false; }.bind(a)
-        var events = [];
-        if (typeof e == 'string') {
-            events.push(e)
-        } else { events = events.concat(e) }
-        _.each(events, function (args, event) {
-            args.event = event;
-
-            var f = function (handler) {
-                if (a.continue) {
-                    if (typeof handler == 'function') {
-                        handler.call(owner, args);
-                    }
-                }
-            }.bind(this)
-
-            if (event in this.handlers) {
-                _.each(this.handlers[event], f);
-                _.each(this.handlers['&'], f);
+      a = a || {};
+      a[this.options.owner] = this.owner;
+      if (typeof f !== "undefined") {
+        a[this.options.item] = f;
+      }
+      a.default = true;
+      a.continue = true;
+      a.preventDefault = function () {
+        this.default = false;
+      }.bind(a);
+      a.stopPropagation = function () {
+        this.continue = false;
+      }.bind(a);
+      var events = [];
+      if (typeof e == "string") {
+        events.push(e);
+      } else {
+        events = events.concat(e);
+      }
+      _.each(
+        events,
+        function (args, event) {
+          args.event = event;
+  
+          var f = function (handler) {
+            if (a.continue) {
+              if (typeof handler == "function") {
+                handler.call(owner, args);
+              }
             }
-            _.each(this.handlers['*'], f);
-        }.bind(this, a))
-        return a;
-
-    }.bind(this)
-
-}
-
-
-gform.collectionManager = function (refObject) {
+          }.bind(this);
+  
+          if (event in this.handlers) {
+            _.each(this.handlers[event], f);
+            _.each(this.handlers["&"], f);
+          }
+          _.each(this.handlers["*"], f);
+        }.bind(this, a)
+      );
+      return a;
+    }.bind(this);
+  };
+  
+  gform.collectionManager = function (refObject) {
     var collections = { ...refObject };
     var map = refObject || {};
     var configuration = {};
-
+  
     var add = (options, data) => {
-        let name;
-        if (typeof options == 'object') {
-            ({ name, path, method } = options);
-        } else {
-            name = options;
-            options = { name: options };
-        }
-
-        if (!(name in configuration)) {
-            Object.defineProperty(map, name, {
-                get: () => {
-                    return collections[name];
-                },
-                set: value => {
-                    if (!_.isEqual(collections[name], value)) {
-                        collections[name] = value;
-                        eventBus.dispatch(name, collections[name]);
-                    }
-                },
-                enumerable: true
-            });
-        }
-
-        if (typeof method == 'function') {
-            map[name] = method.call()
-        }
-        configuration[name] = options;
-        map[name] = data;
-
-        if (typeof path == 'string') {
-            gform.ajax({
-                path: path, success: data => {
-                    update(name, data)
-                }
-            })
-        }
-        else {
-            eventBus.dispatch(name, map[name]);
-            //     eventBus.dispatch('change', name);
-        }
-
-    }
-    var update = (options, data) => {
-        let name;
-        if (typeof options == 'object') {
-            ({ name, path, method } = options);
-        } else {
-            name = options;
-        }
-
-        if (!(name in configuration)) {
-            add(options, data);
-        } else {
-            if (typeof data !== 'undefined') {
-                map[name] = data;
-                eventBus.dispatch(name, map[name]);
-
+      let name;
+      if (typeof options == "object") {
+        ({ name, path, method } = options);
+      } else {
+        name = options;
+        options = { name: options };
+      }
+  
+      if (!(name in configuration)) {
+        Object.defineProperty(map, name, {
+          get: () => {
+            return collections[name];
+          },
+          set: value => {
+            if (!_.isEqual(collections[name], value)) {
+              collections[name] = value;
+              eventBus.dispatch(name, collections[name]);
             }
-        }
-
-
-    }
-    var self = {
-        add: add,
-        get: name => (typeof name == 'undefined') ? collections : map[name],
-        update: update,
-        // on: eventBus.on
+          },
+          enumerable: true,
+        });
+      }
+  
+      if (typeof method == "function") {
+        map[name] = method.call();
+      }
+      configuration[name] = options;
+      map[name] = data;
+  
+      if (typeof path == "string") {
+        gform.ajax({
+          path: path,
+          success: data => {
+            update(name, data);
+          },
+        });
+      } else {
+        eventBus.dispatch(name, map[name]);
+        //     eventBus.dispatch('change', name);
+      }
     };
-    var eventBus = new gform.eventBus({ owner: 'manager', item: 'collection', handlers: {} }, self);
-
+    var update = (options, data) => {
+      let name;
+      if (typeof options == "object") {
+        ({ name, path, method } = options);
+      } else {
+        name = options;
+      }
+  
+      if (!(name in configuration)) {
+        add(options, data);
+      } else {
+        if (typeof data !== "undefined") {
+          map[name] = data;
+          eventBus.dispatch(name, map[name]);
+        }
+      }
+    };
+    var self = {
+      add: add,
+      get: name => (typeof name == "undefined" ? collections : map[name]),
+      update: update,
+      // on: eventBus.on
+    };
+    var eventBus = new gform.eventBus(
+      { owner: "manager", item: "collection", handlers: {} },
+      self
+    );
+  
     // ({add, get, update, on} = {
     // 	add: add,
     // 	get: name=>(typeof name == 'undefined')?collections:map[name],
@@ -3234,109 +4103,139 @@ gform.collectionManager = function (refObject) {
     // 	on: eventBus.on
     // })
     self.on = eventBus.on;
-
+  
     _.each(Object.keys(collections), name => {
-        add(name, collections[name]);
+      add(name, collections[name]);
     });
-
-
+  
     return self;
-}
-// gform.path = field => {
-//     let path = '/';
-//     if ('parent' in field) {
-//         path = path(field.parent) + '.';
-//     }
-//     path += (field.name || field.label.toLowerCase().join(' ', '_'));
-//     if (field.array) {
-//         path += '.' + field.id
-//     }
-//     return path;
-// }
-gform.VERSION = '0.0.2.0';
-gform.i = 0;
-gform.getUID = function () {
-    return 'f' + (gform.i++);
-};
-gform.about = function () {
-    return _.extend({ version: gform.VERSION }, gform.THEME, { types: _.keys(gform.types) })
-};
-gform.each = function (func) {
+  };
+  // gform.path = field => {
+  //     let path = '/';
+  //     if ('parent' in field) {
+  //         path = path(field.parent) + '.';
+  //     }
+  //     path += (field.name || field.label.toLowerCase().join(' ', '_'));
+  //     if (field.array) {
+  //         path += '.' + field.id
+  //     }
+  //     return path;
+  // }
+  gform.VERSION = "0.0.2.0";
+  gform.i = 0;
+  gform.getUID = function () {
+    return "f" + gform.i++;
+  };
+  gform.about = function () {
+    return _.extend({ version: gform.VERSION }, gform.THEME, {
+      types: _.keys(gform.types),
+    });
+  };
+  gform.each = function (func) {
     _.each(this.fields, function (field) {
-        func(field);
-        if ('fields' in field) {
-            gform.each.call(field, func);
-        }
-    })
-}
-gform.reduce = function (func, object, filter) {
+      func(field);
+      if ("fields" in field) {
+        gform.each.call(field, func);
+      }
+    });
+  };
+  gform.reduce = function (func, object, filter) {
     var object = object || {};
-    _.reduce(this.filter(filter, 1), function (object, field) {
+    _.reduce(
+      this.filter(filter, 1),
+      function (object, field) {
         var temp = func(object, field);
-
-        if ('fields' in field) {
-            temp = gform.reduce.call(field, func, temp, filter);
+  
+        if ("fields" in field) {
+          temp = gform.reduce.call(field, func, temp, filter);
         }
         return temp;
-    }, object)
+      },
+      object
+    );
     return object;
-}
-
-gform.iterators = {
+  };
+  
+  gform.iterators = {
     each: function (func) {
-        _.each(this.items || this.instances || this.fields, function (item) {
-            func(item);
-            if ('items' in item || 'instances' in item || 'fields' in item) {
-                gform.iterators.each.call(item, func);
-            }
-        })
+      _.each(this.items || this.instances || this.fields, function (item) {
+        func(item);
+        if ("items" in item || "instances" in item || "fields" in item) {
+          gform.iterators.each.call(item, func);
+        }
+      });
     },
     reduce: function (func, object, filter) {
-        var object = object || {};
-        if (!("_items" in this) || !this._items.length) return object;
-        _.reduce(gform.iterators.filter.call(this, filter, { depth: 1, stopOnFail: true }), function (object, item) {
-            return func(object, item);
-        }, object)
-        return object;
+      var object = object || {};
+      if (!("_items" in this) || !this._items.length) return object;
+      _.reduce(
+        gform.iterators.filter.call(this, filter, { depth: 1, stopOnFail: true }),
+        function (object, item) {
+          return func(object, item);
+        },
+        object
+      );
+      return object;
     },
     filter: function (search, options) {
-
-        var { depth = 10, stopOnFail = false } = options || {};
-        var temp = [];
-        if (typeof search == 'string') {
-            search = { name: search }
-        }
-        // var depth = (depth||10);
-        depth--;
-
-        temp = _.reduce(this._items, (temp, item) => {
-
-            if (!_.isMatch(item, search) && stopOnFail) { return temp }
-            if (_.isMatch(item, search)) {
-                temp.push(item)
-            }
-            if (!!depth && item instanceof gform.arrayManager) {
-                temp = _.reduce(item.instances, function (temp, instance) {
-                    if (!stopOnFail || _.isMatch(instance, search)) {
-                        // temp.push(instance);
-
-                        temp = temp.concat(gform.iterators.filter.call(instance, search, { depth: depth, stopOnFail: stopOnFail }))
-                    }
-                    return temp;
-
-                }, temp)
-            } else {
-                // if(_.isMatch(item, search)){
-                //     temp.push(item)
-                // }
-            }
-
-            if (!!depth && ('_items' in item /*|| field instanceof gform.arrayManager*/) && item._items.length) {
-                temp = temp.concat(gform.iterators.filter.call(item, search, { depth: depth, stopOnFail: stopOnFail }));
-            }
+      var { depth = 10, stopOnFail = false } = options || {};
+      var temp = [];
+      if (typeof search == "string") {
+        search = { name: search };
+      }
+      // var depth = (depth||10);
+      depth--;
+  
+      temp = _.reduce(
+        this._items,
+        (temp, item) => {
+          if (!_.isMatch(item, search) && stopOnFail) {
             return temp;
-        }, temp)
-        return temp;
+          }
+          if (_.isMatch(item, search)) {
+            temp.push(item);
+          }
+          if (!!depth && item instanceof gform.arrayManager) {
+            temp = _.reduce(
+              item.instances,
+              function (temp, instance) {
+                if (!stopOnFail || _.isMatch(instance, search)) {
+                  // temp.push(instance);
+  
+                  temp = temp.concat(
+                    gform.iterators.filter.call(instance, search, {
+                      depth: depth,
+                      stopOnFail: stopOnFail,
+                    })
+                  );
+                }
+                return temp;
+              },
+              temp
+            );
+          } else {
+            // if(_.isMatch(item, search)){
+            //     temp.push(item)
+            // }
+          }
+  
+          if (
+            !!depth &&
+            "_items" in item /*|| field instanceof gform.arrayManager*/ &&
+            item._items.length
+          ) {
+            temp = temp.concat(
+              gform.iterators.filter.call(item, search, {
+                depth: depth,
+                stopOnFail: stopOnFail,
+              })
+            );
+          }
+          return temp;
+        },
+        temp
+      );
+      return temp;
     },
     // _filter:function(search, depth){
     //     var temp = [];
@@ -3345,33 +4244,32 @@ gform.iterators = {
     //     }
     //     var depth = (depth||10);
     //     depth--;
-
+  
     //     temp = _.reduce( this['_items'], (temp,item)=>{
-
+  
     //         if(!_.isMatch(item, search)){return temp}
-
+  
     //             if(item instanceof gform.arrayManager){
     //                 // if(_.isMatch(item, search)){
     //                 //     temp.push(item);
     //                 // }
-
+  
     //                 temp =_.reduce(item.instances, function(temp,instance){
     //                     // if(!_.isMatch(instance, search)){return temp}
     //                     if(_.isMatch(instance, search)){
     //                         temp.push(instance);
-
+  
     //                         temp = temp.concat(gform.iterators.filter.call(instance,search,depth))
     //                     }
     //                     return temp;
-
+  
     //                 },temp)
     //             }else{
     //                 if(_.isMatch(item, search)){
     //                     temp.push(item)
     //                 }
     //             }
-
-
+  
     //         if(!!depth  && ('_items' in item /*|| field instanceof gform.arrayManager*/) && item._items.length){
     //             temp = temp.concat(gform.iterators.filter.call(item, search, depth));
     //         }
@@ -3380,295 +4278,329 @@ gform.iterators = {
     //     return temp;
     // },
     find: function (search, depth) {
-        var temp = null;
-        if (typeof search == 'string') {
-            search = { name: search }
-        }
-        var depth = (depth || 10);
-        depth--;
-
-        temp = _.reduce(this._items, (temp, item) => {
-            if (temp !== null) return temp;
-
-            if (_.isMatch(item, search)) { return item }
-
-            if (item instanceof gform.arrayManager) {
-                temp = _.reduce(item.instances, function (temp, instance) {
-                    if (temp !== null) return temp;
-                    if (_.isMatch(instance, search)) {
-                        temp = instance;
-                    } else {
-                        temp = gform.iterators.find.call(instance, search, depth)
-                    }
-                    return temp;
-
-                }, temp)
-            }
-
-
-            if (!!depth && ('_items' in item /*|| field instanceof gform.arrayManager*/) && item._items.length) {
-                temp = gform.iterators.find.call(item, search, depth);
-            }
-
-            return temp;
-        }, temp)
-        return temp;
-    }
-
-}
-// gform.reduceShallow = function(func,object,filter){
-//     var object = object ||{};
-//     _.reduce(this.filter(filter,1),function(object, field){
-//         var temp = func(object,field);
-//         return temp;
-//     },object)
-//     return object;
-// }
-
-// gform.reduce_items = function(func,object,filter){
-//     var object = object ||{};
-//     _.reduce(gform.filter_items.call(this, filter, 1),function(object, field){
-//         var temp = func(object,field);
-//         return temp;
-//     }, object)
-//     return object;
-// }
-// gform.filter_items = function(search, depth){
-//     var temp = [];
-//     if(typeof search == 'string'){
-//         search = {name: search}
-//     }
-//     var depth = (depth||10);
-//     depth--;
-
-//     temp = _.reduce( this['_items'], (temp,item)=>{
-
-//             if(item instanceof gform.arrayManager){
-//                 if(_.isMatch(item, search)){
-//                     temp.push(item);
-//                 }
-//                 temp =_.reduce(item.instances, function(temp,instance){
-//                     temp = temp.concat(gform.filter_items.call(instance,search,depth))
-//                     return temp;
-//                 },temp)
-//             }else{
-//                 if(_.isMatch(item, search)){
-//                     temp.push(item)
-//                 }
-//             }
-
-
-//         if(!!depth  && ('_items' in item /*|| field instanceof gform.arrayManager*/) && item._items.length){
-//             temp = temp.concat(gform.filter_items.call(item, search, depth));
-//         }
-//         return temp;
-//     },temp)
-//     return temp;
-// }
-
-gform.find = function (oname, depth) {
+      var temp = null;
+      if (typeof search == "string") {
+        search = { name: search };
+      }
+      var depth = depth || 10;
+      depth--;
+  
+      temp = _.reduce(
+        this._items,
+        (temp, item) => {
+          if (temp !== null) return temp;
+  
+          if (_.isMatch(item, search)) {
+            return item;
+          }
+  
+          if (item instanceof gform.arrayManager) {
+            temp = _.reduce(
+              item.instances,
+              function (temp, instance) {
+                if (temp !== null) return temp;
+                if (_.isMatch(instance, search)) {
+                  temp = instance;
+                } else {
+                  temp = gform.iterators.find.call(instance, search, depth);
+                }
+                return temp;
+              },
+              temp
+            );
+          }
+  
+          if (
+            !!depth &&
+            "_items" in item /*|| field instanceof gform.arrayManager*/ &&
+            item._items.length
+          ) {
+            temp = gform.iterators.find.call(item, search, depth);
+          }
+  
+          return temp;
+        },
+        temp
+      );
+      return temp;
+    },
+  };
+  // gform.reduceShallow = function(func,object,filter){
+  //     var object = object ||{};
+  //     _.reduce(this.filter(filter,1),function(object, field){
+  //         var temp = func(object,field);
+  //         return temp;
+  //     },object)
+  //     return object;
+  // }
+  
+  // gform.reduce_items = function(func,object,filter){
+  //     var object = object ||{};
+  //     _.reduce(gform.filter_items.call(this, filter, 1),function(object, field){
+  //         var temp = func(object,field);
+  //         return temp;
+  //     }, object)
+  //     return object;
+  // }
+  // gform.filter_items = function(search, depth){
+  //     var temp = [];
+  //     if(typeof search == 'string'){
+  //         search = {name: search}
+  //     }
+  //     var depth = (depth||10);
+  //     depth--;
+  
+  //     temp = _.reduce( this['_items'], (temp,item)=>{
+  
+  //             if(item instanceof gform.arrayManager){
+  //                 if(_.isMatch(item, search)){
+  //                     temp.push(item);
+  //                 }
+  //                 temp =_.reduce(item.instances, function(temp,instance){
+  //                     temp = temp.concat(gform.filter_items.call(instance,search,depth))
+  //                     return temp;
+  //                 },temp)
+  //             }else{
+  //                 if(_.isMatch(item, search)){
+  //                     temp.push(item)
+  //                 }
+  //             }
+  
+  //         if(!!depth  && ('_items' in item /*|| field instanceof gform.arrayManager*/) && item._items.length){
+  //             temp = temp.concat(gform.filter_items.call(item, search, depth));
+  //         }
+  //         return temp;
+  //     },temp)
+  //     return temp;
+  // }
+  
+  gform.find = function (oname, depth) {
     var name;
     var temp;
-    if (typeof oname == 'string') {
-        name = oname.split('.');
-        temp = _.find(this.fields, { name: name.shift() })
-    } else if (typeof oname == 'number') {
-        // temp =this.fields[oname];// _.find(this.fields, {name: name.shift()})
-        // name = oname;
-    } else if (typeof oname == 'object') {
-        return gform.filter.call(this, oname, depth)[0] || false;
+    if (typeof oname == "string") {
+      name = oname.split(".");
+      temp = _.find(this.fields, { name: name.shift() });
+    } else if (typeof oname == "number") {
+      // temp =this.fields[oname];// _.find(this.fields, {name: name.shift()})
+      // name = oname;
+    } else if (typeof oname == "object") {
+      return gform.filter.call(this, oname, depth)[0] || false;
     }
-    if (typeof temp !== 'undefined') {
-        if ('find' in temp) {
-            if (temp.name == oname || typeof oname == 'number') {
-                return temp;
-            }
-            return temp.find(name.join('.'));
-        } else {
-            return temp;
+    if (typeof temp !== "undefined") {
+      if ("find" in temp) {
+        if (temp.name == oname || typeof oname == "number") {
+          return temp;
         }
+        return temp.find(name.join("."));
+      } else {
+        return temp;
+      }
     } else {
-        if (typeof this.parent !== 'undefined' && typeof this.parent.find == 'function') {
-            return this.parent.find(oname);
-        }
+      if (
+        typeof this.parent !== "undefined" &&
+        typeof this.parent.find == "function"
+      ) {
+        return this.parent.find(oname);
+      }
     }
-}
-// gform.findByID = function(id){
-//     return  gform.filter.call(this, {id:id},10)[0] || false;
-// }
-gform.filter = function (search, depth) {
+  };
+  // gform.findByID = function(id){
+  //     return  gform.filter.call(this, {id:id},10)[0] || false;
+  // }
+  gform.filter = function (search, depth) {
     var temp = [];
-    if (typeof search == 'string') {
-        search = { name: search }
+    if (typeof search == "string") {
+      search = { name: search };
     }
-    var depth = (depth || 10);
+    var depth = depth || 10;
     depth--;
-
-    _.each(this['fields'], function (depth, field) {
+  
+    _.each(
+      this["fields"],
+      function (depth, field) {
         if (_.isMatch(field, search)) {
-            temp.push(field)
+          temp.push(field);
         }
-        if (!!depth && ('fields' in field /*|| field instanceof gform.arrayManager*/)) {
-            temp = temp.concat(gform.filter.call(field, search, depth));
+        if (
+          !!depth &&
+          "fields" in field /*|| field instanceof gform.arrayManager*/
+        ) {
+          temp = temp.concat(gform.filter.call(field, search, depth));
         }
-    }.bind(null, depth))
+      }.bind(null, depth)
+    );
     return temp;
-}
-
-
-gform.collections = new gform.collectionManager()
-gform.instances = {};
-gform.prototype.options = {
+  };
+  gform.collections = new gform.collectionManager();
+  gform.instances = {};
+  gform.prototype.options = {
     autoFocus: true,
-    rootpath: '',
-    actions: [{ type: 'cancel' }, { type: 'save' }],
-    rowClass: 'row',
+    rootpath: "",
+    actions: [{ type: "cancel" }, { type: "save" }],
+    rowClass: "row",
     default: {
-        type: 'text',
-        suffix: ':',
-        requiredText: '<span style="color:red">*</span>',
-        validate: [],
-        valid: true,
-        parsable: true,
-        reportable: true,
-        visible: true,
-        editable: true,
-        fillable: true,
-        array: false
+      type: "text",
+      suffix: ":",
+      requiredText: '<span style="color:red">*</span>',
+      validate: [],
+      valid: true,
+      parsable: true,
+      reportable: true,
+      visible: true,
+      editable: true,
+      fillable: true,
+      array: false,
     },
     clear: true,
-    sections: '',
-}
-
-//parse form values into JSON object
-gform.toJSON = function (name) {
-    if (typeof name == 'string' && name.length > 0) {
-        var field = this.find({ map: name }, _.toPath(name).length)
+    sections: "",
+  };
+  
+  //parse form values into JSON object
+  gform.toJSON = function (name) {
+    if (typeof name == "string" && name.length > 0) {
+      var field = this.find({ map: name }, _.toPath(name).length);
+      if (!field) {
+        field = this.find({ name: name }, _.toPath(name).length);
         if (!field) {
-            field = this.find({ name: name }, _.toPath(name).length)
-            if (!field) { return undefined; }
+          return undefined;
         }
-        return field.get()
+      }
+      return field.get();
     }
     let obj = {};
-    if (typeof name == 'boolean' && name) {
-        obj = this.options.data;
+    if (typeof name == "boolean" && name) {
+      obj = this.options.data;
     }
-    if (typeof name == 'object') {
-        obj = name;
+    if (typeof name == "object") {
+      obj = name;
     }
-
-    return gform.iterators.reduce.call(this, gform.patch, obj, { parsable: true })
-}
-
-gform.toString = function (name, report) {
+  
+    return gform.iterators.reduce.call(this, gform.patch, obj, {
+      parsable: true,
+    });
+  };
+  
+  gform.toString = function (name, report) {
     if (!report) {
-        if (typeof name == 'string' && name.length > 0) {
-            name = name.split('.');
-            return _.find(this.fields, { name: name.shift() }).toString(name.join('.'));
+      if (typeof name == "string" && name.length > 0) {
+        name = name.split(".");
+        return _.find(this.fields, { name: name.shift() }).toString(
+          name.join(".")
+        );
+      }
+      var obj = "";
+      _.each(this.fields, function (field) {
+        if (field.reportable) {
+          // var fieldString = field.toString();
+          obj += field.toString();
         }
-        var obj = "";
-        _.each(this.fields, function (field) {
-            if (field.reportable) {
-                // var fieldString = field.toString();
-                obj += field.toString();
-            }
-        })
-        return obj;
+      });
+      return obj;
     } else {
-        if (typeof name == 'string' && name.length > 0) {
-            name = name.split('.');
-            return _.find(this.fields, { name: name.shift() }).toString(name.join('.'), report);
+      if (typeof name == "string" && name.length > 0) {
+        name = name.split(".");
+        return _.find(this.fields, { name: name.shift() }).toString(
+          name.join("."),
+          report
+        );
+      }
+      var obj = {};
+      _.each(this.fields, function (field) {
+        if (field.visible || field.reportable) {
+          if (field.array) {
+            obj[field.name] = obj[field.name] || [];
+            obj[field.name].push(field.toString(name, true));
+          } else {
+            obj[field.name] = field.toString(name, true);
+          }
         }
-        var obj = {};
-        _.each(this.fields, function (field) {
-            if (field.visible || field.reportable) {
-                if (field.array) {
-                    obj[field.name] = obj[field.name] || [];
-                    obj[field.name].push(field.toString(name, true))
-                } else {
-                    obj[field.name] = field.toString(name, true);
-                }
-            }
-        })
-        return obj;
+      });
+      return obj;
     }
-}
-
-gform.addOptionsConditions = function (field, item) {
-    _.each(item.options, function (item) {
-        if ('optgroup' in item) {
-            gform.addOptionsConditions.call(this, field, item.optgroup)
-
+  };
+  
+  gform.addOptionsConditions = function (field, item) {
+    _.each(
+      item.options,
+      function (item) {
+        if ("optgroup" in item) {
+          gform.addOptionsConditions.call(this, field, item.optgroup);
         }
-    }.bind(this))
-
+      }.bind(this)
+    );
+  
     // } else {
-    gform.processConditions.call(field, item.edit, function (field, item, result, e) {
-
+    gform.processConditions.call(
+      field,
+      item.edit,
+      function (field, item, result, e) {
         // field.mapOptions.option = { ...item, editable: result };
         // this.owner.eventBus.dispatch('change')
         field.mapOptions.option = { ...item, editable: result };
-
+  
         if (e.field !== field) {
-            field.update(undefined, true);
+          field.update(undefined, true);
         }
-
-    }.bind(this, field, item))
-    gform.processConditions.call(field, item.show, function (field, item, result, e) {
+      }.bind(this, field, item)
+    );
+    gform.processConditions.call(
+      field,
+      item.show,
+      function (field, item, result, e) {
         field.mapOptions.option = { ...item, visible: result };
-
+  
         if (e.field !== field) {
-            field.update(undefined, true);
+          field.update(undefined, true);
         }
-    }.bind(this, field, item))
-}
-
-gform.addConditions = function (field) {
+      }.bind(this, field, item)
+    );
+  };
+  
+  gform.addConditions = function (field) {
     gform.processConditions.call(field, field.show, function (result) {
-        var events = (this.visible !== result);
-        this.visible = result;
-
-        gform.types[this.type].show.call(this, this.visible);
-
-        if (events && this.owner.isActive) {
-            (this.am || this.owner).reflow();
-            this.owner.trigger('change', this);
-        }
-    })
-
+      var events = this.visible !== result;
+      this.visible = result;
+  
+      gform.types[this.type].show.call(this, this.visible);
+  
+      if (events && this.owner.isActive) {
+        (this.am || this.owner).reflow();
+        this.owner.trigger("change", this);
+      }
+    });
+  
     gform.processConditions.call(field, field.edit, function (result) {
-        this.editable = result;
-        this.owner.call('edit', this, this.editable);
-    })
-
+      this.editable = result;
+      this.owner.call("edit", this, this.editable);
+    });
+  
     //should be able to reduce the number of times the process gets called using objectDefine
-    if (!('parse' in field)) {
-        field.parse = field.show;
+    if (!("parse" in field)) {
+      field.parse = field.show;
     }
     gform.processConditions.call(field, field.parse, function (result) {
-        this.parsable = result
-    })
-
-    if (!('report' in field)) {
-        field.report = field.show;
+      this.parsable = result;
+    });
+  
+    if (!("report" in field)) {
+      field.report = field.show;
     }
     gform.processConditions.call(field, field.report, function (result) {
-        this.reportable = result
-    })
-
+      this.reportable = result;
+    });
+  
     if (field.required) {
-        gform.processConditions.call(field, field.required, function (result) {
-            if (this.required !== result) {
-                this.required = result;
-                gform.types[this.type].setLabel.call(this);
-                // this.update({required:result},(e.field == this));
-            }
-        })
+      gform.processConditions.call(field, field.required, function (result) {
+        if (this.required !== result) {
+          this.required = result;
+          gform.types[this.type].setLabel.call(this);
+          // this.update({required:result},(e.field == this));
+        }
+      });
     }
-    if (typeof field.mapOptions !== 'undefined') {
-        gform.addOptionsConditions.call(field, field, field);
-        field.update();
+    if (typeof field.mapOptions !== "undefined") {
+      gform.addOptionsConditions.call(field, field, field);
+      field.update();
     }
     // debugger;
     // gform.processConditions.call(this.owner, item.edit, function (id, result, e) {
@@ -3680,7 +4612,7 @@ gform.addConditions = function (field) {
     //     // }
     //     _.find(this.optgroup.options, { id: id }).editable = result
     //     this.eventBus.dispatch('change')
-
+  
     // }.bind(this, item.id))
     // gform.processConditions.call(this.owner, item.show, function (id, result, e,) {
     //     // if(typeof e.field.el !== 'undefined'){
@@ -3692,1088 +4624,1352 @@ gform.addConditions = function (field) {
     //     _.find(this.optgroup.options, { id: id }).visible = result
     //     this.eventBus.dispatch('change')
     // }.bind(this, item.id))
-
-
-}
-// gform.expand = function(atts,arrayManager){
-//     if(arrayManager instanceof gform.arrayManager){
-//         _.each(atts,function(att){
-//             this.addField(att);
-//         }.bind(arrayManager))
-//     }
-// }
-//creates multiple instances of duplicatable fields if input attributes exist for them
-// gform.inflate = function(atts, fieldIn, ind, list) {
-//     if(fieldIn.array) {
-
-//         fieldIn._items = _.map(fieldIn.fields, gform.createField.bind(this, fieldIn, atts, null, null) );
-//         // var temp =  new gform.arrayManager(field);
-
-
-//         // Object.defineProperty(temp, "fields", {
-//         //     gedt: function(){
-//         //          return _.reduce(this._items,function(stuff,e){
-//         //             if(e instanceof gform.arrayManager){
-//         //                 stuff = stuff.concat(e.instances);
-//         //             }else{
-//         //             stuff.push(e);
-//         //             }
-//         //             return stuff;
-//         //         },[]);
-//         //     },
-//         //     enumerable: true
-//         // });
-
-//         fieldIn.am = true;
-//     }
-//     // return;
-//     if(fieldIn instanceof gform.arrayManager){
-//         field= fieldIn.field;
-//         if(!this.options.strict && typeof atts[field.name] !== 'object' && typeof field.owner.options.data[field.name] == 'object'){
-//             atts = field.owner.options.data;
-//         }
-//         if((typeof atts[field.name] == 'object' && atts[field.name].length > 1)){
-//             if(atts[field.name].length> fieldCount){fieldCount = atts[field.name].length}
-//         }
-//         var fieldCount = field.array.min||0;
-
-//         if(!this.options.strict && typeof atts[field.name] !== 'object' && typeof field.owner.options.data[field.name] == 'object'){
-//             atts = field.owner.options.data;
-//         }
-//         if((typeof atts[field.name] == 'object' && atts[field.name].length > 1)){
-//             if(atts[field.name].length> fieldCount){fieldCount = atts[field.name].length}
-//         }
-//         var initialCount = _.filter(field.parent.fields,
-//             function(o) { return (o.name == field.name) && ('array' in o) && !!o.array;}
-//         ).length
-
-//         for(var i = initialCount; i<fieldCount; i++) {
-//             var newfield = gform.createField.call(this, field.parent, atts, field.el, i, _.extend({},field.item,{array:field.array}), null, null,i);
-//             fieldIn.instances.splice(_.findIndex(fieldIn.instances, {id: field.id})+1, 0, newfield.field)
-//             field = newfield;
-//         }
-
-//     }else{
-//         var newList = list;
-//         //commented this out because I am not sure what its purpose is 
-//         // - may need it but it breaks if you have an array following two fields with the same name
-//         if(fieldIn.array){
-//             newList = _.filter(newList,function(item){return !item.index})
-//         }
-//         //newList[ind].name >> fieldIn.name should fix above comments
-//         var field = _.findLast(newList, {name: fieldIn.name});
-
-//         if(!field.array && field.fields){
-//             if(!this.options.strict){
-//                 _.each(_.extend([],field.fields), gform.inflate.bind(this, atts[field.name]|| field.owner.options.data[field.name] || {}) );
-//             }else{
-//                 _.each(_.extend([],field.fields), gform.inflate.bind(this, atts[field.name] || {}) );
-//             }
-//             // field.reflow()
-//         }
-//         if(field.array) {
-//             var fieldCount = field.array.min||0;
-
-//             if(!this.options.strict && typeof atts[field.name] !== 'object' && typeof field.owner.options.data[field.name] == 'object'){
-//                 atts = field.owner.options.data;
-//             }
-//             if((typeof atts[field.name] == 'object' && atts[field.name] !== null && atts[field.name].length > 1)){
-//                 if(atts[field.name].length> fieldCount){fieldCount = atts[field.name].length}
-//             }
-//             var initialCount = _.filter(field.parent.fields,
-//                 function(o) { return (o.name == field.name) && ('array' in o) && !!o.array;}
-//             ).length
-
-//             for(var i = initialCount; i<fieldCount; i++) {
-//                 var newfield = gform.createField.call(this, field.parent, atts, field.el, i, _.extend({},field.item,{array:field.array}), null, null,i);
-//                 field.parent.fields.splice(_.findIndex(field.parent.fields, {id: field.id})+1, 0, newfield)
-//                 gform.addConditions.call(this,newfield);
-//                 field = newfield;
-//             }
-//             // var testFunc = function(status, button){
-//             //     gform.toggleClass(button,'hidden', status)
-//             // }
-//             // if(field.name == "options")
-//             // _.each(field.operator.container.querySelectorAll('[data-ref="'+field.array.ref+'"] .gform-add'),testFunc.bind(null,(fieldCount >= (field.array.max || 5)) ))
-
-//             // _.each(field.operator.container.querySelectorAll('[data-ref="'+field.array.ref+'"] .gform-minus'),testFunc.bind(null,!(fieldCount > (field.array.min || 1) ) ))
-//             this.updateActions(field);
-//             // var fieldCount = field.operator.filter({array:{ref:field.array.ref}},1).length
-
-//             // var testFunc = function(selector,status, button){
-//             //     gform.toggleClass(button.querySelector(selector),'hidden', status)
-//             // }
-//             // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
-//             // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
-
-
-//         }
-//     }
-
-// }
-// gform.normalizeField = function(fieldIn,parent){
-//     var parent = parent || this;
-//     fieldIn.type = fieldIn.type || this.options.default.type || 'text';
-//     if(!(fieldIn.type in gform.types)){
-//         console.warn('Field type "'+fieldIn.type+'" not supported - using text instead');
-//         fieldIn.type = 'text';
-//     }
-//     //work gform.default in here
-//     var field = _.assignIn({
-//         id: gform.getUID(), 
-//         // type: 'text', 
-//         label: fieldIn.legend || fieldIn.title || (gform.types[fieldIn.type]||gform.types['text']).defaults.label || fieldIn.name,
-//         validate: [],
-//         valid: true,
-//         parsable:true,
-//         reportable:true,
-//         visible:true,
-//         editable:true,
-//         parent: parent,
-//         fillable:true,
-//         array:false,
-//         columns: this.options.columns||gform.columns,
-//         offset: this.options.offset||gform.offset||0,
-//         ischild:!(parent instanceof gform)
-//     }, this.options.default,(gform.types[fieldIn.type]||gform.types['text']).defaults, fieldIn)
-//     if(typeof field.value == "function" || (typeof field.value == "string" && field.value.indexOf('=') === 0))delete field.value;
-
-//     //keep required separate
-//     //WRONG....WRONG....WRONG....
-//     if(field.array){
-//         if(typeof field.array !== 'object'){
-//             field.array = {};
-//         }
-//         field.array = _.defaultsDeep(field.array,(gform.types[field.type]||{}).array,{max:5,min:1,duplicate:{enable:'auto'},remove:{enable:'auto'},append:{enable:true}})
-//         field.array.ref = field.array.ref || gform.getUID();
-//     }
-
-//     // field.validate.required = field.validate.required|| field.required || false;
-//     if(!('multiple' in field) && 'limit' in field && field.limit>1)
-//     {
-//         field.multiple = true;
-//     }
-//     field.name = field.name || (gform.renderString(fieldIn.legend || fieldIn.label || fieldIn.title)||'').toLowerCase().split(' ').join('_');
-
-//     // if(typeof field.validate.required == 'undefined'){field.validate.required = false}
-//     if(field.name == ''){
-//         field.name = field.id;
-//     }
-//     // if((typeof fieldIn.label == 'undefined' || fieldIn.label == '') && (field.label == '' || typeof field.label == 'undefined') ){fieldIn.label = field.name;}
-//     field.item = _.extend(fieldIn,{});
-//     return field;
-// }
-
-
-
-
-
-
-
-
-
-gform.mapOptions = function (optgroup, value, count, collections, waitlist) {
+  };
+  // gform.expand = function(atts,arrayManager){
+  //     if(arrayManager instanceof gform.arrayManager){
+  //         _.each(atts,function(att){
+  //             this.addField(att);
+  //         }.bind(arrayManager))
+  //     }
+  // }
+  //creates multiple instances of duplicatable fields if input attributes exist for them
+  // gform.inflate = function(atts, fieldIn, ind, list) {
+  //     if(fieldIn.array) {
+  
+  //         fieldIn._items = _.map(fieldIn.fields, gform.createField.bind(this, fieldIn, atts, null, null) );
+  //         // var temp =  new gform.arrayManager(field);
+  
+  //         // Object.defineProperty(temp, "fields", {
+  //         //     gedt: function(){
+  //         //          return _.reduce(this._items,function(stuff,e){
+  //         //             if(e instanceof gform.arrayManager){
+  //         //                 stuff = stuff.concat(e.instances);
+  //         //             }else{
+  //         //             stuff.push(e);
+  //         //             }
+  //         //             return stuff;
+  //         //         },[]);
+  //         //     },
+  //         //     enumerable: true
+  //         // });
+  
+  //         fieldIn.am = true;
+  //     }
+  //     // return;
+  //     if(fieldIn instanceof gform.arrayManager){
+  //         field= fieldIn.field;
+  //         if(!this.options.strict && typeof atts[field.name] !== 'object' && typeof field.owner.options.data[field.name] == 'object'){
+  //             atts = field.owner.options.data;
+  //         }
+  //         if((typeof atts[field.name] == 'object' && atts[field.name].length > 1)){
+  //             if(atts[field.name].length> fieldCount){fieldCount = atts[field.name].length}
+  //         }
+  //         var fieldCount = field.array.min||0;
+  
+  //         if(!this.options.strict && typeof atts[field.name] !== 'object' && typeof field.owner.options.data[field.name] == 'object'){
+  //             atts = field.owner.options.data;
+  //         }
+  //         if((typeof atts[field.name] == 'object' && atts[field.name].length > 1)){
+  //             if(atts[field.name].length> fieldCount){fieldCount = atts[field.name].length}
+  //         }
+  //         var initialCount = _.filter(field.parent.fields,
+  //             function(o) { return (o.name == field.name) && ('array' in o) && !!o.array;}
+  //         ).length
+  
+  //         for(var i = initialCount; i<fieldCount; i++) {
+  //             var newfield = gform.createField.call(this, field.parent, atts, field.el, i, _.extend({},field.item,{array:field.array}), null, null,i);
+  //             fieldIn.instances.splice(_.findIndex(fieldIn.instances, {id: field.id})+1, 0, newfield.field)
+  //             field = newfield;
+  //         }
+  
+  //     }else{
+  //         var newList = list;
+  //         //commented this out because I am not sure what its purpose is
+  //         // - may need it but it breaks if you have an array following two fields with the same name
+  //         if(fieldIn.array){
+  //             newList = _.filter(newList,function(item){return !item.index})
+  //         }
+  //         //newList[ind].name >> fieldIn.name should fix above comments
+  //         var field = _.findLast(newList, {name: fieldIn.name});
+  
+  //         if(!field.array && field.fields){
+  //             if(!this.options.strict){
+  //                 _.each(_.extend([],field.fields), gform.inflate.bind(this, atts[field.name]|| field.owner.options.data[field.name] || {}) );
+  //             }else{
+  //                 _.each(_.extend([],field.fields), gform.inflate.bind(this, atts[field.name] || {}) );
+  //             }
+  //             // field.reflow()
+  //         }
+  //         if(field.array) {
+  //             var fieldCount = field.array.min||0;
+  
+  //             if(!this.options.strict && typeof atts[field.name] !== 'object' && typeof field.owner.options.data[field.name] == 'object'){
+  //                 atts = field.owner.options.data;
+  //             }
+  //             if((typeof atts[field.name] == 'object' && atts[field.name] !== null && atts[field.name].length > 1)){
+  //                 if(atts[field.name].length> fieldCount){fieldCount = atts[field.name].length}
+  //             }
+  //             var initialCount = _.filter(field.parent.fields,
+  //                 function(o) { return (o.name == field.name) && ('array' in o) && !!o.array;}
+  //             ).length
+  
+  //             for(var i = initialCount; i<fieldCount; i++) {
+  //                 var newfield = gform.createField.call(this, field.parent, atts, field.el, i, _.extend({},field.item,{array:field.array}), null, null,i);
+  //                 field.parent.fields.splice(_.findIndex(field.parent.fields, {id: field.id})+1, 0, newfield)
+  //                 gform.addConditions.call(this,newfield);
+  //                 field = newfield;
+  //             }
+  //             // var testFunc = function(status, button){
+  //             //     gform.toggleClass(button,'hidden', status)
+  //             // }
+  //             // if(field.name == "options")
+  //             // _.each(field.operator.container.querySelectorAll('[data-ref="'+field.array.ref+'"] .gform-add'),testFunc.bind(null,(fieldCount >= (field.array.max || 5)) ))
+  
+  //             // _.each(field.operator.container.querySelectorAll('[data-ref="'+field.array.ref+'"] .gform-minus'),testFunc.bind(null,!(fieldCount > (field.array.min || 1) ) ))
+  //             this.updateActions(field);
+  //             // var fieldCount = field.operator.filter({array:{ref:field.array.ref}},1).length
+  
+  //             // var testFunc = function(selector,status, button){
+  //             //     gform.toggleClass(button.querySelector(selector),'hidden', status)
+  //             // }
+  //             // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-add',(fieldCount >= (field.array.max || 5)) ))
+  //             // _.each(field.operator.container.querySelectorAll('.gform_isArray'),testFunc.bind(null,'[data-ref="'+field.array.ref+'"] .gform-minus',!(fieldCount > (field.array.min || 1) ) ))
+  
+  //         }
+  //     }
+  
+  // }
+  // gform.normalizeField = function(fieldIn,parent){
+  //     var parent = parent || this;
+  //     fieldIn.type = fieldIn.type || this.options.default.type || 'text';
+  //     if(!(fieldIn.type in gform.types)){
+  //         console.warn('Field type "'+fieldIn.type+'" not supported - using text instead');
+  //         fieldIn.type = 'text';
+  //     }
+  //     //work gform.default in here
+  //     var field = _.assignIn({
+  //         id: gform.getUID(),
+  //         // type: 'text',
+  //         label: fieldIn.legend || fieldIn.title || (gform.types[fieldIn.type]||gform.types['text']).defaults.label || fieldIn.name,
+  //         validate: [],
+  //         valid: true,
+  //         parsable:true,
+  //         reportable:true,
+  //         visible:true,
+  //         editable:true,
+  //         parent: parent,
+  //         fillable:true,
+  //         array:false,
+  //         columns: this.options.columns||gform.columns,
+  //         offset: this.options.offset||gform.offset||0,
+  //         ischild:!(parent instanceof gform)
+  //     }, this.options.default,(gform.types[fieldIn.type]||gform.types['text']).defaults, fieldIn)
+  //     if(typeof field.value == "function" || (typeof field.value == "string" && field.value.indexOf('=') === 0))delete field.value;
+  
+  //     //keep required separate
+  //     //WRONG....WRONG....WRONG....
+  //     if(field.array){
+  //         if(typeof field.array !== 'object'){
+  //             field.array = {};
+  //         }
+  //         field.array = _.defaultsDeep(field.array,(gform.types[field.type]||{}).array,{max:5,min:1,duplicate:{enable:'auto'},remove:{enable:'auto'},append:{enable:true}})
+  //         field.array.ref = field.array.ref || gform.getUID();
+  //     }
+  
+  //     // field.validate.required = field.validate.required|| field.required || false;
+  //     if(!('multiple' in field) && 'limit' in field && field.limit>1)
+  //     {
+  //         field.multiple = true;
+  //     }
+  //     field.name = field.name || (gform.renderString(fieldIn.legend || fieldIn.label || fieldIn.title)||'').toLowerCase().split(' ').join('_');
+  
+  //     // if(typeof field.validate.required == 'undefined'){field.validate.required = false}
+  //     if(field.name == ''){
+  //         field.name = field.id;
+  //     }
+  //     // if((typeof fieldIn.label == 'undefined' || fieldIn.label == '') && (field.label == '' || typeof field.label == 'undefined') ){fieldIn.label = field.name;}
+  //     field.item = _.extend(fieldIn,{});
+  //     return field;
+  // }
+  
+  gform.mapOptions = function (optgroup, value, count, collections, waitlist) {
     waitlist = waitlist || [];
-
+  
     if (optgroup.owner instanceof gform) {
-        this.owner = optgroup.owner;
-        this.field = optgroup;
+      this.owner = optgroup.owner;
+      this.field = optgroup;
     }
     this.collections = collections;
-    this.eventBus = new gform.eventBus({ owner: 'field', item: 'option' }, this)
+    this.eventBus = new gform.eventBus({ owner: "field", item: "option" }, this);
     this.optgroup = _.extend({}, optgroup);
     count = count || 0;
     var format = this.optgroup.format;
-
+  
     function pArray(opts) {
-        if (typeof opts == "string") {
-            if (opts == 'waiting') return [];
-        }
-        return _.compact(_.map(opts, function (item) {
-            if (item == null || typeof item == 'undefined') return;
-            if (typeof item === 'object' && item.type == 'optgroup') {
-                item.map = new gform.mapOptions(_.extend({ format: format, owner: this.owner }, item), value, count, this.collections, waitlist);
-                item.map.on('*', function (e) {
-                    this.eventBus.dispatch(e.event);
-                }.bind(this))
-
-                item.id = gform.getUID();
-
-                // gform.processConditions.call(this.owner, item.edit, function (id, result, e) {
-                //     // if(typeof e.field.el !== 'undefined'){
-                //     //     var op = e.field.el.querySelectorAll('[data-id="'+id+'"]');
-                //     //     for (var i = 0; i < op.length; i++) {
-                //     //         op[i].disabled = !result;
-                //     //     }
-                //     // }
-                //     _.find(this.optgroup.options, { id: id }).editable = result
-                //     this.eventBus.dispatch('change')
-
-                // }.bind(this, item.id))
-                // gform.processConditions.call(this.owner, item.show, function (id, result, e,) {
-                //     // if(typeof e.field.el !== 'undefined'){
-                //     //     var op = e.field.el.querySelectorAll('[data-id="'+id+'"]');
-                //     //     for (var i = 0; i < op.length; i++) {
-                //     //         op[i].hidden = !result;
-                //     //     }
-                //     // }
-                //     _.find(this.optgroup.options, { id: id }).visible = result
-                //     this.eventBus.dispatch('change')
-                // }.bind(this, item.id))
-
-                // count += item.options.length;
-                count += item.map.getoptions().length;
-                return item;
+      if (typeof opts == "string") {
+        if (opts == "waiting") return [];
+      }
+      return _.compact(
+        _.map(
+          opts,
+          function (item) {
+            if (item == null || typeof item == "undefined") return;
+            if (typeof item === "object" && item.type == "optgroup") {
+              item.map = new gform.mapOptions(
+                _.extend({ format: format, owner: this.owner }, item),
+                value,
+                count,
+                this.collections,
+                waitlist
+              );
+              item.map.on(
+                "*",
+                function (e) {
+                  this.eventBus.dispatch(e.event);
+                }.bind(this)
+              );
+  
+              item.id = gform.getUID();
+  
+              // gform.processConditions.call(this.owner, item.edit, function (id, result, e) {
+              //     // if(typeof e.field.el !== 'undefined'){
+              //     //     var op = e.field.el.querySelectorAll('[data-id="'+id+'"]');
+              //     //     for (var i = 0; i < op.length; i++) {
+              //     //         op[i].disabled = !result;
+              //     //     }
+              //     // }
+              //     _.find(this.optgroup.options, { id: id }).editable = result
+              //     this.eventBus.dispatch('change')
+  
+              // }.bind(this, item.id))
+              // gform.processConditions.call(this.owner, item.show, function (id, result, e,) {
+              //     // if(typeof e.field.el !== 'undefined'){
+              //     //     var op = e.field.el.querySelectorAll('[data-id="'+id+'"]');
+              //     //     for (var i = 0; i < op.length; i++) {
+              //     //         op[i].hidden = !result;
+              //     //     }
+              //     // }
+              //     _.find(this.optgroup.options, { id: id }).visible = result
+              //     this.eventBus.dispatch('change')
+              // }.bind(this, item.id))
+  
+              // count += item.options.length;
+              count += item.map.getoptions().length;
+              return item;
             } else {
-                var option = _.extend({}, item)
-                option.data = item;
-                if (typeof item === 'string' || typeof item === 'number' || typeof item == 'boolean') {
-                    option.label = option.value = item;
-                }
-                option.index = item.index || "" + count;
-                count += 1;
-                option.i = count;
-                if (typeof format !== 'undefined') {
-                    option = _.reduce(['label', 'display', 'value'/*,'cleanlabel'*/], function (option, prop) {
-                        if (prop in format) {
-                            if (prop in option) {
-                                option.original = option.original || {};
-                                option.original[prop] = option[prop]
-                            }
-                            option[prop] = (typeof format[prop] == 'string') ?
-                                gform.renderString(format[prop], option)
-                                : (typeof format[prop] == 'function') ?
-                                    format[prop].call(this, option)
-                                    : option[prop]
-                        }
-                        option.processed = true;
-
-                        return option;
-                    }.bind(this), option)
-                    /*
-                                        if('cleanlabel' in format){
-                                            if(typeof format.cleanlabel == 'string'){
-                                                option.label = gform.renderString(format.cleanlabel,option);
-                                              }else{
-                                                  if(typeof format.cleanlabel == 'function'){
-                                                      option.label = format.cleanlabel.call(this.option);
-                                                  }
+              var option = _.extend({}, item);
+              option.data = item;
+              if (
+                typeof item === "string" ||
+                typeof item === "number" ||
+                typeof item == "boolean"
+              ) {
+                option.label = option.value = item;
+              }
+              option.index = item.index || "" + count;
+              count += 1;
+              option.i = count;
+              if (typeof format !== "undefined") {
+                option = _.reduce(
+                  ["label", "display", "value" /*,'cleanlabel'*/],
+                  function (option, prop) {
+                    if (prop in format) {
+                      if (prop in option) {
+                        option.original = option.original || {};
+                        option.original[prop] = option[prop];
+                      }
+                      option[prop] =
+                        typeof format[prop] == "string"
+                          ? gform.renderString(format[prop], option)
+                          : typeof format[prop] == "function"
+                          ? format[prop].call(this, option)
+                          : option[prop];
+                    }
+                    option.processed = true;
+  
+                    return option;
+                  }.bind(this),
+                  option
+                );
+                /*
+                                            if('cleanlabel' in format){
+                                                if(typeof format.cleanlabel == 'string'){
+                                                    option.label = gform.renderString(format.cleanlabel,option);
+                                                  }else{
+                                                      if(typeof format.cleanlabel == 'function'){
+                                                          option.label = format.cleanlabel.call(this.option);
+                                                      }
+                                                }
                                             }
-                                        }
-                                        */
-                }
-                if (option.value == value || (/*this.multiple && */typeof value !== 'undefined' && typeof value !== 'function'/*probably remove previous condition */ && value !== null && value.length && (value.indexOf(option.value) >= 0))) { option.selected = true; }
-
-
-                return option;
-            } ''
-        }.bind(this)))
+                                            */
+              }
+              if (
+                option.value == value ||
+                /*this.multiple && */ (typeof value !== "undefined" &&
+                  typeof value !==
+                    "function" /*probably remove previous condition */ &&
+                  value !== null &&
+                  value.length &&
+                  value.indexOf(option.value) >= 0)
+              ) {
+                option.selected = true;
+              }
+  
+              return option;
+            }
+            ("");
+          }.bind(this)
+        )
+      );
     }
-
+  
     this.optgroup.options = this.optgroup.options || [];
     // optgroup.options = optgroup.options || optgroup.path || optgroup.action;
-
+  
     switch (typeof this.optgroup.options) {
-        case 'string':
-            this.optgroup.path = this.optgroup.path || this.optgroup.options;
-            this.optgroup.options = []
-            break;
-        case 'function':
-            this.optgroup.action = this.optgroup.options;
-            this.optgroup.options = []
-            break;
+      case "string":
+        this.optgroup.path = this.optgroup.path || this.optgroup.options;
+        this.optgroup.options = [];
+        break;
+      case "function":
+        this.optgroup.action = this.optgroup.options;
+        this.optgroup.options = [];
+        break;
     }
-
-    // If max is set on the field, assume a number set is desired. 
+  
+    // If max is set on the field, assume a number set is desired.
     // min defaults to 0 and the step defaults to 1.
-
-    if ('max' in this.optgroup && this.optgroup.max !== '') {
-        for (var i = (this.optgroup.min || 0); i <= this.optgroup.max; i = i + (this.optgroup.step || 1)) {
-            this.optgroup.options.push("" + i);
-        }
+  
+    if ("max" in this.optgroup && this.optgroup.max !== "") {
+      for (
+        var i = this.optgroup.min || 0;
+        i <= this.optgroup.max;
+        i = i + (this.optgroup.step || 1)
+      ) {
+        this.optgroup.options.push("" + i);
+      }
     }
-
-    if (typeof this.optgroup.action == 'function') {
-        this.optgroup.options = this.optgroup.options.concat(pArray.call(this, this.optgroup.action.call(this)));
+  
+    if (typeof this.optgroup.action == "function") {
+      this.optgroup.options = this.optgroup.options.concat(
+        pArray.call(this, this.optgroup.action.call(this))
+      );
     }
-
+  
     if (_.isArray(this.optgroup.options)) {
-        this.optgroup.options = pArray.call(this, this.optgroup.options);
+      this.optgroup.options = pArray.call(this, this.optgroup.options);
     }
-
+  
     if (_.isString(this.optgroup.path) && this.optgroup.path) {
-
-
-        if (!this.collections.get(this.optgroup.path) || this.collections.get(this.optgroup.path) == 'waiting') {
-
-            if (waitlist.indexOf(this.optgroup.path) == -1) {
-                waitlist.push(this.optgroup.path);
-            }
-
-            if (this.collections.get(this.optgroup.path) !== 'waiting') {
-                this.collections.add(this.optgroup.path, 'waiting')
-
-                gform.ajax({
-                    path: (this.owner.options.rootpath || '') + this.optgroup.path, success: function (data) {
-                        this.collections.update(this.optgroup.path, data)
-                        this.optgroup.options = pArray.call(this.optgroup.map, this.collections.get(this.optgroup.path));
-                        if (waitlist.indexOf(this.optgroup.path) >= 0) {
-                            delete waitlist[waitlist.indexOf(this.optgroup.path)];
-                        }
-
-                        this.eventBus.dispatch('collection');
-                        this.eventBus.dispatch('change',);
-
-                    }.bind(this)
-                })
-            }
-        } else {
-            this.optgroup.options = pArray.call(this.optgroup.map, this.collections.get(this.optgroup.path));
+      if (
+        !this.collections.get(this.optgroup.path) ||
+        this.collections.get(this.optgroup.path) == "waiting"
+      ) {
+        if (waitlist.indexOf(this.optgroup.path) == -1) {
+          waitlist.push(this.optgroup.path);
         }
-
-        this.collections.on(this.optgroup.path, function (e) {
-            this.optgroup.options = pArray.call(this.optgroup.map, e.collection);
-            if (waitlist.indexOf(e.event) >= 0) {
-                delete waitlist[waitlist.indexOf(e.event)];
-            }
-            this.eventBus.dispatch('change')
-        }.bind(this))
+  
+        if (this.collections.get(this.optgroup.path) !== "waiting") {
+          this.collections.add(this.optgroup.path, "waiting");
+  
+          let path = this.optgroup.path || "";
+          if (path[0] !== "/") {
+            path = (this.owner.options.rootpath || "") + this.optgroup.path;
+          }
+          gform.ajax({
+            path: path,
+            success: function (data) {
+              this.collections.update(this.optgroup.path, data);
+              this.optgroup.options = pArray.call(
+                this.optgroup.map,
+                this.collections.get(this.optgroup.path)
+              );
+              if (waitlist.indexOf(this.optgroup.path) >= 0) {
+                delete waitlist[waitlist.indexOf(this.optgroup.path)];
+              }
+  
+              this.eventBus.dispatch("collection");
+              this.eventBus.dispatch("change");
+            }.bind(this),
+          });
+        }
+      } else {
+        this.optgroup.options = pArray.call(
+          this.optgroup.map,
+          this.collections.get(this.optgroup.path)
+        );
+      }
+  
+      this.collections.on(
+        this.optgroup.path,
+        function (e) {
+          this.optgroup.options = pArray.call(this.optgroup.map, e.collection);
+          if (waitlist.indexOf(e.event) >= 0) {
+            delete waitlist[waitlist.indexOf(e.event)];
+          }
+          this.eventBus.dispatch("change");
+        }.bind(this)
+      );
     }
-
-
-
+  
     var response = {
-        getobject: function () {
-            return _.reduce(this.optgroup.options, function (result, i) {
-                let item = { ...i };
-                item.visible = ('visible' in item) ? item.visible : true
-                item.editable = ('editable' in item) ? item.editable : true
-                if ('map' in item) {
-                    item.options = item.map.getoptions();
-                    result.push({ optgroup: { ...item, label: item.label || '',/* visible: item.visible, editable: item.editable,*/ options: item.map.getoptions() } })
-                } else {
-                    result.push(item);
-                }
-                return result
-            }, [])
-        }.bind(this),
-        getoptions: function (search) {
-            var temp = [];
-            _.each(this.optgroup.options, function (item) {
-
-                item.visible = ('visible' in item) ? item.visible : true
-                item.editable = ('editable' in item) ? item.editable : true
-                if ('map' in item) {
-                    temp = temp.concat(item.map.getoptions())
-                } else { temp.push(item) }
-            })
-            if (typeof search !== 'undefined') {
-                return _.find(temp, search)
-            }
-            return temp;
-        }.bind(this), on: this.eventBus.on, handlers: this.handlers, optgroup: this.optgroup
-    }
-    Object.defineProperty(response, "option", {
-        set: function (item) {
-
-            let temp = _.find(this.optgroup.options, { id: item.id });
-            if (temp) {
-                temp.visible = item.visible;
-                temp.edit = item.edit;
+      getobject: function () {
+        return _.reduce(
+          this.optgroup.options,
+          function (result, i) {
+            let item = { ...i };
+            item.visible = "visible" in item ? item.visible : true;
+            item.editable = "editable" in item ? item.editable : true;
+            if ("map" in item) {
+              item.options = item.map.getoptions();
+              result.push({
+                optgroup: {
+                  ...item,
+                  label: item.label || "",
+                  /* visible: item.visible, editable: item.editable,*/ options:
+                    item.map.getoptions(),
+                },
+              });
             } else {
-
+              result.push(item);
             }
+            return result;
+          },
+          []
+        );
+      }.bind(this),
+      getoptions: function (search) {
+        var temp = [];
+        _.each(this.optgroup.options, function (item) {
+          item.visible = "visible" in item ? item.visible : true;
+          item.editable = "editable" in item ? item.editable : true;
+          if ("map" in item) {
+            temp = temp.concat(item.map.getoptions());
+          } else {
+            temp.push(item);
+          }
+        });
+        if (typeof search !== "undefined") {
+          return _.find(temp, search);
         }
+        return temp;
+      }.bind(this),
+      on: this.eventBus.on,
+      handlers: this.handlers,
+      optgroup: this.optgroup,
+    };
+    Object.defineProperty(response, "option", {
+      set: function (item) {
+        let temp = _.find(this.optgroup.options, { id: item.id });
+        if (temp) {
+          temp.visible = item.visible;
+          temp.edit = item.edit;
+        } else {
+        }
+      },
     });
     Object.defineProperty(response, "waiting", {
-        get: function () {
-            // return true;
-            return _.compact(waitlist).length > 0;
-        }
+      get: function () {
+        // return true;
+        return _.compact(waitlist).length > 0;
+      },
     });
-
+  
     return response;
-}
-
-gform.arrayManager = function (field) {
-    _.reduce(['reflow', 'find', 'filter'], (manager, prop) => {
+  };
+  
+  gform.arrayManager = function (field) {
+    _.reduce(
+      ["reflow", "find", "filter"],
+      (manager, prop) => {
         if (prop in gform.types[field.type]) {
-            manager[prop] = gform.types[field.type][prop].bind(manager);// || null;
+          manager[prop] = gform.types[field.type][prop].bind(manager); // || null;
         }
         return manager;
-    }, this)
+      },
+      this
+    );
     this.field = field;
     this.item = field.item;
-
-    _.each(['name', 'owner', 'array', 'target', 'parent'], key => {
-        this[key] = field[key];
-    })
+  
+    _.each(["name", "owner", "array", "target", "parent"], key => {
+      this[key] = field[key];
+    });
     // this.name = field.name;
     // this.owner = field.owner;
     // this.array = field.array;
     // this.target = field.target;
     // this.parent = field.parent;
-    this.label = gform.renderString((field.format || { title: null }).title || this.field.title || this.field.label || this.label, this);
-    this.type = 'arrayManager'
+    this.label = gform.renderString(
+      (field.format || { title: null }).title ||
+        this.field.title ||
+        this.field.label ||
+        this.label,
+      this
+    );
+    this.type = "arrayManager";
     // const {name, owner, array, target, parent} = field;
-
-
-    this.array.min = (this.array.min == 0) ? (this.field.required) ? 1 : 0 : this.array.min || 1;
+  
+    this.array.min =
+      this.array.min == 0 ? (this.field.required ? 1 : 0) : this.array.min || 1;
     this.parsable = true;
     this.reportable = true;
     this.editable = true;
     this.visible = true;
     // this.fillable = true;
-    _.each(['show', 'parse', 'edit', 'report'], attr => {
-        let val = undefined;
-        if (typeof this.field.item.array == 'object') {
-            val = (attr in this.field.item.array) ? this.field.item.array[attr] : undefined;
-        }
-        if (typeof val == 'undefined') val = (attr in this.field.item) ? this.field.item[attr] : (attr == "show") ? true : undefined;
-        if (typeof val !== 'undefined') this[attr] = val;
-        // return am;
-        // this[attr] = this.field.item.array[attr]||this.field.item[attr]||true
-    })
-
-    this.focus = function () { };
+    _.each(["show", "parse", "edit", "report"], attr => {
+      let val = undefined;
+      if (typeof this.field.item.array == "object") {
+        val =
+          attr in this.field.item.array ? this.field.item.array[attr] : undefined;
+      }
+      if (typeof val == "undefined")
+        val =
+          attr in this.field.item
+            ? this.field.item[attr]
+            : attr == "show"
+            ? true
+            : undefined;
+      if (typeof val !== "undefined") this[attr] = val;
+      // return am;
+      // this[attr] = this.field.item.array[attr]||this.field.item[attr]||true
+    });
+  
+    this.focus = function () {};
     // this.type = 'am';//field.type;
     this.satisfied = function () {
-        var value = value || this.get();
-        return (typeof value !== 'undefined' && value !== null && value !== '' && !(typeof value == 'object' && _.isEmpty(value)));
-    }
+      var value = value || this.get();
+      return (
+        typeof value !== "undefined" &&
+        value !== null &&
+        value !== "" &&
+        !(typeof value == "object" && _.isEmpty(value))
+      );
+    };
     this.fields = [];
     this.instances = [];
     this.id = gform.getUID();
     // this.field.array.refid = this.id;
-
+  
     // this.el = gform.create(gform.types[this.field.type].row.call(this.field));
     this.el = gform.types[this.field.type].array.template(this);
     this.container = gform.types[field.type].array.container || this.el;
-
-    if (typeof gform.types[field.type].array.container == 'string') {
-        this.container = this.el.querySelector(gform.types[this.field.type].array.container);
+  
+    if (typeof gform.types[field.type].array.container == "string") {
+      this.container = this.el.querySelector(
+        gform.types[this.field.type].array.container
+      );
     }
     this.rowManager = gform.rowManager(this);
-    this.reflow = gform.reflow.bind(this)
-
+    this.reflow = gform.reflow.bind(this);
+  
     Object.defineProperty(this, "display", {
-        get: function () {
-            return _.reduce(this.instances, (displayResult, instance) => {
-                displayResult += ('<div>' + instance.display + '</div>');
-                return displayResult;
-            }, '<div>') + '</div>'
-        },
-        enumerable: true
+      get: function () {
+        return (
+          _.reduce(
+            this.instances,
+            (displayResult, instance) => {
+              displayResult += "<div>" + instance.display + "</div>";
+              return displayResult;
+            },
+            "<div>"
+          ) + "</div>"
+        );
+      },
+      enumerable: true,
     });
-
-
+  
     Object.defineProperty(this, "label", {
-        get: function () {
-            return this.internalLabel || this.field.array.label || this.field.label;
-        },
-        set: function (value) { this.internalLabel = value; },
-        enumerable: true
+      get: function () {
+        return this.internalLabel || this.field.array.label || this.field.label;
+      },
+      set: function (value) {
+        this.internalLabel = value;
+      },
+      enumerable: true,
     });
     Object.defineProperty(this, "path", {
-        get: () => {
-            let path = '/';
-            if (!(this.parent instanceof gform)) {
-                path = this.parent.path + '.';
-            }
-            path += this.name
-            return path;
+      get: () => {
+        let path = "/";
+        if (!(this.parent instanceof gform)) {
+          path = this.parent.path + ".";
         }
+        path += this.name;
+        return path;
+      },
     });
-
+  
     Object.defineProperty(this, "map", {
-        get: function () {
-            if (this.field.item.map === false) { return this.field.item.map }
-            var map = '';
-            if (this.field.ischild) {
-
-                map = this.field.parent.map + '.';
-            }
-            map += this.field.name
-
-            return this.field.item.map || map;
-        },
-        // enumerable: true
+      get: function () {
+        if (this.field.item.map === false) {
+          return this.field.item.map;
+        }
+        var map = "";
+        if (this.field.ischild) {
+          map = this.field.parent.map + ".";
+        }
+        map += this.field.name;
+  
+        return this.field.item.map || map;
+      },
+      // enumerable: true
     });
     Object.defineProperty(this, "toJSON", {
-        get: function () {
-            return this.get();
-        },
-        enumerable: true
+      get: function () {
+        return this.get();
+      },
+      enumerable: true,
     });
     if (typeof gform.types[field.type].row == "function") {
     }
     this.get = function () {
-        // let temp = _.map(_.reduce(this.instances, function (temp, instance) {
-        //     if (_.isMatch(instance, { parsable: true })) {
-        //         temp.push(instance);
-        //     }
-        //     return temp;
-
-        // }, []), instance => instance.get())
-        let temp = gform.reduce.call(this.parent, (i, e) => {
-            let val = e.get();
-            if (typeof val !== 'undefined') i.push(val);
-            return i;
-        }, [], { parsable: true, am: this })
-        //check length as well - validation stuff
-        if (typeof this.array.filter !== 'undefined' && this.array.filter != false) {
-            if (typeof this.array.filter == 'function') {
-                temp = _.filter(temp, this.array.filter);
-            } else {
-                temp = (this.array.filter.length) ? _.filter(temp, i => i && (!this.array.filter.includes(i))) : _.compact(temp);
-            }
-        }
-        return (temp.length > 0) ? temp : this.array.default || undefined;
-    }
-    this.set = function (value) {
-        if (_.isArray(value)) {
-            value = value.slice(0, this.field.array.max || 5);
-        } else if (typeof value == 'object') {
-            value = [value];
-        }
-        //remove extras that currently exist
-        while (this.instances.length > value.length && this.removeField(this.instances[0])) { }
-        //populate or create new ones to match incomming data
-        _.each(value, (value, index) => {
-            if (typeof this.instances[index] == 'undefined') {
-                let newField = this.addField()
-            }
-            this.instances[index].set(value);
-        })
-        this.reflow()
-    }
-
-    this.addField = function (options, field) {
-        if (typeof field == "undefined") {
-            field = this.field;//this.instances[this.instances.length-1]
-        }
-
-        if (!field.editable || this.instances.length >= (field.array.max || 5)) { return false; }
-
-        //var index = _.findIndex(this.instances, {id: field.id});
-        var index = (_.findIndex(this.instances, { id: field.id }) + 1) || this.instances.length;
-        var newField = field.owner.fieldMethods.cultivate({ ...options, index: index }, this.field)
-
-        this.instances.splice(index, 0, newField)
-        // gform.addConditions.call(field.owner, newField);
-        // gform.each.call(newField, gform.addConditions)
-
-        _.each(_.filter(this.instances,
-            function (o) { return (o.name == field.name) && (typeof o.array !== "undefined") && !!o.array; }
-        ), function (item, index) {
-            item.index = index;
-            gform.types[item.type].setLabel.call(item)
-        })
-
-        newField.parent.trigger(['change', 'input', 'create', 'inserted'], newField)
-
-        gform.each.call(newField, function (field) {
-            field.parent.trigger(['change'], field)
-        })
-        // newField.owner.updateActions(newField);
-
-        return newField;
-    }
-    this.removeField = function (field) {
-        // var fieldCount =  _.filter(field.parent.fields, 
-        //     function(o) { return (o.name == field.name) && (typeof o.array !== "undefined") && !!o.array; }
-        // ).length;
-        var fieldCount = this.instances.length
-        if (field.editable && fieldCount > (field.array.min || 0)) {
-            // Clean up events this field created as part of conditionals
-            if (typeof field.eventlist !== 'undefined') {
-                _.each(field.owner.eventBus.handlers, function (event, index, events) {
-                    _.each(event, function (handler, a, b, c) {
-                        _.each(field.eventlist, function (a, b, search) {
-                            if (handler == search) {
-                                delete b[a];
-                            }
-                        }.bind(null, a, b))
-                    })
-                    events[index] = _.compact(events[index])
-                })
-            }
-            var index = _.findIndex(this.instances, { id: field.id });
-            this.instances[index].el.parentElement.removeChild(this.instances[index].el)
-            // this.instances[index].el
-            this.instances.splice(index, 1);
-            field.am.reflow();
-            _.each(_.filter(this.instances,
-                function (o) { return (o.name == field.name) && (typeof o.array !== "undefined") && !!o.array; }
-            ), function (item, index) {
-                item.index = index;
-                gform.types[item.type].setLabel.call(item)
-
-            })
-            field.parent.trigger(['change', 'input', 'removed'], field)
-            fieldCount--;
+      // let temp = _.map(_.reduce(this.instances, function (temp, instance) {
+      //     if (_.isMatch(instance, { parsable: true })) {
+      //         temp.push(instance);
+      //     }
+      //     return temp;
+  
+      // }, []), instance => instance.get())
+      let temp = gform.reduce.call(
+        this.parent,
+        (i, e) => {
+          let val = e.get();
+          if (typeof val !== "undefined") i.push(val);
+          return i;
+        },
+        [],
+        { parsable: true, am: this }
+      );
+      //check length as well - validation stuff
+      if (
+        typeof this.array.filter !== "undefined" &&
+        this.array.filter != false
+      ) {
+        if (typeof this.array.filter == "function") {
+          temp = _.filter(temp, this.array.filter);
         } else {
-            if (field.editable) field.set(null);
-            field.parent.trigger(['input'], field)
+          temp = this.array.filter.length
+            ? _.filter(temp, i => i && !this.array.filter.includes(i))
+            : _.compact(temp);
         }
-        // field.owner.updateActions(field);
-    }
-}
-
-//    this.add = gform.createField.bind(this, this, this.options.data||{}, null, null);
-//gform.till
-gform.field = {
+      }
+      return temp.length > 0 ? temp : this.array.default || undefined;
+    };
+    this.set = function (value) {
+      if (_.isArray(value)) {
+        value = value.slice(0, this.field.array.max || 5);
+      } else if (typeof value == "object") {
+        value = [value];
+      }
+      //remove extras that currently exist
+      while (
+        this.instances.length > value.length &&
+        this.removeField(this.instances[0])
+      ) {}
+      //populate or create new ones to match incomming data
+      _.each(value, (value, index) => {
+        if (typeof this.instances[index] == "undefined") {
+          let newField = this.addField();
+        }
+        this.instances[index].set(value);
+      });
+      this.reflow();
+    };
+  
+    this.addField = function (options, field) {
+      if (typeof field == "undefined") {
+        field = this.field; //this.instances[this.instances.length-1]
+      }
+  
+      if (!field.editable || this.instances.length >= (field.array.max || 5)) {
+        return false;
+      }
+  
+      //var index = _.findIndex(this.instances, {id: field.id});
+      var index =
+        _.findIndex(this.instances, { id: field.id }) + 1 ||
+        this.instances.length;
+      var newField = field.owner.fieldMethods.cultivate(
+        { ...options, index: index },
+        this.field
+      );
+  
+      this.instances.splice(index, 0, newField);
+      // gform.addConditions.call(field.owner, newField);
+      // gform.each.call(newField, gform.addConditions)
+  
+      _.each(
+        _.filter(this.instances, function (o) {
+          return (
+            o.name == field.name && typeof o.array !== "undefined" && !!o.array
+          );
+        }),
+        function (item, index) {
+          item.index = index;
+          gform.types[item.type].setLabel.call(item);
+        }
+      );
+  
+      newField.parent.trigger(
+        ["change", "input", "create", "inserted"],
+        newField
+      );
+  
+      gform.each.call(newField, function (field) {
+        field.parent.trigger(["change"], field);
+      });
+      // newField.owner.updateActions(newField);
+  
+      return newField;
+    };
+    this.removeField = function (field) {
+      // var fieldCount =  _.filter(field.parent.fields,
+      //     function(o) { return (o.name == field.name) && (typeof o.array !== "undefined") && !!o.array; }
+      // ).length;
+      var fieldCount = this.instances.length;
+      if (field.editable && fieldCount > (field.array.min || 0)) {
+        // Clean up events this field created as part of conditionals
+        if (typeof field.eventlist !== "undefined") {
+          _.each(field.owner.eventBus.handlers, function (event, index, events) {
+            _.each(event, function (handler, a, b, c) {
+              _.each(
+                field.eventlist,
+                function (a, b, search) {
+                  if (handler == search) {
+                    delete b[a];
+                  }
+                }.bind(null, a, b)
+              );
+            });
+            events[index] = _.compact(events[index]);
+          });
+        }
+        var index = _.findIndex(this.instances, { id: field.id });
+        this.instances[index].el.parentElement.removeChild(
+          this.instances[index].el
+        );
+        // this.instances[index].el
+        this.instances.splice(index, 1);
+        field.am.reflow();
+        _.each(
+          _.filter(this.instances, function (o) {
+            return (
+              o.name == field.name && typeof o.array !== "undefined" && !!o.array
+            );
+          }),
+          function (item, index) {
+            item.index = index;
+            gform.types[item.type].setLabel.call(item);
+          }
+        );
+        field.parent.trigger(["change", "input", "removed"], field);
+        fieldCount--;
+      } else {
+        if (field.editable) field.set(null);
+        field.parent.trigger(["input"], field);
+      }
+      // field.owner.updateActions(field);
+    };
+  };
+  
+  //    this.add = gform.createField.bind(this, this, this.options.data||{}, null, null);
+  //gform.till
+  gform.field = {
     cultivate: function (form) {
-        return (options, field) => {
-            options = {
-                parent: form,
-                owner: form,
-                el: null,
-                instance: null,
-                data: undefined,
-                am: null,
-                ...options
+      return (options, field) => {
+        options = {
+          parent: form,
+          owner: form,
+          el: null,
+          instance: null,
+          data: undefined,
+          am: null,
+          ...options,
+        };
+  
+        field = form.fieldMethods.normalize(options, field);
+        field.owner = form;
+  
+        if (
+          typeof options.data == "object" &&
+          options.data !== null &&
+          field.name in options.data
+        ) {
+          options.data = options.data[field.name];
+        } else {
+          delete options.data;
+          if (form.options.strict == false) {
+            if (
+              typeof form.options.data == "object" &&
+              field.name in form.options.data
+            ) {
+              options.data = form.options.data[field.name];
             }
-
-            field = form.fieldMethods.normalize(options, field);
-            field.owner = form;
-
-            if (typeof options.data == 'object' && options.data !== null && field.name in options.data) {
-                options.data = options.data[field.name];
-            } else {
-                delete options.data;
-                if (form.options.strict == false) {
-                    if (typeof form.options.data == 'object' && field.name in form.options.data) {
-                        options.data = form.options.data[field.name];
-                    }
-                }
-            }
-
-            if (field.array && !field.am) {
-                let am = new gform.arrayManager(field);
-                field.am = am;
-                if (typeof options.data == "object") {
-                    _.each(options.data, (data, i) => {
-                        am.addField({ ...options, data: { [field.name]: data }, index: i }, field)
-                    })
-                }
-                let index = am.instances.length;
-                while (index < field.array.min) {
-                    am.addField({ ...options, data: ((options.data || {})[field.name] || [])[index] || (gform.types[field.type].base == 'section') ? {} : "", index: index }, field);//am.addField({},field);
-                    index++;
-                }
-                return am;
-            }
-
-
-
-
-            //get value from passed in value
-            // if(field.fillable){
-
-            //     if(field.array){
-            //         field.value =  options.data;
-            //     }else{
-            //         field.value = options.data[field.name]
-            //     }
-
-            //should be able to compine these and just conditionally set localValue
-            // test thouroughly though
-
-            // if(!form.options.strict){
-            //     const rootValue = form.options.data[field.name]
-
-            //     if(field.array && typeof (localValue || rootValue) == 'object'){
-            //         field.value =  (localValue || rootValue)[options.index||0] || {};
-            //     }else{
-            //         field.value = _.defaults({data:_.selectPath(options.data,field.item.map||field.name)},{value:rootValue},field).value
-            //     }
-            // }else{
-            //     if(field.array && typeof localValue == 'object'){
-            //         field.value =  localValue || {};
-            //     }else{
-            //         field.value =  _.defaults({value:_.selectPath(options.data,field.item.map||field.name)},field).value                
-            //     }    
-            // }
-
-            // }
-
-
-            if (typeof form.options.data == 'object' && 'data' in form.options.data) {
-                Object.defineProperty(field, "data", {
-                    get: () => {
-                        return form.options.data.data
-                    },
-                    enumerable: true
-                });
-            }
-
-            field = _.reduce(['value', 'label', 'placeholder', 'help', 'info', 'pre', 'post'], (field, attr) => {
-                if (typeof field[attr] == 'string' && field.raw !== true) {
-                    field[attr] = gform.renderString((typeof field.item[attr] == 'string') ? field.item[attr] : field[attr], field)
-                }
-                return field;
-            }, field)
-
-            //Define properties
-            /*------------------------------------------*/
-
-            if (typeof field.item.value === 'function' || (typeof field.item.method === 'string' && typeof field.owner.methods[field.item.method] == 'function')) {
-                field.derivedValue = (e) => {
-                    let localVal = (field.owner.methods[field.item.method] || field.item.value).call(null, { ...e, form: field.owner, field: field, initial: field });
-
-                    field.set((typeof localVal !== 'undefined') ? localVal : (field.initialValue || field.item.defaultValue || false), false)
-                    return field.internalValue;
-                }
-            } else if (typeof field.item.value === 'string' && field.item.value.indexOf('=') === 0) {
-                field.derivedValue = () => {
-                    const data = field.owner.get();
-                    field.formula = gform.renderString(field.item.value.substr(1), data)
-                    try {
-                        if (field.formula.length) {
-                            if (typeof math !== 'undefined') {
-                                var result = math.eval(field.formula, data);
-                                if (typeof result == 'object' && 'entries' in result) {
-                                    result = _.last(result.entries);
-                                    if (typeof result._data == 'object') result = result._data;
-                                }
-                                field.formula = _.isFinite(result) ? result.toFixed((field.item.precision || 0)) : _.isArray(result) ? result : '';
-                            }
-                        }
-                    } catch (e) { field.formula = ''; }
-                    return field.formula;
-                }
-            }
-
-            field.trigger = (gform.types[field.type].trigger) ? gform.types[field.type].trigger.bind(field) : field.parent.trigger;
-
-            field.set = (value, silent) => {
-
-                if (typeof value == 'undefined' && typeof field.derivedValue == 'function') {
-                    let temp = field.derivedValue({ initial: field, form: field.owner, field: field })
-                    value = (typeof temp == 'undefined') ? "" : temp;
-                }
-                //not sure we should be excluding objects - test how to allow objects
-                if ('fields' in field && typeof value == 'object') { value = _.pick(value, _.map(field.fields, "name")) }
-
-                if (field.internalValue != value || value == null) {// && typeof value !== 'object') {
-                    if (!gform.types[field.type].set.call(field, value)) {
-                        field.internalValue = value;
-
-                        if (!silent) {
-                            field.trigger(['change'], field);
-                        };
-                    };
-                }
-                return field.internalValue;
-            }
-            if (field.fillable) {
-
-                // if(field.array && typeof options.data == 'object' && typeof options.data[field.name] == 'object' && !!options.data[field.name] ){
-                //     field.value =  options.data[field.name][options.index||0];
-                // }
-                // if(typeof options.data == 'undefined'){
-                //     field.value = form.call('resetValue', field);
-                // }else{
-                //     field.value =  _.defaults({value:_.selectPath(options.data,field.item.map||field.name)},field,{value:''}).value
-                // }
-                if (typeof field.derivedValue == 'function') {
-                    field.value = field.initialValue = ('data' in options) ? options.data : (field.owner.call('resetValue', field) || field.value);
-                    field.owner.on('initialized', e => {
-                        field.value = field.derivedValue({ ...e, initial: field, field: field, form: field.owner });
-                        field.owner.on('input', e => {
-                            e.initial = field;
-                            var oldv = field.value;
-                            var newv = field.derivedValue(e);
-                            newv = (typeof newv == 'undefined') ? "" : newv;
-                            if (newv != oldv && e.default) {
-                                field.set.call(null, newv);
-                                if (e.field !== field && e.continue) {
-                                    e.form.trigger("input", field)
-                                }
-                            }
-                        });
-                    })
-                } else {
-                    field.value = ('data' in options && typeof options.data !== 'undefined') ? options.data : (("value" in field) ? field.value : (("value" in field.item) ? field.item.value : form.call('resetValue', field)));
-                }
-                // field.value =  _.defaults({value:_.selectPath(options.data,field.item.map||field.name)},field).value
-                options.data = ('data' in options) ? options.data : field.value;
-
-            }
-            if (field.multiple && field.value == null) field.value = []
-
-            field.internalValue = field.initialValue = field.value;
-
-            Object.defineProperty(field, "value", {
-                get: () => field.internalValue,
-                set: val => {
-                    if (field.internalValue !== val) {
-                        field.set(val, true);
-                    }
-                },
-                enumerable: true
+          }
+        }
+  
+        if (field.array && !field.am) {
+          let am = new gform.arrayManager(field);
+          field.am = am;
+          if (typeof options.data == "object") {
+            _.each(options.data, (data, i) => {
+              am.addField(
+                { ...options, data: { [field.name]: data }, index: i },
+                field
+              );
             });
-
-
-            // field._show = field.show;
-            // Object.defineProperty(field, "show", {
-            //     get:() => field._show,
-            //     set: val => {
-            //         if(typeof val == 'undefined')return;
-            //         if(typeof val == 'object'){
-            //             gform.processConditions(val, e=>{field.show = e;})
-            //             return;
-            //         }
-            //         field._show = (typeof val == 'function')? val.call(null, {form: field.owner, field: field}): !!val;
-            //         field.visible = field._show;
-            //         gform.types[field.type].show.call(field, field._show)
-            //     },
-            //     enumerable: false
-            // });
-
-
-
-            //Define properties
-            /*------------------------------------------*/
-            Object.defineProperty(field, "active", {
-                get: () => (field.isActive && field.editable /*&& field.parsable*/ && field.visible && field.parent.active),
-                enumerable: true
-            });
-
-            Object.defineProperty(field, "display", {
-                get: () => {
-                    if ('display' in field.item && typeof field.item.display == 'function') {
-                        return field.display.call(field)
-                    }
-                    if ('display' in gform.types[field.type]) {
-                        return gform.types[field.type].display.call(field)
-                    }
-                    return field.toString();
-                },
-                enumerable: true
-            });
-            Object.defineProperty(field, "sibling", {
-                get: () => {
-                    return field.am instanceof gform.arrayManager;
-                    // var types = field.parent.filter({array:{ref:field.array.ref}},1);
-                    // return (types.length && types[0] !== field );
-                },
-                enumerable: true
-            });
-            Object.defineProperty(field, "isSatisfied", {
-                get: () => field.satisfied(field.get()),
-            });
-
-
-
-            Object.defineProperty(field, "path", {
-                get: () => {
-                    let path = '/';
-                    if (field.ischild) {
-                        path = field.parent.path + '.';
-                    }
-                    path += field.name
-                    if (field.array) {
-                        path += '.' + field.id
-                    }
-                    return path;
-                }
-            });
-            Object.defineProperty(field, "map", {
-                get: () => {
-                    if (field.item.map === false) { return field.item.map }
-                    let map = '';
-                    if (field.ischild) {
-                        map = field.parent.map + '.';
-                    }
-                    map += field.name
-                    if (field.array) {
-                        map += '.' + field.index;
-                    }
-
-                    return field.item.map || map;
-                },
-            });
-            Object.defineProperty(field, "source", {
-                get: () => {
-                    if (field.item.source === false) { return field.item.source }
-                    var source = '';
-                    if (field.ischild) {
-                        source = field.parent.source + '.';
-                    }
-                    source += field.name
-                    if (field.array) {
-                        source += '.' + field.index;
-                    }
-
-                    return field.item.source || source || field.map;
-                },
-            });
-
-
-
-            Object.defineProperty(field, "relative", {
-                get: () => {
-                    var path = '/';
-                    if (field.ischild) {
-                        path = field.parent.relative + '.';
-                    }
-                    path += field.name
-                    return path;
-                }
-            });
-
-            /*------------------------------------------*/
-
-
-
-            field.columns = _.min([field.columns, form.options.columns]);// (field.columns > form.options.columns)? form.options.columns: field.columns;
-
-            field = _.reduce([
-                'get',
-                'toString',
-                'satisfied',
-                'render',
-                'update',
-                'destroy',
-                'focus',
-                'reflow',
-                'find',
-                'filter'
-            ], (field, prop) => {
-                if ((!(prop in field) || (field[prop] == Object.prototype[prop])) && prop in gform.types[field.type]) {
-                    field[prop] = form.bind(prop, field);
-                }
-                return field;
-            }, field)
-
-            Object.defineProperty(field, "toJSON", {
-                get: () => {
-                    return field.get();
-                },
-                enumerable: true
-            });
-
-            field.el = form.call('create', field);
-
-            switch (typeof field.container) {
-                case "string":
-                    field.container = field.el.querySelector(field.container);
-                    break;
-                case "undefined":
-                    field.container = field.el.querySelector('fieldset') || field.el || null;
-                    break;
-            }
-
-            if (field.section) form.el.querySelector('.' + form.options.sections + '-content').appendChild(field.el);
-
-            form.call('initialize', field)
-            field.isActive = true;
-
-            //apply data on field to metadata tags
-            if (_.isArray(field.item.data)) {
-                field.meta = field.item.data;
-                _.each(field.meta, function (meta) {
-                    if (typeof meta.key == 'string' && meta.key !== "" && !(meta.key in field)) {
-                        Object.defineProperty(field, meta.key, {
-                            get: function (key, field) {
-                                return _.find(field.meta, { key: key }).value;
-                            }.bind(null, meta.key, field),
-                            set: function (key, field, value) {
-                                _.find(field.meta, { key: key }).value = value;
-                                field.parent.trigger(meta.key, field);
-                            }.bind(null, i.key, field),
-                            configurable: true,
-                            enumerable: true
-                        });
-                    }
-                })
-            }
-
-
-            if (field.fields) {
-                field._items = _.map(field.fields, form.fieldMethods.cultivate.bind(null, {
-                    data: options.data,
-                    parent: field
-                }))
-
-                Object.defineProperty(field, 'items', {
-                    get: () => {
-                        return field._items
-                    }
-                }
-                )
-                Object.keys(gform.iterators).forEach(i => {
-                    field.items[i] = gform.iterators[i].bind(field)
-                })
-
-                Object.defineProperty(field, 'fields', {
-                    get: () => _.reduce(field._items, (fields, item) => {
-                        if (item instanceof gform.arrayManager) {
-                            fields = fields.concat(item.instances);
-                        } else {
-                            fields.push(item)
-                        }
-                        return fields;
-                    }, [])
-                })
-                gform.each.call(field, function (field) {
-                    field.owner.trigger('change', field);
-                })
+          }
+          let index = am.instances.length;
+          while (index < field.array.min) {
+            am.addField(
+              {
+                ...options,
+                data:
+                  ((options.data || {})[field.name] || [])[index] ||
+                  gform.types[field.type].base == "section"
+                    ? {}
+                    : "",
+                index: index,
+              },
+              field
+            ); //am.addField({},field);
+            index++;
+          }
+          return am;
+        }
+  
+        //get value from passed in value
+        // if(field.fillable){
+  
+        //     if(field.array){
+        //         field.value =  options.data;
+        //     }else{
+        //         field.value = options.data[field.name]
+        //     }
+  
+        //should be able to compine these and just conditionally set localValue
+        // test thouroughly though
+  
+        // if(!form.options.strict){
+        //     const rootValue = form.options.data[field.name]
+  
+        //     if(field.array && typeof (localValue || rootValue) == 'object'){
+        //         field.value =  (localValue || rootValue)[options.index||0] || {};
+        //     }else{
+        //         field.value = _.defaults({data:_.selectPath(options.data,field.item.map||field.name)},{value:rootValue},field).value
+        //     }
+        // }else{
+        //     if(field.array && typeof localValue == 'object'){
+        //         field.value =  localValue || {};
+        //     }else{
+        //         field.value =  _.defaults({value:_.selectPath(options.data,field.item.map||field.name)},field).value
+        //     }
+        // }
+  
+        // }
+  
+        if (typeof form.options.data == "object" && "data" in form.options.data) {
+          Object.defineProperty(field, "data", {
+            get: () => {
+              return form.options.data.data;
+            },
+            enumerable: true,
+          });
+        }
+  
+        field = _.reduce(
+          ["value", "label", "placeholder", "help", "info", "pre", "post"],
+          (field, attr) => {
+            if (typeof field[attr] == "string" && field.raw !== true) {
+              field[attr] = gform.renderString(
+                typeof field.item[attr] == "string"
+                  ? field.item[attr]
+                  : field[attr],
+                field
+              );
             }
             return field;
+          },
+          field
+        );
+  
+        //Define properties
+        /*------------------------------------------*/
+  
+        if (
+          typeof field.item.value === "function" ||
+          (typeof field.item.method === "string" &&
+            typeof field.owner.methods[field.item.method] == "function")
+        ) {
+          field.derivedValue = e => {
+            let localVal = (
+              field.owner.methods[field.item.method] || field.item.value
+            ).call(null, {
+              ...e,
+              form: field.owner,
+              field: field,
+              initial: field,
+            });
+  
+            field.set(
+              typeof localVal !== "undefined"
+                ? localVal
+                : field.initialValue || field.item.defaultValue || false,
+              false
+            );
+            return field.internalValue;
+          };
+        } else if (
+          typeof field.item.value === "string" &&
+          field.item.value.indexOf("=") === 0
+        ) {
+          field.derivedValue = () => {
+            const data = field.owner.get();
+            field.formula = gform.renderString(field.item.value.substr(1), data);
+            try {
+              if (field.formula.length) {
+                if (typeof math !== "undefined") {
+                  var result = math.eval(field.formula, data);
+                  if (typeof result == "object" && "entries" in result) {
+                    result = _.last(result.entries);
+                    if (typeof result._data == "object") result = result._data;
+                  }
+                  field.formula = _.isFinite(result)
+                    ? result.toFixed(field.item.precision || 0)
+                    : _.isArray(result)
+                    ? result
+                    : "";
+                }
+              }
+            } catch (e) {
+              field.formula = "";
+            }
+            return field.formula;
+          };
         }
+  
+        field.trigger = gform.types[field.type].trigger
+          ? gform.types[field.type].trigger.bind(field)
+          : field.parent.trigger;
+  
+        field.set = (value, silent) => {
+          if (
+            typeof value == "undefined" &&
+            typeof field.derivedValue == "function"
+          ) {
+            let temp = field.derivedValue({
+              initial: field,
+              form: field.owner,
+              field: field,
+            });
+            value = typeof temp == "undefined" ? "" : temp;
+          }
+          //not sure we should be excluding objects - test how to allow objects
+          if ("fields" in field && typeof value == "object") {
+            value = _.pick(value, _.map(field.fields, "name"));
+          }
+  
+          if (field.internalValue != value || value == null) {
+            // && typeof value !== 'object') {
+            if (!gform.types[field.type].set.call(field, value)) {
+              field.internalValue = value;
+  
+              if (!silent) {
+                field.trigger(["change"], field);
+              }
+            }
+          }
+          return field.internalValue;
+        };
+        if (field.fillable) {
+          // if(field.array && typeof options.data == 'object' && typeof options.data[field.name] == 'object' && !!options.data[field.name] ){
+          //     field.value =  options.data[field.name][options.index||0];
+          // }
+          // if(typeof options.data == 'undefined'){
+          //     field.value = form.call('resetValue', field);
+          // }else{
+          //     field.value =  _.defaults({value:_.selectPath(options.data,field.item.map||field.name)},field,{value:''}).value
+          // }
+          if (typeof field.derivedValue == "function") {
+            field.value = field.initialValue =
+              "data" in options
+                ? options.data
+                : field.owner.call("resetValue", field) || field.value;
+            const fieldinitialize = e => {
+              field.value = field.derivedValue({
+                ...e,
+                initial: field,
+                field: field,
+                form: field.owner,
+              });
+              field.owner.on("input", e => {
+                e.initial = field;
+                var oldv = field.value;
+                var newv = field.derivedValue(e);
+                newv = typeof newv == "undefined" ? "" : newv;
+                if (newv != oldv && e.default) {
+                  field.set.call(null, newv);
+                  if (e.field !== field && e.continue) {
+                    e.form.trigger("input", field);
+                  }
+                }
+              });
+            };
+            if (field.owner.initialized) {
+              fieldinitialize.call({});
+            } else {
+              field.owner.on("initialized", fieldinitialize);
+            }
+          } else {
+            field.value =
+              "data" in options && typeof options.data !== "undefined"
+                ? options.data
+                : "value" in field
+                ? field.value
+                : "value" in field.item
+                ? field.item.value
+                : form.call("resetValue", field);
+          }
+          // field.value =  _.defaults({value:_.selectPath(options.data,field.item.map||field.name)},field).value
+          options.data = "data" in options ? options.data : field.value;
+        }
+        if (field.multiple && field.value == null) field.value = [];
+  
+        field.internalValue = field.initialValue = field.value;
+  
+        Object.defineProperty(field, "value", {
+          get: () => field.internalValue,
+          set: val => {
+            if (field.internalValue !== val) {
+              field.set(val, true);
+            }
+          },
+          enumerable: true,
+        });
+  
+        // field._show = field.show;
+        // Object.defineProperty(field, "show", {
+        //     get:() => field._show,
+        //     set: val => {
+        //         if(typeof val == 'undefined')return;
+        //         if(typeof val == 'object'){
+        //             gform.processConditions(val, e=>{field.show = e;})
+        //             return;
+        //         }
+        //         field._show = (typeof val == 'function')? val.call(null, {form: field.owner, field: field}): !!val;
+        //         field.visible = field._show;
+        //         gform.types[field.type].show.call(field, field._show)
+        //     },
+        //     enumerable: false
+        // });
+  
+        //Define properties
+        /*------------------------------------------*/
+        Object.defineProperty(field, "active", {
+          get: () =>
+            field.isActive &&
+            field.editable /*&& field.parsable*/ &&
+            field.visible &&
+            field.parent.active,
+          enumerable: true,
+        });
+  
+        Object.defineProperty(field, "display", {
+          get: () => {
+            if (
+              "display" in field.item &&
+              typeof field.item.display == "function"
+            ) {
+              return field.display.call(field);
+            }
+            if ("display" in gform.types[field.type]) {
+              return gform.types[field.type].display.call(field);
+            }
+            return field.toString();
+          },
+          enumerable: true,
+        });
+        Object.defineProperty(field, "sibling", {
+          get: () => {
+            return field.am instanceof gform.arrayManager;
+            // var types = field.parent.filter({array:{ref:field.array.ref}},1);
+            // return (types.length && types[0] !== field );
+          },
+          enumerable: true,
+        });
+        Object.defineProperty(field, "isSatisfied", {
+          get: () => field.satisfied(field.get()),
+        });
+  
+        Object.defineProperty(field, "path", {
+          get: () => {
+            let path = "/";
+            if (field.ischild) {
+              path = field.parent.path + ".";
+            }
+            path += field.name;
+            if (field.array) {
+              path += "." + field.id;
+            }
+            return path;
+          },
+        });
+        Object.defineProperty(field, "map", {
+          get: () => {
+            if (field.item.map === false) {
+              return field.item.map;
+            }
+            let map = "";
+            if (field.ischild) {
+              map = field.parent.map + ".";
+            }
+            map += field.name;
+            if (field.array) {
+              map += "." + field.index;
+            }
+  
+            return field.item.map || map;
+          },
+        });
+        Object.defineProperty(field, "source", {
+          get: () => {
+            if (field.item.source === false) {
+              return field.item.source;
+            }
+            var source = "";
+            if (field.ischild) {
+              source = field.parent.source + ".";
+            }
+            source += field.name;
+            if (field.array) {
+              source += "." + field.index;
+            }
+  
+            return field.item.source || source || field.map;
+          },
+        });
+  
+        Object.defineProperty(field, "relative", {
+          get: () => {
+            var path = "/";
+            if (field.ischild) {
+              path = field.parent.relative + ".";
+            }
+            path += field.name;
+            return path;
+          },
+        });
+  
+        /*------------------------------------------*/
+  
+        field.columns = _.min([field.columns, form.options.columns]); // (field.columns > form.options.columns)? form.options.columns: field.columns;
+  
+        field = _.reduce(
+          [
+            "get",
+            "toString",
+            "satisfied",
+            "render",
+            "update",
+            "destroy",
+            "focus",
+            "reflow",
+            "find",
+            "filter",
+          ],
+          (field, prop) => {
+            if (
+              (!(prop in field) || field[prop] == Object.prototype[prop]) &&
+              prop in gform.types[field.type]
+            ) {
+              field[prop] = form.bind(prop, field);
+            }
+            return field;
+          },
+          field
+        );
+  
+        Object.defineProperty(field, "toJSON", {
+          get: () => {
+            return field.get();
+          },
+          enumerable: true,
+        });
+  
+        field.el = form.call("create", field);
+  
+        switch (typeof field.container) {
+          case "string":
+            field.container = field.el.querySelector(field.container);
+            break;
+          case "undefined":
+            field.container =
+              field.el.querySelector("fieldset") || field.el || null;
+            break;
+        }
+  
+        if (field.section)
+          form.el
+            .querySelector("." + form.options.sections + "-content")
+            .appendChild(field.el);
+  
+        form.call("initialize", field);
+        field.isActive = true;
+  
+        //apply data on field to metadata tags
+        if (_.isArray(field.item.data)) {
+          field.meta = field.item.data;
+          _.each(field.meta, function (meta) {
+            if (
+              typeof meta.key == "string" &&
+              meta.key !== "" &&
+              !(meta.key in field)
+            ) {
+              Object.defineProperty(field, meta.key, {
+                get: function (key, field) {
+                  return _.find(field.meta, { key: key }).value;
+                }.bind(null, meta.key, field),
+                set: function (key, field, value) {
+                  _.find(field.meta, { key: key }).value = value;
+                  field.parent.trigger(meta.key, field);
+                }.bind(null, i.key, field),
+                configurable: true,
+                enumerable: true,
+              });
+            }
+          });
+        }
+  
+        if (field.fields) {
+          field._items = _.map(
+            field.fields,
+            form.fieldMethods.cultivate.bind(null, {
+              data: options.data,
+              parent: field,
+            })
+          );
+  
+          Object.defineProperty(field, "items", {
+            get: () => {
+              return field._items;
+            },
+          });
+          Object.keys(gform.iterators).forEach(i => {
+            field.items[i] = gform.iterators[i].bind(field);
+          });
+  
+          Object.defineProperty(field, "fields", {
+            get: () =>
+              _.reduce(
+                field._items,
+                (fields, item) => {
+                  if (item instanceof gform.arrayManager) {
+                    fields = fields.concat(item.instances);
+                  } else {
+                    fields.push(item);
+                  }
+                  return fields;
+                },
+                []
+              ),
+          });
+          gform.each.call(field, function (field) {
+            field.owner.trigger("change", field);
+          });
+        }
+        return field;
+      };
     },
     normalize: function (form) {
-        return (options, field) => {
-            var parent = options.parent || form;
-
-            if (!('type' in field) || !(field.type in gform.types)) {
-                let old = field.type || "Undefined";
-                field.type = ((field.columns == 0) ? 'hidden' : (('options' in field) ? 'select' : (form.options.default.type || 'text')));
-                console.warn('Field type "' + old + '" not supported - using ' + field.type + " " + ((field.columns == 0) ? "(columns set to 0)" : (('options' in field) ? '(default collection)' : '(default)')) + ' instead');
-            }
-            field.item = _.clone(field);
-
-            const { index, id, ...rest } = field;
-            field = {
-                id: gform.getUID(),
-                index: options.index || index || field.instance || 0,
-                label: field.legend || field.title || (gform.types[field.type] || gform.types['text']).defaults.label || field.name,
-                parent: parent,
-                columns: options.columns || form.options.columns,
-                offset: options.offset || gform.offset || 0,
-                ischild: !(parent instanceof gform),
-                format: {},
-                ...form.options.default,
-                ...(gform.types[field.type] || gform.types['text']).defaults,
-                ...rest,
-            }
-
-            //keep required separate
-            //WRONG....WRONG....WRONG....
-            if (field.array) {
-                if (typeof field.array !== 'object') {
-                    field.array = {};
-                }
-                field.array = _.defaultsDeep(field.array, (gform.types[field.type] || {}).array, { max: 5, min: 1, duplicate: { enable: 'auto' }, remove: { enable: 'auto' }, append: { enable: true } })
-                // field.array.ref = field.array.ref || gform.getUID();
-            }
-
-            if (!('multiple' in field)) field.multiple = ('limit' in field && field.limit > 1);
-
-            field.name = (field.name || (gform.renderString(field.legend || field.label || field.title, field) || '').toLowerCase().split(' ').join('_') || field.id) + '';
-            return field;
+      return (options, field) => {
+        var parent = options.parent || form;
+  
+        if (!("type" in field) || !(field.type in gform.types)) {
+          let old = field.type || "Undefined";
+          field.type =
+            field.columns == 0
+              ? "hidden"
+              : "options" in field
+              ? "select"
+              : form.options.default.type || "text";
+          console.warn(
+            'Field type "' +
+              old +
+              '" not supported - using ' +
+              field.type +
+              " " +
+              (field.columns == 0
+                ? "(columns set to 0)"
+                : "options" in field
+                ? "(default collection)"
+                : "(default)") +
+              " instead"
+          );
         }
-    }
-};
-
-
-
-gform.rowManager = (options) => {
+        field.item = _.clone(field);
+  
+        const { index, id, ...rest } = field;
+        field = {
+          id: gform.getUID(),
+          index: options.index || index || field.instance || 0,
+          label:
+            field.legend ||
+            field.title ||
+            (gform.types[field.type] || gform.types["text"]).defaults.label ||
+            field.name,
+          parent: parent,
+          columns: options.columns || form.options.columns,
+          offset: options.offset || gform.offset || 0,
+          ischild: !(parent instanceof gform),
+          format: {},
+          ...form.options.default,
+          ...(gform.types[field.type] || gform.types["text"]).defaults,
+          ...rest,
+        };
+  
+        //keep required separate
+        //WRONG....WRONG....WRONG....
+        if (field.array) {
+          if (typeof field.array !== "object") {
+            field.array = {};
+          }
+          field.array = _.defaultsDeep(
+            field.array,
+            (gform.types[field.type] || {}).array,
+            {
+              max: 5,
+              min: 1,
+              duplicate: { enable: "auto" },
+              remove: { enable: "auto" },
+              append: { enable: true },
+            }
+          );
+          // field.array.ref = field.array.ref || gform.getUID();
+        }
+  
+        if (!("multiple" in field))
+          field.multiple = "limit" in field && field.limit > 1;
+  
+        field.name =
+          (field.name ||
+            (
+              gform.renderString(
+                field.legend || field.label || field.title,
+                field
+              ) || ""
+            )
+              .toLowerCase()
+              .split(" ")
+              .join("_") ||
+            field.id) + "";
+        return field;
+      };
+    },
+  };
+  
+  gform.rowManager = options => {
     // let rows = options.rows || []
-    // let {rowClass, columns, rowTemplate, container, rowSelector} = { 
+    // let {rowClass, columns, rowTemplate, container, rowSelector} = {
     //     rowClass: 'row',
     //     columns:  gform.prototype.options.columns,
     //     rowTemplate: '<div></div>',
@@ -4783,2364 +5979,2795 @@ gform.rowManager = (options) => {
     //     ...(options.owner || options).call('array', options.field),
     //     ...options
     // };
-    let rows = options.rows || []
-    let columns = gform.prototype.options.columns || 12
+    let rows = options.rows || [];
+    let columns = gform.prototype.options.columns || 12;
     let { rowClass, rowTemplate, container, rowSelector } = {
-        rowClass: gform.prototype.options.rowClass,
-        // columns:  gform.prototype.options.columns,
-        rowTemplate: '<div></div>',
-        container: gform.create(gform.renderString('<div></div>', options)),
-        // rowSelector:(options.owner || options).call('rowSelector', options.field),
-        // templateSelector:(options.owner || options).call('templateSelector', options.field) || "*",
-        ...(options.owner || options).call('array', options.field),
-        ...options
+      rowClass: gform.prototype.options.rowClass,
+      // columns:  gform.prototype.options.columns,
+      rowTemplate: "<div></div>",
+      container: gform.create(gform.renderString("<div></div>", options)),
+      // rowSelector:(options.owner || options).call('rowSelector', options.field),
+      // templateSelector:(options.owner || options).call('templateSelector', options.field) || "*",
+      ...(options.owner || options).call("array", options.field),
+      ...options,
     };
     const get = options => {
-        if (options.forceRow) return add(options);
-        let row = _.findLast(rows, { container: options._target }) || add(options);
-        if (columns !== -1 && (row.used + options.size) > columns) row = add(options);
-        return row;
-    }
-
+      if (options.forceRow) return add(options);
+      let row = _.findLast(rows, { container: options._target }) || add(options);
+      if (columns !== -1 && row.used + options.size > columns) row = add(options);
+      return row;
+    };
+  
     const add = options => {
-        let cRow = {
-            ref: gform.create(rowTemplate, rowSelector),
-            id: gform.getUID(),
-            used: 0,
-            container: options._target
-        };
-
-
-        // if(!(cRow.ref instanceof Element))cRow.ref = gform.create("<div></div>");
-        cRow.ref.setAttribute("id", cRow.id);
-        gform.addClass(cRow.ref, rowClass)
-        // cRow.ref.setAttribute("style", "margin-bottom:0;");
-        Object.defineProperty(cRow, "field", {
-            set: field => {
-                if (field.el instanceof Node) {
-                    ((typeof rowSelector == 'undefined') ? cRow.ref : cRow.ref.querySelector(rowSelector) || cRow.ref).appendChild(field.el)
-                    cRow.used += field.columns;
-                    cRow.used += field.offset;
-                } else {
-                    console.warn('Field element must be a node');
-                }
-            }
-        });
-        rows.push(cRow);
-        cRow.container.appendChild(cRow.ref);
-        return cRow
-    }
-
+      let cRow = {
+        ref: gform.create(rowTemplate, rowSelector),
+        id: gform.getUID(),
+        used: 0,
+        container: options._target,
+      };
+  
+      // if(!(cRow.ref instanceof Element))cRow.ref = gform.create("<div></div>");
+      cRow.ref.setAttribute("id", cRow.id);
+      gform.addClass(cRow.ref, rowClass);
+      // cRow.ref.setAttribute("style", "margin-bottom:0;");
+      Object.defineProperty(cRow, "field", {
+        set: field => {
+          if (field.el instanceof Node) {
+            (typeof rowSelector == "undefined"
+              ? cRow.ref
+              : cRow.ref.querySelector(rowSelector) || cRow.ref
+            ).appendChild(field.el);
+            cRow.used += field.columns;
+            cRow.used += field.offset;
+          } else {
+            console.warn("Field element must be a node");
+          }
+        },
+      });
+      rows.push(cRow);
+      cRow.container.appendChild(cRow.ref);
+      return cRow;
+    };
+  
     const clear = options => {
-        _.each(rows, cRow => {
-            if (typeof cRow !== 'undefined') {
-                try { cRow.container.removeChild(cRow.ref); } catch (e) { }
-            }
-        })
-        container = (typeof options == 'object' && 'container' in options) ? options.container : container
-        rows = [];
-    }
-
+      _.each(rows, cRow => {
+        if (typeof cRow !== "undefined") {
+          try {
+            cRow.container.removeChild(cRow.ref);
+          } catch (e) {}
+        }
+      });
+      container =
+        typeof options == "object" && "container" in options
+          ? options.container
+          : container;
+      rows = [];
+    };
+  
     const insert = field => {
-
-        if ('target' in field && (!('am' in field) || typeof field.am === 'undefined')) {
-            field._target = (typeof field.target == 'function') ? field.target.call(field) : field.target;
-
-            if (typeof field._target == 'string') {
-                field._target = field.owner.el.querySelector(field._target);
-            }
-            field._target = ((field._target) instanceof Node) ? (field._target) : container;
-            if (field.row == false) {
-                field._target.appendChild(field.el);
-                return;
-            }
-        } else {
-            field._target = container;
+      if (
+        "target" in field &&
+        (!("am" in field) || typeof field.am === "undefined")
+      ) {
+        field._target =
+          typeof field.target == "function"
+            ? field.target.call(field)
+            : field.target;
+  
+        if (typeof field._target == "string") {
+          field._target = field.owner.el.querySelector(field._target);
         }
-
-        field.columns = ('columns' in field) ? parseInt(field.columns, 10) : gform.prototype.options.columns;
-        field.offset = parseInt(field.offset, 10) || 0;
-        let size = (field.columns + field.offset);
-        if (columns > -1) {
-            if (size > columns) {
-                console.warn('Requested size "' + size + '" exceeds row size');
-                if (field.columns > columns) {
-                    console.warn('Requested columns "' + field.columns + '" exceeds row size, using column size of ' + columns);
-                    field.columns = columns;
-                    size = (field.columns + field.offset);
-                }
-                if (size > columns) {
-                    console.warn('Requested offset of ' + field.offset + ' pushes size over maximum row size of ' + columns + ' using offset of ' + (columns - field.columns));
-                    field.offset = (columns - field.columns);
-                    size = (field.columns + field.offset);
-                }
-            }
+        field._target = field._target instanceof Node ? field._target : container;
+        if (field.row == false) {
+          field._target.appendChild(field.el);
+          return;
         }
-        if (size > 0 && field.visible) {
-            let row = get({ size: size, ...field });
-            row.field = field;
+      } else {
+        field._target = container;
+      }
+  
+      field.columns =
+        "columns" in field
+          ? parseInt(field.columns, 10)
+          : gform.prototype.options.columns;
+      field.offset = parseInt(field.offset, 10) || 0;
+      let size = field.columns + field.offset;
+      if (columns > -1) {
+        if (size > columns) {
+          console.warn('Requested size "' + size + '" exceeds row size');
+          if (field.columns > columns) {
+            console.warn(
+              'Requested columns "' +
+                field.columns +
+                '" exceeds row size, using column size of ' +
+                columns
+            );
+            field.columns = columns;
+            size = field.columns + field.offset;
+          }
+          if (size > columns) {
+            console.warn(
+              "Requested offset of " +
+                field.offset +
+                " pushes size over maximum row size of " +
+                columns +
+                " using offset of " +
+                (columns - field.columns)
+            );
+            field.offset = columns - field.columns;
+            size = field.columns + field.offset;
+          }
         }
-        // if(typeof gform.types[field.type].rowSelector == 'string'){
-        //     cRow.appender = cRow.ref.querySelector(gform.types[field.type].rowSelector);
-        // }
-        // if(!('appender' in cRow) || cRow.appender == null){
-        //     cRow.appender = cRow.ref;
-        // }
-        // field.operator.rows = field.operator.rows || [];
-        // field.operator.rows.push(cRow);
-        // cRow.container = container;
-        // container.appendChild(cRow.ref);
-
-        // cRow.used += parseInt(field.columns, 10);
-        // cRow.used += parseInt(field.offset, 10);
-
-        // if(!skipAppend){
-        //     cRow.appender.appendChild(field.el);
-        // }
-
-
-
-    }
+      }
+      if (size > 0 && field.visible) {
+        let row = get({ size: size, ...field });
+        row.field = field;
+      }
+      // if(typeof gform.types[field.type].rowSelector == 'string'){
+      //     cRow.appender = cRow.ref.querySelector(gform.types[field.type].rowSelector);
+      // }
+      // if(!('appender' in cRow) || cRow.appender == null){
+      //     cRow.appender = cRow.ref;
+      // }
+      // field.operator.rows = field.operator.rows || [];
+      // field.operator.rows.push(cRow);
+      // cRow.container = container;
+      // container.appendChild(cRow.ref);
+  
+      // cRow.used += parseInt(field.columns, 10);
+      // cRow.used += parseInt(field.offset, 10);
+  
+      // if(!skipAppend){
+      //     cRow.appender.appendChild(field.el);
+      // }
+    };
     let api = { get: get, add: add, clear: clear, insert: insert };
     Object.defineProperty(api, "rows", {
-        get: () => rows
+      get: () => rows,
     });
-
+  
     Object.defineProperty(api, "status", {
-        get: () => { return { rows: rows, rowClass: rowClass, rowTemplate: rowTemplate, container: container, rowSelector: rowSelector }; },
-        set: (status) => {
-            if (status.container) container = status.container;
-            if (status.rowClass) rowClass = status.rowClass;
-            if (status.rowTemplate) rowTemplate = status.rowTemplate;
-            if (status.rowSelector) rowSelector = status.rowSelector;
-        }
+      get: () => {
+        return {
+          rows: rows,
+          rowClass: rowClass,
+          rowTemplate: rowTemplate,
+          container: container,
+          rowSelector: rowSelector,
+        };
+      },
+      set: status => {
+        if (status.container) container = status.container;
+        if (status.rowClass) rowClass = status.rowClass;
+        if (status.rowTemplate) rowTemplate = status.rowTemplate;
+        if (status.rowSelector) rowSelector = status.rowSelector;
+      },
     });
-
+  
     return api;
-}
-
-// gform.layout = function(field){
-
-//     // if(field instanceof gform.arrayManager){
-//     //     //start here
-//     //     field.field.parent.container.appendChild(field.el);
-//     //     // _.each(field.instances,function(myinstance){this.container.appendChild(myinstance.el)}.bind(field))
-//     // }else if('manager' in field && !!field.manager.container){
-//     //     var container = field.manager.container;
-//     //     field.operator = field.manager;
-//     //     container.appendChild(field.el);
-
-//     // }else{
-//         if(field.columns == 0 || !field.visible){return;}
-//         var search = {};
-//         var skipAppend = false;
-
-//         if('parent' in field && !!field.parent.container){
-//             var container = field.parent.container;
-
-//             field.operator = field.parent;
-
-//             if(typeof field.target == 'function'){
-//                 field.target = field.target.call(field)
-//             }
-//             if(typeof field.target == 'string'){
-//                 var temp = field.owner.el.querySelector(field.target);
-//                 if(typeof temp !== 'undefined' && temp !== null){
-//                     search ={target:field.target};
-//                     container = temp;
-//                     field.operator = field.owner;
-//                 }else{
-//                     if(field.owner.options.clear){
-//                         search.id = field.target
-//                     }else{
-//                         //used when populating an html block with field positions predefined  -- make an option
-//                         skipAppend = true;
-//                     }            
-//                 }
-//             }
-//             // if(field.sibling){
-//                 // search.id = field.operator.filter({array:{ref:field.array.ref}},1)[0].row;
-//             // }
-//             var cRow  = _.findLast(field.operator.rows,search);
-//             if(!field.sibling || !('id' in search) || typeof cRow == 'undefined'){
-//                 if(typeof cRow === 'undefined' || (cRow.used + parseInt(field.columns,10) + parseInt(field.offset,10)) > field.owner.options.columns || field.forceRow == true){
-//                     cRow = search;
-//                     cRow.id =gform.getUID();
-//                     cRow.used = 0;
-//                     var template = '<div></div>';
-//                     if(typeof gform.types[field.type].row == 'function'){
-//                         template = gform.types[field.type].row.call(field)||template;
-//                     }
-//                     cRow.ref = gform.create(template)
-//                     cRow.ref.setAttribute("id", cRow.id);
-//                     cRow.ref.setAttribute("class", field.owner.options.rowClass);
-//                     cRow.ref.setAttribute("style", "margin-bottom:0;");
-
-//                     if(typeof gform.types[field.type].rowSelector == 'string'){
-//                         cRow.appender = cRow.ref.querySelector(gform.types[field.type].rowSelector);
-//                     }
-//                     if(!('appender' in cRow) || cRow.appender == null){
-//                         cRow.appender = cRow.ref;
-//                     }
-//                     field.operator.rows = field.operator.rows || [];
-//                     field.operator.rows.push(cRow);
-//                     cRow.container = container;
-//                     container.appendChild(cRow.ref);
-//                 }
-//                 cRow.used += parseInt(field.columns, 10);
-//                 cRow.used += parseInt(field.offset, 10);
-//             }
-//             if(!skipAppend){
-//                 cRow.appender.appendChild(field.el);
-//             }
-//             field.row = cRow.id;
-//         }
-//     // }
-// }
-
-gform.reflow = function (options) {
-
-    if (typeof this.rowManager == 'object') {
-        let tempel = document.activeElement;
-        if (!(document.activeElement instanceof HTMLBodyElement)) {
-            (this.owner || this).activeEl = document.activeElement;
-        }
-
-        this.rowManager.clear(options);
-        let result = _.reduce(this._items || this.instances, (error, item) => {
-
-
-            //come back to this
-            if ('am' in item && typeof item.am !== 'undefined') {
-                // if (typeof item.target ==  'function'){
-                //     item.location = item.target.call(item)
-                // }
-                // if(typeof (item.location||item.target) == 'string'){
-                //     item.location = item.owner.el.querySelector(item.location||item.target);
-                // }
-                // if((item.location||item.target) instanceof Node){
-                //     (item.location||item.target).appendChild(item.el)
-                // }else{
-                // if(item.row !== false){
-                this.rowManager.insert(item)
-                // }
-                // }
-
-
-                item.owner.updateActions(item.am);
-            } else {
-                // if (typeof item.target ==  'function'){
-                //     item.location = item.target.call(item)
-                // }
-                // if(typeof (item.location||item.target) == 'string'){
-                //     item.location = item.owner.el.querySelector(item.location||item.target);
-                // }
-                // if((item.location||item.target) instanceof Node){
-                //     (item.location||item.target).appendChild(item.el)
-                // }else{
-                this.rowManager.insert(item)
-                // }
-            }
-            //Keep track of unique locations to clear them out 
-            // switch(typeof item.target){
-            //     case 'function':
-
-            //         item.location = item.target.call(item)
-            //         if(typeof item.location == 'string'){
-            //             item.location = item.owner.el.querySelector(item.location);
-            //         }
-            //         if(item.location instanceof Node){
-            //             item.location.appendChild(item.el)
-            //             break;
-            //         }
-            //     case 'string':
-            //         item.location = item.owner.el.querySelector(item.target);
-
-            //         if(item.location instanceof Node){
-            //             item.location.appendChild(item.el)
-            //             break;
-            //         }
-            //     default:
-            //         this.rowManager.insert(item)
-
+  };
+  
+  // gform.layout = function(field){
+  
+  //     // if(field instanceof gform.arrayManager){
+  //     //     //start here
+  //     //     field.field.parent.container.appendChild(field.el);
+  //     //     // _.each(field.instances,function(myinstance){this.container.appendChild(myinstance.el)}.bind(field))
+  //     // }else if('manager' in field && !!field.manager.container){
+  //     //     var container = field.manager.container;
+  //     //     field.operator = field.manager;
+  //     //     container.appendChild(field.el);
+  
+  //     // }else{
+  //         if(field.columns == 0 || !field.visible){return;}
+  //         var search = {};
+  //         var skipAppend = false;
+  
+  //         if('parent' in field && !!field.parent.container){
+  //             var container = field.parent.container;
+  
+  //             field.operator = field.parent;
+  
+  //             if(typeof field.target == 'function'){
+  //                 field.target = field.target.call(field)
+  //             }
+  //             if(typeof field.target == 'string'){
+  //                 var temp = field.owner.el.querySelector(field.target);
+  //                 if(typeof temp !== 'undefined' && temp !== null){
+  //                     search ={target:field.target};
+  //                     container = temp;
+  //                     field.operator = field.owner;
+  //                 }else{
+  //                     if(field.owner.options.clear){
+  //                         search.id = field.target
+  //                     }else{
+  //                         //used when populating an html block with field positions predefined  -- make an option
+  //                         skipAppend = true;
+  //                     }
+  //                 }
+  //             }
+  //             // if(field.sibling){
+  //                 // search.id = field.operator.filter({array:{ref:field.array.ref}},1)[0].row;
+  //             // }
+  //             var cRow  = _.findLast(field.operator.rows,search);
+  //             if(!field.sibling || !('id' in search) || typeof cRow == 'undefined'){
+  //                 if(typeof cRow === 'undefined' || (cRow.used + parseInt(field.columns,10) + parseInt(field.offset,10)) > field.owner.options.columns || field.forceRow == true){
+  //                     cRow = search;
+  //                     cRow.id =gform.getUID();
+  //                     cRow.used = 0;
+  //                     var template = '<div></div>';
+  //                     if(typeof gform.types[field.type].row == 'function'){
+  //                         template = gform.types[field.type].row.call(field)||template;
+  //                     }
+  //                     cRow.ref = gform.create(template)
+  //                     cRow.ref.setAttribute("id", cRow.id);
+  //                     cRow.ref.setAttribute("class", field.owner.options.rowClass);
+  //                     cRow.ref.setAttribute("style", "margin-bottom:0;");
+  
+  //                     if(typeof gform.types[field.type].rowSelector == 'string'){
+  //                         cRow.appender = cRow.ref.querySelector(gform.types[field.type].rowSelector);
+  //                     }
+  //                     if(!('appender' in cRow) || cRow.appender == null){
+  //                         cRow.appender = cRow.ref;
+  //                     }
+  //                     field.operator.rows = field.operator.rows || [];
+  //                     field.operator.rows.push(cRow);
+  //                     cRow.container = container;
+  //                     container.appendChild(cRow.ref);
+  //                 }
+  //                 cRow.used += parseInt(field.columns, 10);
+  //                 cRow.used += parseInt(field.offset, 10);
+  //             }
+  //             if(!skipAppend){
+  //                 cRow.appender.appendChild(field.el);
+  //             }
+  //             field.row = cRow.id;
+  //         }
+  //     // }
+  // }
+  
+  gform.reflow = function (options) {
+    if (typeof this.rowManager == "object") {
+      let tempel = document.activeElement;
+      if (!(document.activeElement instanceof HTMLBodyElement)) {
+        (this.owner || this).activeEl = document.activeElement;
+      }
+  
+      this.rowManager.clear(options);
+      let result = _.reduce(
+        this._items || this.instances,
+        (error, item) => {
+          //come back to this
+          if ("am" in item && typeof item.am !== "undefined") {
+            // if (typeof item.target ==  'function'){
+            //     item.location = item.target.call(item)
             // }
-
-            error = gform.reflow.call(item)
-            return error;
-        }, false)
-
-        //restore focus to element if it is still shown
-        var temp = (this.owner || this).find({ id: ((this.owner || this).activeEl || { id: '' }).id });
-        if (temp) temp.focus();
-        return result;
+            // if(typeof (item.location||item.target) == 'string'){
+            //     item.location = item.owner.el.querySelector(item.location||item.target);
+            // }
+            // if((item.location||item.target) instanceof Node){
+            //     (item.location||item.target).appendChild(item.el)
+            // }else{
+            // if(item.row !== false){
+            this.rowManager.insert(item);
+            // }
+            // }
+  
+            item.owner.updateActions(item.am);
+          } else {
+            // if (typeof item.target ==  'function'){
+            //     item.location = item.target.call(item)
+            // }
+            // if(typeof (item.location||item.target) == 'string'){
+            //     item.location = item.owner.el.querySelector(item.location||item.target);
+            // }
+            // if((item.location||item.target) instanceof Node){
+            //     (item.location||item.target).appendChild(item.el)
+            // }else{
+            this.rowManager.insert(item);
+            // }
+          }
+          //Keep track of unique locations to clear them out
+          // switch(typeof item.target){
+          //     case 'function':
+  
+          //         item.location = item.target.call(item)
+          //         if(typeof item.location == 'string'){
+          //             item.location = item.owner.el.querySelector(item.location);
+          //         }
+          //         if(item.location instanceof Node){
+          //             item.location.appendChild(item.el)
+          //             break;
+          //         }
+          //     case 'string':
+          //         item.location = item.owner.el.querySelector(item.target);
+  
+          //         if(item.location instanceof Node){
+          //             item.location.appendChild(item.el)
+          //             break;
+          //         }
+          //     default:
+          //         this.rowManager.insert(item)
+  
+          // }
+  
+          error = gform.reflow.call(item);
+          return error;
+        },
+        false
+      );
+  
+      //restore focus to element if it is still shown
+      var temp = (this.owner || this).find({
+        id: ((this.owner || this).activeEl || { id: "" }).id,
+      });
+      if (temp) temp.focus();
+      return result;
     }
-
-}
-// gform.reflowOld = function(){
-//     //capture focused element
-//     var activeEl = document.activeElement;
-
-
-
-
-//     if(this.isActive || (typeof this.owner !== 'undefined' && this.owner.isActive)){
-//         //remove all existing rows
-//         _.each(this.rows, (cRow)=>{
-//             if(typeof cRow !== 'undefined'){
-//                 try{cRow.container.removeChild(cRow.ref);}catch(e){}
-//             }
-//         })    
-//         this.rows = [];
-
-
-//         // gform.each.call(this, function(field){
-//         //     if(!field.section){// && (this.options.clear || field.isChild)){
-//         //         gform.layout.call(this,field)
-//         //     }else{
-//         //         if(field.section){
-//         //             field.owner.el.querySelector('.'+field.owner.options.sections+'-content').appendChild(field.el);
-//         //         }
-//         //     }
-//         // })
-//         gform.reduce_items((item)=>{
-//             if(!item.section){// && (this.options.clear || field.isChild)){
-//                 gform.layout.call(this, item)
-//             }else{
-//                 if(item.section){
-//                     item.owner.el.querySelector('.'+item.owner.options.sections+'-content').appendChild(item.el);
-//                 }
-//             }
-//         })
-//     }
-
-
-
-
-//     //restore focus to element if it is still shown
-//     var temp = this.find({id:activeEl.id});
-//     if(temp)temp.focus();
-// }
-gform.processConditions = function (conditions, func, options) {
-	let { _subscribe = gform._subscribeByName, _lookup = gform._lookup } = options || {};
-	let response = true;
-	if (typeof conditions === 'string') {
-		if (conditions === 'show' || conditions === 'edit' || conditions === 'parse') {
-			conditions = this.item[conditions];
-		}
-		if (typeof conditions == 'string' && conditions.indexOf('method:') == 0) {
-			if (typeof this.owner.methods !== 'undefined' && typeof this.owner.methods[conditions.split('method:')[1]] == 'function') {
-				func.call(this, this.owner.methods[conditions.split('method:')[1]].call(null, { form: this.owner, field: this }), { form: this.owner, field: this })
-			}
-		}
-	}
-	if (typeof conditions === 'boolean') {
-		response = func.call(this, conditions, { form: this.owner, field: this })
-	}
-	if (typeof conditions === 'function') {
-		response = func.call(this, conditions.call(null, { form: this.owner, field: this }), { form: this.owner, field: this })
-	}
-	if (typeof conditions === 'object') {
-		var callback = function (rules, func, _lookup, e) {
-			func.call(this, gform._rules.call(this, rules, _lookup), e)
-		}.bind(this, conditions, func, _lookup)
-		_subscribe.call(this, conditions, callback)
-		response = callback({ field: this, form: this.owner, event: "create" })
-	}
-	return response;
-};
-
-
-gform._subscribeByName = function (conditions, callback) {
-	if (!(this.owner instanceof gform)) return;
-
-	for (var i in conditions) {
-		if (typeof conditions[i].conditions == 'object') {
-			gform._subscribeByName.call(this, conditions[i].conditions, callback)
-		} else {
-			var temp = gform._lookup(this, conditions[i])
-
-			if ((conditions[i].name || this.name).indexOf('/') !== 0 && typeof temp !== 'undefined') {
-
-
-				// if(typeof temp !== "undefined"){
-				this.eventlist = this.eventlist || [];
-
-				this.owner.on('change:' + temp.path, callback, this.eventlist)
-
-				// }else{
-				// 	this.owner.on('change:' + (this.parent.find(conditions[i].name||this.name)||this.parent).path||(conditions[i].name||this.name), callback)
-				// }
-			} else {
-				this.owner.on('change:' + (conditions[i].name || this.name), callback)
-			}
-		}
-	}
-}
-
-gform._rules = function (rules, _lookup, op) {
-	var op = op || 'and';
-	return _.reduce(rules, function (result, rule) {
-		var s;
-		if (typeof rule.conditions !== 'undefined') {
-			s = gform._rules.call(this, rule.conditions, _lookup, rule.op);
-		} else {
-			s = gform.conditions[rule.type](this, rule, _lookup);
-		}
-		if (op == 'or') {
-			return result || s;
-		} else {
-			return result && s;
-		}
-	}.bind(this), (op == 'and'))
-}
-
-gform.conditions = {
-	// requires: (field, args, _lookup = _lookup) => _lookup(field, args, _lookup).satisfied(),
-	requires: (field, args, _lookup = _lookup) => {
-		let targetField = _lookup(field, args);
-		return (targetField) ? targetField.satisfied() : false;
-	},
-	// valid_previous: function(gform, args) {},
-	not_matches: (field, args, _lookup) => {
-		let targetField = _lookup(field, args);
-		if (!targetField) return;
-		var val = args[args.attribute || 'value'];
-		var localval = targetField[args.attribute || 'value'];
-
-		if (typeof val == "object" && val !== null && localval !== null) {
-			return (val.indexOf(localval) == -1);
-		} else {
-			return (val !== localval);
-		}
-	},
-	test: (field, args, _lookup) => args.test.call(this, field, args),
-	contains: (field, args, _lookup) => {
-		let targetField = _lookup(field, args);
-
-		var val = args.value;
-		var localval = null;
-		if (targetField && typeof targetField !== 'undefined') {
-			if (targetField.array != false) {
-				localval = field.parent.find(args.name).parent.get()[args.name]
-			} else {
-				localval = targetField.value;
-			}
-		} else {
-			targetField = field.parent.find(args.name) || field.owner.filter({ path: args.name }, args.depth || 10)[0];
-			if (typeof targetField == 'undefined') {
-				return false;
-			}
-		}
-
-		if (typeof val == "object" && val !== null && localval !== null) {
-			if (typeof localval == 'object') {
-				return (_.intersection(val, localval).length > 0)
-			} else if (typeof localval == 'string') {
-				return _.some(val, function (filter) { return (localval.indexOf(filter) >= 0); });
-			}
-		} else {
-			return (typeof localval !== 'undefined' && localval !== null && localval.indexOf(val) !== -1)
-		}
-	},
-	matches: (field, args, _lookup) => {
-		let targetField = _lookup(field, args);
-		if (!targetField) return;
-
-		var val = args[args.attribute || 'value'];
-		var localval = targetField[args.attribute || 'value'];
-		if (typeof val == "object" && val !== null && localval !== null) {
-			return (val.indexOf(localval) !== -1);
-		} else {
-			return (val == localval);
-		}
-	},
-
-	matches_bool: (field, args, _lookup) => {
-		let targetField = _lookup(field, args);
-		if (!targetField) return;
-
-		var val = args[args.attribute || 'value'];
-		var localval = targetField[args.attribute || 'value'];
-		return (val == "false" || !val) == (localval == "false" || !localval)
-	},
-	matches_numeric: (field, args, _lookup) => {
-		let targetField = _lookup(field, args);
-		if (!targetField) return;
-
-		var val = args[args.attribute || 'value'];
-		var localval = parseInt(targetField[args.attribute || 'value']);
-		if (typeof val == "object" && val !== null && localval !== null) {
-			return (_.map(val, function (vals) { return parseInt(vals); }).indexOf(localval) !== -1);
-		} else {
-			return (parseInt(val) == localval);
-		}
-	},
-	numeric: function (field, args, _lookup) {
-		let targetField = _lookup(field, args);
-		if (!targetField) return;
-
-		var val = args[args.attribute || 'value'];
-		var localval = parseInt(targetField[args.attribute || 'value']);
-
-		if (!(gform.regex.decimal.test(value) || value === '')) {
-			return '{{label}} must contain only numbers';
-		}
-
-		args.min = (typeof this.min == 'number') ? this.min : (typeof args.min == 'number') ? args.min : null
-		if (args.min !== null && parseFloat(value) < parseFloat(args.min)) {
-			return '{{label}} must contain a number not less than {{args.min}} '
-		}
-
-		args.max = (typeof this.max == 'number') ? this.max : (typeof args.max == 'number') ? args.max : null
-		if (args.max !== null && parseFloat(value) > parseFloat(args.max)) {
-			return '{{label}} must contain a number not more than {{args.max}}'
-		}
-
-
-
-		if (typeof val == "object" && val !== null && localval !== null) {
-			return (_.map(val, function (vals) { return parseInt(vals); }).indexOf(localval) !== -1);
-		} else {
-			return (parseInt(val) == localval);
-		}
-
-	}
-};gform.prototype.validate = function(force){
-	this.valid = true;
-	_.each(this.fields, gform.validateItem.bind(null, force))
-	if(!this.valid){
-		this.trigger('invalid',{errors:this.errors});
-	}else{
-		this.trigger('valid');
-	}
-	this.trigger('validation');
-	
-	return this.valid;
-};
-gform.prototype.clearValidation = function(){
-	this.valid = true;
-	_.each(this.filter({valid:false}),(field)=>{
-		field.valid = true;
-		field.errors = '';
-		gform.handleError(field);
-
-	})
-	return this.valid;
-};
-gform.handleError = gform.update;
-
-gform.validateItem = function(force,item){
-	var value = item.get();
-	if(force || !item.valid || item.required || item.satisfied(value)){
-		item.valid = true;
-		item.errors = '';
-		if(item.parsable && typeof item.validate === 'object'){
-			
-			var errors = [];
-			if(item.required){
-				var type = (item.satisfied(item.get()) ? false : '{{label}} is required')
-				if(type) {
-					errors.push(gform.renderString(item.required.message || type, {label:item.label,value:value, args:item.required}));
-				}
-			}
-			if(!errors.length){
-				errors = gform.validation.call(item,item.validate);
-			}
-			errors = _.compact(errors);
-			if((typeof item.display === 'undefined') || item.visible) {
-				item.valid = !errors.length;
-				item.errors = errors.join('<br>')
-				gform.handleError(item);
-			}
-
-		}
-		
-	}
-	if(item.parsable){
-		//validate sub fields
-		if(typeof item.fields !== 'undefined'){
-			_.each(item.fields, gform.validateItem.bind(null,force))
-		}
-	}
-	if(item.errors) {
-		item.owner.trigger('invalid:'+item.name, {errors:item.errors});
-	}else{
-		item.owner.trigger('valid:'+item.name);
-	}
-	item.owner.errors[item.name] = item.errors;
-	item.owner.errors = _.pickBy(item.owner.errors);
-	item.owner.valid = item.valid && item.owner.valid;
-	// return item.valid;
-
-};
-
-gform.validation = function(rules, op){
-	var op = op||'and';
-	var value = this.get();
-	var errors =  _.map(rules, function(v, it){
-		if(typeof it.type == 'string'){
-			if(typeof it.conditions == 'undefined' || gform._rules.call(this, it.conditions)){
-					var type = v[it.type].call(this, value, it);
-					if(type){	
-						return gform.renderString(it.message || type, {label:this.label,value:value, args:it});
-					}
-			}
-		}else if(typeof it.tests !== 'undefined'){
-			return gform.validation.call(this,it.tests,it.op).join('<br>');
-		}
-	}.bind(this, gform.validations))
-	if(op == 'and' || _.compact(errors).length == rules.length){
-		return errors;
-	}else{
-		return [];
-	}
-}
-
-gform.regex = {
-	numeric: /^[0-9]+$/,
-	decimal: /^\-?[0-9]*\.?[0-9]*$/,
-	url: /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/,
-	date: /^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$/,
-	email: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6}$/i
-};
-
-gform.validations = 
-{	
-	none:function(value) {
-			return false;
-	},
-
-	required:function(value) {
-		return (this.satisfied(value) ? false : '{{label}} is required');
-	},
-	unique:function(value) {
-		return (this.parent.get()[this.name].indexOf(this.value)==this.index ? false : '{{label}} is a duplicate');
-	},
-	pattern: function(value, args) {
-		var r = args.regex;
-		if(typeof r == 'string'){
-			if(typeof gform.regex[r] !== 'undefined'){
-				r = gform.regex[r]
-			}else{
-				
-				r = new RegExp(args.regex, args.flags);
-			}
-		}
-		return r.test(value) || value === '' ? false : args.message;
-	},
-	custom: function(value, args) {
-
-		if(typeof args.test === 'function' || (typeof args.test === 'string' && typeof this.owner.methods[args.test] == 'function') ) {
-			args.test = this.owner.methods[args.test] || args.test;
-		}
-		// return args.test.call(this, value, args);
-		args.field = this;
-		args.form = this.owner;
-		args.value = value
-		return args.test.call(null, args);
-
-	},
-	matches:function(value, args) {
-		if(typeof args.name !== 'undefined'){
-			var temp = this.parent.find(args.name);
-			if(typeof temp == 'undefined'){return "Matching field not defined";}
-			args.label = temp.label;
-			args.value = temp.get();
-			return (value == args.value ? false : '"{{label}}" does not match the "{{args.label}}" field');
-		}else if(typeof args.value !== 'undefined'){
-			if(_.isArray(args.value)){
-                return (args.value.indexOf(value) !== -1 ? false : '"{{label}}" does not match "{{args.value}}"');
-
-            }else{
-                return (value == args.value ? false : '"{{label}}" does not match "{{args.value}}"');
-			}
-		}
-	},
-	date: function(value) {
-			return gform.regex.date.test(value) || value === '' ? false : '{{label}} should be in the format MM/DD/YYYY';
-	},
-	valid_url: function(value) {
-		return gform.regex.url.test(value) || value === '' ? false : '{{label}} must contain a valid Url';
-	},
-	valid_email: function(value) {
-			return gform.regex.email.test(value) || value === '' ? false : '{{label}} must contain a valid email address';
-	},
-	length:function(value, args){
-		if (!gform.regex.numeric.test(args.max) && !gform.regex.numeric.test(args.min)) {
-			return 'Invalid length requirement';
-		}
-
-		if(typeof args.max == 'number' && typeof args.min == 'number' && args.min == args.max){
-			if(args.min == value.length){
-				return false
-			}else{
-				return '{{label}} must be exactly '+args.min+' characters in length';
-			}
-		}
-		if(typeof args.max == 'number' && value.length > args.max){
-			return '{{label}} must not exceed '+args.max+' characters in length'
-		}
-		if(typeof args.min == 'number' && value.length>0 && value.length < args.min){
-			return '{{label}} must be at least '+args.min+' characters in length'
-		}
-		return false
-	},
-	numeric: function(value, args) {
-		if(!(gform.regex.decimal.test(value) || value === '')){
-			return '{{label}} must contain only numbers';
-		}
-		
-		args.min = (typeof parseFloat(this.min) == 'number')?parseFloat(this.min):(typeof parseFloat(args.min) == 'number')?parseFloat(args.min):null
-		if(args.min !== null && parseFloat(value) < parseFloat(args.min)){
-			return '{{label}} must contain a number not less than {{args.min}} '
-		}
-
-		args.max =  (typeof parseFloat(this.max) == 'number')?parseFloat(this.max):(typeof parseFloat(args.max) == 'number')?parseFloat(this.max):null
-		if(args.max !== null && parseFloat(value) > parseFloat(args.max)){
-			return '{{label}} must contain a number not more than {{args.max}}'
-		}
-		// if((typeof args.step == 'number' || typeof this.step == 'number') && parseFloat(value) > parseFloat(args.max)){
-		// 	return '{{label}} must contain a number less than {{args.max}}'
-		// }
-	}
-};gform.stencils = {
-	_style: `.array_container + button.create {
-		display: none;
-
-	  }
-
-	  .array_container:empty + button.create{
-		display: inline-block;
-	  }
-	  .array_container .actions {
-		margin-bottom: -15px;
-	}
-	.array_container fieldset > .actions {
-		margin-bottom: 0;
-	}
-	.gform_isArray > fieldset:before {
-		content: "";
-		border: dashed 1px #102e7946;
-		border-right:0px;
-		width:10px;
-		position: absolute;
-		bottom: 1px;
-		left: 7px;
-		top: 2px;
-	  }
-	  fieldset:disabled .actions{
-		display:none;
-	  }
-
-	  fieldset fieldset {
-		margin-left: 10px !important;
-	  }
-	.form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control,form[disabled] .form-control {
-		cursor: not-allowed;
-		background-color: #eee;
-		opacity: 1
-	}
-input + .falseLabel {
-	display: inline;
-}
-input + .falseLabel+ .trueLabel {
-	display: none;
-}
-input:checked + .falseLabel + .trueLabel {
-	display: inline;
-}
-input:checked + .falseLabel {
-	display: none;
-}
-.combobox-container .form-control[contenteditable="false"]
-{
-	background: #eee;
-}
-.combobox-selected .caret {
-	display: none;
-}
-/* :not doesn't work in IE8 */
-.combobox-container:not(.combobox-selected) .fa-times {
-	display: none;
-}
-
-
-.combobox-container:not(.loaded) .status-icon,
-.combobox-container:not(.loaded) .status-icon:after\ {
-  border-radius: 50%;
-  width: 10em;
-  height: 10em;
-	color:red;
-}
-.combobox-container:not(.loaded) .status-icon {
-  margin: 0px auto;
-	    position: absolute !important;
-    top: 7px;
-    right: 7px;
-  font-size: 2px;
-  position: relative;
-  text-indent: -9999em;
-  border-top: 1.1em solid rgba(255, 255, 255, 0.2);
-  border-right: 1.1em solid rgba(255, 255, 255, 0.2);
-  border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
-  border-left: 1.1em solid #333333;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-animation: load8 1.1s infinite linear;
-  animation: load8 1.1s infinite linear;
-}
-@-webkit-keyframes load8 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes load8 {
-  0% {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-
-.combobox-container.loaded .status-icon {
- 		background: #eee url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor' aria-hidden='true'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>") no-repeat center 1px;
-		background-size: 20px 20px;
-    width: 100%;
-    height: 100%;
-		display:inline-block;
-}
-
-.combobox-container.loaded:not(.combobox-selected) .status-icon {
- background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor' aria-hidden='true'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/></svg>");
-}
-
-
-.combobox-list {
-	max-height: 300px;
-	overflow-y: auto;
-	width: 100%;
-}
-.combobox-container .form-control{
-	overflow: hidden;white-space: nowrap;position: absolute;width:auto;right:37px;left:0;
-}
-.combobox-container .form-control:empty::before {
-	content: attr(placeholder);
-	color: #aaa; 
-}
-
-.combobox-container .form-control:empty:focus::before {
-	content: "";
-}
-.combobox-container .dropdown-toggle{
-	height: 34px;position: relative;border-left: solid 1px #ccc;width: 38px;
-}
-@media (min-width: 992px) {
-	.row .col-md-Infinity:first-child{margin-left: 15px;}
-	.col-md-Infinity{display:inline-block;padding:0 20px 0 0}
-}
-
-@media (max-width: 991px) {
-	.row .col-md-Infinity:first-child{margin-top: 5px !important;}
-	.row .col-md-Infinity{margin-left: 15px;}
-}
-/* The switch - the box around the slider */
-.switch {
-	position: relative;
-	display: inline-block;
-	width: 4rem;
-	height: 2.2rem;
-	margin: .5em;
-}
-
-/* Hide default HTML checkbox */
-.switch input {
-	opacity: 0;
-	width: 0;
-	height: 0;
-}
-
-/* The slider */
-.switch .slider {
-	position: absolute;
-	cursor: pointer;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: #ccc;
-	-webkit-transition: 0.2s;
-	transition: 0.2s;
-	border: solid 0.1rem #c8c8c8;
-}
-
-.switch .slider:before {
-	position: absolute;
-	content: "";
-	height: 1.8rem;
-	width: 1.8rem;
-	left: 0.1rem;
-	bottom: 0.1rem;
-	background-color: white;
-	-webkit-transition: 0.2s;
-	transition: 0.2s;
-}
-
-input:checked + .slider {
-	background-color: #1690d8;
-}
-
-input:focus + .slider {
-	border-color: #1690d8;
-	box-shadow: 0 0 0 0.125em rgba(50, 115, 220, 0.25);
-}
-
-input:checked + .slider:before {
-	-webkit-transform: translateX(1.8rem);
-	-ms-transform: translateX(1.8rem);
-	transform: translateX(1.8rem);
-}
-input:disabled + .slider {
-	background-color: #ddd;
-}
-/* Rounded sliders */
-.switch .slider.round {
-	border-radius: 2rem;
-}
-
-.switch .slider.round:before {
-	border-radius: 50%;
-}
-
-.gform-info {
-	position:absolute;
-	right:10px;
-	cursor: pointer;
-	font-weight: bold;
-	width: 2.2rem;
-	height: 2.2rem;
-	margin-right: 0.5rem;
-	line-height: 2.2rem;
-	color: #fff;
-	text-align: center;
-	background: rgba(0, 0, 0, 0.38);
-	border-radius: 50%;
-  }
-  .gform-info:after {
-	content: "?";
-  }
-  .gform-info:hover {
-	box-shadow: 0px 0px 2px #000;
-  }
+  };
+  // gform.reflowOld = function(){
+  //     //capture focused element
+  //     var activeEl = document.activeElement;
   
-  .info-close {
-	float: right;
-	cursor: pointer;
-	border: solid 1px;
-	border-radius: 0.5rem;
-	font-weight: bold;
-	padding: 0 0.7rem;
-  }
-  .info-close:after {
-	content: "X";
-  }
-  #tooltip {
-	background-color: #333;
-	color: #fff;
-	padding: 5px 10px;
-	border-radius: 4px;
-	font-size: 13px;
-	max-width: 400px;
-  }
-  #tooltip .title {
-	font-weight: bold;
-	margin-right: 40px;
-  }
+  //     if(this.isActive || (typeof this.owner !== 'undefined' && this.owner.isActive)){
+  //         //remove all existing rows
+  //         _.each(this.rows, (cRow)=>{
+  //             if(typeof cRow !== 'undefined'){
+  //                 try{cRow.container.removeChild(cRow.ref);}catch(e){}
+  //             }
+  //         })
+  //         this.rows = [];
   
-  #tooltip hr,
-  #tooltip .gform-add, #tooltip .gform-minus {
-	display: none;
-  }
-
-.gform-append{
-	margin-bottom:5px;
-}
-
-
-
-
-
-
-
-
-
-
-
-  #arrow,
-  #arrow::before {
-	position: absolute;
-	width: 8px;
-	height: 8px;
-	z-index: -1;
-  }
+  //         // gform.each.call(this, function(field){
+  //         //     if(!field.section){// && (this.options.clear || field.isChild)){
+  //         //         gform.layout.call(this,field)
+  //         //     }else{
+  //         //         if(field.section){
+  //         //             field.owner.el.querySelector('.'+field.owner.options.sections+'-content').appendChild(field.el);
+  //         //         }
+  //         //     }
+  //         // })
+  //         gform.reduce_items((item)=>{
+  //             if(!item.section){// && (this.options.clear || field.isChild)){
+  //                 gform.layout.call(this, item)
+  //             }else{
+  //                 if(item.section){
+  //                     item.owner.el.querySelector('.'+item.owner.options.sections+'-content').appendChild(item.el);
+  //                 }
+  //             }
+  //         })
+  //     }
   
-  #arrow::before {
-	content: "";
-	transform: rotate(45deg);
-	background: #333;
-  }
- 
-
-  
-
-
-
-
-
-  
-  	label.required:after,
-	legend.required:after {
-		content: "*";
-		color: #f00;
-	}
-
-	html,body{
-		-webkit-overflow-scrolling : touch !important;
-		overflow: auto !important;
-		height: 100% !important;
-	}
-	@media print {
-		body {
-			height: auto !important;
-		}
-	}
-
-	.table>tbody.table-row+tbody.table-row{border-top:1px}
-`,
-	// _form:`<form id="{{name}}" style="overflow:hidden" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform {{#horizontal}} smart-form-horizontal form-horizontal{{/horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>{{^legendTarget}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/legendTarget}}</form>`,
-	_container: `<form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform {{modifiers}}{{#horizontal}} form-horizontal{{/horizontal}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>{{^legendTarget}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/legendTarget}}</form><div class="gform-footer"></div>`,
-	text: `<div class="row clearfix form-group {{modifiers}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12">{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8">{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12">
-	{{/label}}
-		{{#pre}}<div class="input-group col-xs-12"><span class="input-group-addon">{{{pre}}}</span>{{/pre}}
-    {{^pre}}{{#post}}<div class="input-group">{{/post}}{{/pre}}
-		<input {{^autocomplete}}autocomplete="off"{{/autocomplete}} class="form-control" {{^editable}}readonly disabled{{/editable}} {{#limit}}maxlength="{{limit}}"{{/limit}} min="{{min}}" {{#max}} max="{{max}}"{{/max}} {{#step}} step="{{step}}"{{/step}} placeholder="{{placeholder}}" type="{{elType}}{{^elType}}{{type}}{{/elType}}" name="{{name}}" id="{{id}}" value="" />
-		{{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
-    {{^post}}{{#pre}}</div>{{/pre}}{{/post}}
-		{{#limit}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/limit}}
-
-		{{>_addons}}
-		{{>_actions}}
-	</div>
-</div>`,
-	output: `
-<div class="row">
-<div>
-		{{>_label}}
-		
-	<div class="col-xs-12">
-    <output name="{{name}}" id="{{id}}">{{{display}}}{{^display}}&nbsp;{{/display}}</output>
-		{{>_addons}}
-		{{>_actions}} 
-		</div>
-    </div>
-    </div>
-`,
-	grid: `<div class="row">
-<fieldset id="{{id}}" name="{{name}}" class="row"  style="margin-bottom:20px">
-    {{>_label}}
-	<div class="col-xs-12">
-    	<table class="table table-striped" style="margin-bottom:0">
-			<thead>
-				<tr>
-					<th></th>
-					{{#options}}
-					<th><label>{{label}}</label></th>
-					{{/options}}
-				</tr>
-			</thead>
-			<tbody>
-			{{#fields}}
-				<tr>
-					<td><label style="font-weight: 500;" for="{{id}}">{{{label}}}</label></td>
-					{{#options}}
-					<td>
-					{{#multiple}}
-						<div><input name="{{id}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{value}}"/>
-					{{/multiple}}
-					{{^multiple}}
-						<input style="margin-right: 5px;" name="{{id}}" {{#selected}} checked=selected {{/selected}}  value="{{value}}" type="radio">
-					{{/multiple}}
-					</td>
-					{{/options}}
-				</tr>
-				{{/fields}}
-			</tbody>
-		</table>
-		{{>_addons}}
-		{{>_actions}}
-	</div>
-</fieldset>
-</div>`,
-	switch: `<div class="row clearfix {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12" style="margin:0 0 5px">{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8" style="margin:0 0 15px">{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12">
-	{{/label}}
-	<div>
-	<span class="falseLabel">{{{options.0.label}}} </span>
-		<label class="switch">
-		<input name="{{name}}" type="checkbox" {{^editable}}disabled{{/editable}} {{#options.1.selected}}checked=checked{{/options.1.selected}} value="{{value}}" id="{{id}}" />
-		<span class="slider round"></span>
-		</label>
-		<span class="trueLabel">{{{options.1.label}}}</span>
-		</div>
-		{{>_addons}}
-		{{>_actions}}
-	</div>
-</div>`,
-	// switch: `
-	// <div class="row clearfix {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" name="{{name}}" data-type="{{type}}">
-	// {{>_label}}
-	// <div class="col-md-12" style="margin:0 0 5px">
-	// <label class="switch">
-	// <input name="{{name}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{value}}" id="{{name}}" />
-	// <span class="slider round"></span>
-	// </label>
-	// </div>
-
-	//     {{>_error}}
-	//     </div>
-	//     {{>_actions}}
-	// </div>`,
-	hidden: `<input type="hidden" name="{{name}}" value="{{value}}" />{{>_addons}}`,
-	textarea: `<div class="row clearfix form-group {{modifiers}} {{#array}}isArray" data-min="{{array.min}}" data-max="{{array.max}}{{/array}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>
-	{{/label}}
-		<textarea class="form-control"  {{^editable}}readonly disabled{{/editable}} {{#limit}}maxlength="{{limit}}"{{/limit}} style="width:100%;height:auto;min-height:20px" rows="{{size}}{{^size}}3{{/size}}" name="{{name}}" id="{{id}}" placeholder="{{placeholder}}"></textarea>
-		{{#limit}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/limit}}
-		{{>_addons}}
-			{{>_actions}}
-	</div>
-</div>`,
-
-	contenteditable: `<div class="row clearfix form-group {{modifiers}} {{#array}}isArray" data-min="{{array.min}}" data-max="{{array.max}}{{/array}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>
-	{{/label}}
-
-		<div class="formcontrol" style="height:auto" id={{id}}><div placeholder="{{placeholder}}" style="outline:none;border:solid 1px #cbd5dd;{{^unstyled}}background:#fff;padding:10px{{/unstyled}}" name="{{name}}">{{content}}{{value}}</div></div>
-		{{#limit}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/limit}}
-		{{>_addons}}
-			{{>_actions}}
-	</div>
-</div>`,
-	select: `<div class="row clearfix form-group {{modifiers}} {{#size}}size={{size}}{{/size}} {{#array}}isArray" data-min="{{array.min}}" data-max="{{array.max}}{{/array}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12">{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8">{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12">
-	{{/label}}		
-	{{#limit}}{{#multiple}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/multiple}}{{/limit}}
-
-		{{#pre}}<div class="input-group"><span class="input-group-addon">{{{pre}}}</span>{{/pre}} 
-		{{^pre}}{{#post}}<div class="input-group">{{/post}}{{/pre}}
-		{{#mapOptions.waiting}}<i class="fa fa-spinner fa-spin" style="font-size:20px;position:absolute;top:7px;left:22px;color:#666"></i>{{/mapOptions.waiting}}
-			<select class="form-control test"  {{#multiple}}multiple=multiple{{/multiple}} {{#size}}size={{size}}{{/size}}  name="{{name}}{{#multiple}}[]{{/multiple}}" value="{{value}}" id="{{id}}" />
-			{{#options}}
-			{{^optgroup}}
-			{{#visible}}<option {{#selected}}selected='selected'{{/selected}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}} value="{{i}}">{{{label}}}</option>{{/visible}}
-			{{/optgroup}}
-			{{#optgroup}}
-			{{#visible}}{{#optgroup.label}}
-			<optgroup label="{{label}}" data-id="{{optgroup.id}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}">
-			{{/optgroup.label}}
-					{{#options}}
-					{{#visible}}<option data-id="{{optgroup.id}}" {{#selected}}selected='selected'{{/selected}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}  value="{{i}}">{{{label}}}</option>{{/visible}}
-					{{/options}}
-					{{#optgroup.label}}
-			</optgroup>
-			{{/optgroup.label}}{{/visible}}
-			{{/optgroup}}
-			{{/options}}
-			</select>
-		{{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
-		{{^post}}{{#pre}}</div>{{/pre}}{{/post}}
-		{{>_addons}}
-		{{>_actions}}
-	</div>
-</div>`,
-	radio: `<div class="row clearfix form-group {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" name="{{name}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12 {{#size}}row{{/size}}" {{#size}}style="padding-top: 5px;"{{/size}}>{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8 {{#size}}row{{/size}}" {{#size}}style="padding-top: 5px;"{{/size}}>{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12" {{#size}}style="padding-top: 5px;"{{/size}}>
-	{{/label}}
-	{{#limit}}{{#multiple}}<small class="count text-muted" style="display:block;text-align:left">0/{{limit}}</small>{{/multiple}}{{/limit}}
-
-			{{#options}}
-				{{^optgroup}}
-
-					{{#multiple}}
-					<div class="checkbox {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
-						<label class="noselect"><input name="{{name}}_{{value}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{i}}"/> {{{label}}}</label>
-					</div>
-					{{/multiple}}
-					{{^multiple}}
-					<div class="radio {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
-						<label {{^horizontal}}class="radio-inline"{{/horizontal}}><input style="margin-right: 5px;" name="{{id}}" {{#selected}} checked=selected {{/selected}}  value="{{i}}" type="radio"><span class="noselect" style="font-weight:normal">{{{label}}}{{^label}}&nbsp;{{/label}}</span></label>        
-					</div>
-					{{/multiple}}
-
-				{{/optgroup}}
-			{{#optgroup}}
-			{{#optgroup.label}}
-			<b class="text-muted" data-id="{{optgroup.id}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}">{{label}}</b>
-			{{/optgroup.label}}
-					{{#options}}
-
-					{{#multiple}}
-					<div class="checkbox {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
-						<label class="noselect"><input data-id="{{optgroup.id}}" name="{{name}}_{{value}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{i}}"/> {{{label}}}</label>
-					</div>
-					{{/multiple}}
-					{{^multiple}}
-					<div class="radio {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
-						<label {{^horizontal}}class="radio-inline"{{/horizontal}}><input data-id="{{optgroup.id}}" style="margin-right: 5px;" name="{{id}}" {{#selected}} checked=selected {{/selected}}  value="{{i}}" type="radio"><span class="noselect" style="font-weight:normal">{{{label}}}{{^label}}&nbsp;{{/label}}</span></label>        
-					</div>
-					{{/multiple}}
-
-					{{/options}}
-
-			{{/optgroup}}
-			{{/options}}
-
-
-
-
-
-
-		{{>_addons}}
-		{{>_actions}}
-	</div>
-</div>`,
-	custom_radio: `<div class="row clearfix form-group {{modifiers}} {{#multiple.duplicate}}dupable" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/multiple.duplicate}}" name="{{name}}" data-type="{{type}}">
-{{>_label}}
-{{#multiple.duplicate}}
-<div class="duplicate add btn btn-default"><i class="fa fa-plus"></i></div>
-<div class="btn btn-default remove"><i class="fa fa-minus"></i></div>
-{{/multiple.duplicate}}
-{{#label}}
-{{^horizontal}}<div class="col-md-12">{{/horizontal}}
-{{#horizontal}}<div class="col-md-8">{{/horizontal}}
-{{/label}}
-{{^label}}
-<div class="col-md-12">
-{{/label}}
-	{{#pre}}<div class="input-group"><span class="input-group-addon">{{{pre}}}</span>{{/pre}}
-	{{^pre}}{{#post}}<div class="input-group">{{/post}}{{/pre}}
-		<div class="custom-group"  name="{{name}}" style="max-height:200px;overflow-y:scroll;">
-
-		{{#options}}
-		{{^optgroup}}
-
-		<button type="button" href="javascript:void(0);" data-id="{{optgroup.id}}" name="{{id}}" data-id="{{optgroup.id}}" class="{{^selected}} {{defaultClass}}{{/selected}}{{#selected}} {{selectedClass}}{{/selected}}"  value="{{i}}"  data-value="{{value}}">
-		{{{label}}}{{^label}}&nbsp;{{/label}}
-		</button>
-
-		{{/optgroup}}
-	{{#optgroup}}
-	{{#optgroup.label}}
-	<b class="text-muted" data-id="{{optgroup.id}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}">{{label}}</b>
-	{{/optgroup.label}}
-			{{#options}}
-			
-			<button type="button" href="javascript:void(0);" data-id="{{optgroup.id}}" name="{{id}}" data-id="{{optgroup.id}}" class="{{^selected}} {{defaultClass}}{{/selected}}{{#selected}} {{selectedClass}}{{/selected}}"  value="{{i}}"  data-value="{{value}}">
-			{{{label}}}{{^label}}&nbsp;{{/label}}
-			</button>
-
-
-			{{/options}}
-
-	{{/optgroup}}
-	{{/options}}
-		</div>
-	{{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
-	{{^post}}{{#pre}}</div>{{/pre}}{{/post}}
-	{{>_addons}}
-	{{>_actions}}
-</div>
-</div>`,
-	fieldset_array: '<div><div class="col-xs-12">{{#array}}{{#append.enable}}<button data-ref="{{ref}}" data-parent="{{parent.id}}" class="gform-append btn btn-info btn-xs pull-right">{{{append.label}}}{{^append.label}}<i class="fa fa-plus"></i> Add {{{label}}}{{/append.label}}</button>{{/append.enable}}{{/array}}<legend>{{label}}</legend><div class="list-group gform-template_row"></div></div></div>',
-
-	_fieldset: `<div class=""><fieldset data-type="fieldset" style="" name="{{name}}" id="{{id}}" class="{{modifiers}}" >
-{{#array}}
-<div data-name="{{name}}" data-ref="{{am.id}}" class="btn-group hidden-print actions">
-	{{#remove.enable}}
-	<div data-id="{{id}}" class="btn btn-white gform-minus">{{{remove.label}}}{{^remove.label}}<i data-id="{{id}}"  class="fa fa-minus text-danger"></i>{{/remove.label}}</div>
-	{{/remove.enable}}
-	{{#duplicate.enable}}
-	<div data-id="{{id}}" class="gform-add btn btn-white">{{{duplicate.label}}}{{^duplicate.label}}<i data-id="{{id}}"  class="fa fa-plus text-success"></i>{{/duplicate.label}}</div>
-	{{/duplicate.enable}}
-</div>
-{{^section}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/section}}
-{{/array}}
-{{^section}}{{#label}}<legend>{{{label}}}</legend>{{/label}}{{/section}}
-<div style="position:relative;top:-20px">{{>_addons}}</div>
-</fieldset></div>`,
-	_actions: `{{#array}}
-	<div data-name="{{name}}" data-ref="{{am.id}}" data-parent="{{parent.id}}" class="btn-group hidden-print actions pull-right">
-	{{#remove.enable}}
-	<div data-id="{{id}}" class="btn btn-white gform-minus">{{{remove.label}}}{{^remove.label}}<i class="fa fa-minus text-danger"></i>{{/remove.label}}</div>
-	{{/remove.enable}}
-	{{#duplicate.enable}}
-	<div data-id="{{id}}" class="gform-add btn btn-white">{{{duplicate.label}}}{{^duplicate.label}}<i class="fa fa-plus text-success"></i>{{/duplicate.label}}</div>
-	{{/duplicate.enable}}
-
-	</div>
-	{{/array}}`,
-	_tooltip: `<div id="tooltip" role="tooltip">
-<span class="info-close"></span>
-<div class="tooltip-body"></div>
-<div id="arrow" data-popper-arrow></div>
-</div>`,
-	_info: `<div>
-<div class="title">More&nbsp;Information</div>
-<hr>
-  <div>{{info}}</div>
-</div> `,
-	_label: `
-	{{^hideLabel}}
-    {{#label}}
-	<label for="{{name}}" {{^horizontal}}style="text-align:left"{{/horizontal}} class="control-label {{^horizontal}}col-md-12{{/horizontal}}{{#horizontal}}col-md-4{{/horizontal}}">{{{label}}}{{#required}}{{{requiredText}}}{{/required}}{{suffix}}</label>{{/label}}
-{{#info}}<b class="gform-info" data-id="{{id}}"></b>{{/info}}
-{{/hideLabel}}
-    `,
-	_addons: `<span class="help-inline"> {{{help}}}</span>
-<span class="font-xs text-danger" style="display:block;"></span>`,
-	checkbox: `<div class="row clearfix {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12" style="margin:0 0 5px">{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8" style="margin:0 0 15px">{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12" style="margin: -10px 0 5px;"">
-	{{/label}}
-		<div class="checkbox">
-			<label class="{{alt-display}}" for="{{id}}">
-				<input name="{{name}}" id="{{id}}" type="checkbox" {{^editable}}disabled{{/editable}} {{#options.1.selected}}checked=checked{{/options.1.selected}}>{{^format.display}}<span class="falseLabel">{{{options.0.label}}}</span><span class="trueLabel">{{{options.1.label}}}</span>{{/format.display}}{{format.display}}&nbsp;
-			</label>
-		</div>
-	{{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
-		{{>_addons}}
-		{{>_actions}}
-	</div>
-</div>`,
-	scale: `
-<div class="row clearfix form-group {{modifiers}} {{#multiple.duplicate}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/multiple.duplicate}}" name="{{name}}" data-type="{{type}}">
-	{{>_label}}
-	{{>_actions}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12">{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8">{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12">
-	{{/label}}
-			<table class="table table-striped">
-				<thead>
-				<tr>
-					{{#format.low}}<th></th>{{/format.low}}
-					{{#options}}
-					<th><label for="{{name}}_{{i}}">{{{label}}}</label></th>
-					{{/options}}
-					{{#format.high}}<th></th>{{/format.high}}
-				</tr>
-				</thead>
-				<tbody>
-				<tr>
-					{{#format.low}}<td><label style="font-weight: 500;" for="{{name}}_1">{{{format.low}}}</label></td>{{/format.low}}
-					{{#options}}
-					<td>
-						<input data-label="{{label}}" id="{{name}}_{{i}}" name="{{id}}" value="{{i}}" {{^editable}}readonly disabled{{/editable}} type="radio" {{#selected}}checked=checked{{/selected}} >
-					</td>
-					{{/options}}
-					{{#format.high}}<td><label style="font-weight: 500;" for="{{name}}_{{options.length}}">{{{format.high}}}</label></td>{{/format.high}}
-				</tr>
-		</tbody>
-			</table>
-		{{>_addons}}
-	</div>
-</div>`,
-	button: `<button class="btn btn-default hidden-print {{modifiers}}" type="button" style="margin:0 15px">{{{label}}}</button>`,
-	tab_container: `
-<form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform tab-content {{#horizontal}} smart-form-horizontal form-horizontal{{/horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>{{^legendTarget}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/legendTarget}}    
-	<ul class="nav nav-tabs" style="margin-bottom:15px">
-		{{#fields}}
-			{{#section}}
-			<li {{^index}}class="active"{{/index}}>
-				<a href="#tabs{{id}}" data-toggle="tab">{{{legend}}}</a>
-			</li>
-			{{/section}}		
-		{{/fields}}
-	</ul></form>
-	</form><div class="gform-footer"></div>`,
-	tab_fieldset: `{{#section}}<div class="tab-pane {{^index}}active{{/index}} " id="tabs{{id}}">{{/section}}{{>_fieldset}}{{#section}}</div>{{/section}}`,
-	modal_container: `<div class="hidden">
-	<div style="display:block;overflow-x: hidden;overflow-y: auto;" class=" modal gform {{modifiers}} {{#horizontal}} form-horizontal{{/horizontal}}" id="myModal" name="modal_{{name}}" data-update="{{update}}" data-append="{{append}}" {{#focus}}tabindex="-1"{{/focus}} role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header {{modal.header_class}}">
-				<button type="button" class="close" data-action="kill" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h4 class="modal-title" id="myModalLabel">{{#icon}}<i class="fa fa-{{icon}}"></i> {{/icon}}{{{title}}}{{{legend}}}&nbsp;</h4>
-			</div>
-			<div class="modal-body">
-				{{{body}}}
-				{{^sections}}
-				<form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform {{#options.horizontal}} smart-form-horizontal form-horizontal{{/options.horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}></form>
-				{{/sections}}
-				{{#sections}}
-				<form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform tab-content {{#options.horizontal}} smart-form-horizontal form-horizontal{{/options.horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>   
-				<ul class="nav nav-tabs" style="margin-bottom:15px">
-					{{#fields}}
-					{{#section}}
-					<li {{^index}}class="active"{{/index}}>
-						<a href="#tabs{{id}}" data-toggle="tab">{{{legend}}}</a>
-					</li>
-					{{/section}}		
-					{{/fields}}
-				</ul></form>
-				{{/sections}}
-				
-			</div>
-			<div class="modal-footer gform-footer">
-				{{{footer}}}
-			</div>
-		</div>
-	</div>
-</div>
-
-	<div class="modal-backdrop in">
-</div>
-</div>
-`,
-	modal_fieldset: `{{>_fieldset}}`,
-	child_modal_footer: `<button type="button" class="btn btn-danger hidden-print pull-left gform-minus"><i class="fa fa-times"></i> Delete</button><button class="btn btn-default hidden-print done" style="margin:0 15px"><i class="fa fa-check"></i> Done</button>`,
-
-	template: '<div><div class="col-xs-12">{{#array}}{{#append.enable}}<button data-ref="{{am.id}}" class="gform-append btn btn-info btn-xs pull-right">{{{append.label}}}{{^append.label}}<i class="fa fa-plus"></i> Add {{{label}}}{{/append.label}}</button>{{/append.enable}}<legend>{{label}}</legend>{{/array}}</div></div>',
-	template_item: `<div style="position:relative;top: -6px;">{{>_actions}}</div><div class="gform-template_container">{{{format.template}}}{{^format.template}}{{{display}}}{{/format.template}}</div>`,
-	table: '<div><div class="col-xs-12" style="overflow:scroll">{{#array}}<legend>{{{label}}}</legend>{{#append.enable}}<button type="button" data-id="{{ref}}"  class="gform-append btn btn-info btn-xs" style="top: -10px;position: relative;">{{{append.label}}}{{^append.label}}<i class="fa fa-plus"></i> Add {{{label}}}{{/append.label}}</button>{{/append.enable}}{{/array}}<table class="table table-bordered table-striped table-hover table-fixed {{#array.sortable.enable}}sortable{{/array.sortable.enable}}"><thead>{{#labels}}<th>{{{.}}}</th>{{/labels}}</thead></table></div></div>'
-};
-
-
-// gform.columns = 12;
-
-gform.columnClasses = _.map(new Array(13), function (item, i) { return 'col-xs-12 col-sm-' + i })
-gform.offsetClasses = _.map(new Array(13), function (item, i) { return 'col-xs-offset-0 col-sm-offset-' + i })
-gform.prototype.options.inline = true;
-gform.prototype.options.columns = 12;
-
-gform.prototype.options.default.suffix = "";
-
-gform.handleError = function (field) {
-	var error_container = field.el.querySelector('.font-xs.text-danger')
-
-	if (!field.valid) {
-		field.el.classList.add('has-error');
-		if (!!error_container) error_container.innerHTML = field.errors;
-	} else {
-		field.el.classList.remove('has-error');
-		// field.el.classList.add('has-success')
-		// field.el.querySelector('.font-xs.text-danger').innerHTML = '';
-		if (!!error_container) error_container.innerHTML = '';
-
-	}
-}
-
-gform.types['reset'] = _.defaultsDeep({ toString: function () { return '' } }, gform.types['button'], {
-	defaults: {
-		"label": "<i class=\"fa fa-times\"></i> Reset",
-		"action": "reset",
-		"modifiers": "btn btn-default"
-	}
-});
-gform.types['cancel'] = _.defaultsDeep({ toString: function () { return '' } }, gform.types['button'], {
-	defaults: {
-		"label": "<i class=\"fa fa-times\"></i> Cancel",
-		"action": "cancel",
-		"modifiers": "btn btn-danger"
-	}
-});
-gform.types['save'] = _.defaultsDeep({ toString: function () { return '' } }, gform.types['button'], {
-	defaults: {
-		"label": "<i class=\"fa fa-check\"></i> Save",
-		"action": "save",
-		"modifiers": "btn btn-success"
-	}
-});
-gform.types['clear'] = _.defaultsDeep({ toString: function () { return '' } }, gform.types['button'], {
-	defaults: {
-		"label": "<i class=\"fa fa-times\"></i> Clear",
-		"action": "clear",
-		"modifiers": "btn btn-warning"
-	}
-});
-
-gform.types['color'] = _.extend({}, gform.types['input'], {
-	defaults: {
-		pre: '<i style="display: block;width:20px;height:20px;margin: 0 -5px;background-color:{{value}}"></i>',
-		elType: 'text',
-		value: "#000000"
-	},
-	toString: function (name, display) {
-		this.value = this.get();//shouldn't need this here - but we do for now
-		if (!display) {
-			return '<dt>' + this.label + '</dt> <dd><div style="white-space:nowrap"><span style="width:20px;height:20px;display: inline-block;top: 5px;position: relative;background:' + this.value + ';"></span> ' + (this.value || '<span class="text-muted">(empty)</span>') + '</div></dd><hr>'
-		} else {
-			return this.value
-		}
-
-	},
-	set: function (value) {
-		if ('el' in this) {
-			this.el.querySelector('input[name="' + this.name + '"]').value = value;
-			this.el.querySelector('.input-group-addon i').style.backgroundColor = value;
-		}
-
-	},
-	initialize: function () {
-		// this.onchangeEvent = function(){
-		// 	this.value = this.get();
-		// 	this.parent.trigger(['change','input'], this,{input:this.value});
-		// }.bind(this)
-
-
-		this.onchangeEvent = function (input) {
-			//   this.input = input;
-			this.value = this.get();
-			if (this.el.querySelector('.count') != null) {
-				var text = this.value.length;
-				if (this.limit > 1) { text += '/' + this.limit; }
-				this.el.querySelector('.count').innerHTML = text;
-			}
-			//   this.update({value:this.get()},true);
-			//   gform.types[this.type].focus.call(this)
-			gform.types[this.type].setup.call(this);
-			this.owner.trigger('change', this, { input: this.value });
-
-			if (input) {
-				this.owner.trigger('input', this, { input: this.value });
-			}
-		}.bind(this)
-
-
-		this.el.addEventListener('input', this.onchangeEvent.bind(null, true));
-		this.el.querySelector('.input-group-addon i').addEventListener('click', function () { this.focus() }.bind(this));
-
-		$(this.el.querySelector('input[name="' + this.name + '"]')).attr('type', 'text');
-		this.el.querySelector('.input-group-addon i').style.backgroundColor = this.get()
-		$(this.el.querySelector('input[name="' + this.name + '"]')).colorpicker({ format: 'hex', container: $(this.el).find('.input-group') }).on('changeColor', function (ev) {
-			this.el.querySelector('.input-group-addon i').style.backgroundColor = this.get()
-			this.parent.trigger('change', this);
-			this.parent.trigger('input', this);
-		}.bind(this));
-		gform.types[this.type].setLabel.call(this);
-
-	}
-});
-
-gform.types['contentEditable'] = gform.types['summernote'] = _.extend({}, gform.types['input'], {
-	render: function () {
-		//   return gform.render(this.type, this);
-		return gform.render('contenteditable', this);
-	},
-	set: function (value) {
-		//   this.el.querySelector('textarea[name="' + this.name + '"]').value = value;
-
-
-		// if(typeof this.lastSaved === 'undefined'){
-		// 	this.lastSaved = value;
-		// }
-		// this.editor.setContent(value)
-		this.$el.summernote('code', value)
-		// this.value = value;
-		// this.$el.html(value)
-
-		// return this.$el;
-	},
-	get: function () {
-		//   return this.el.querySelector('textarea[name="' + this.name + '"]').value;
-		return ('el' in this) ? this.$el.summernote('code') : this.internalValue;
-
-	},
-	initialize: function () {
-		this.$el = $(this.el).find('.formcontrol > div');
-		this.$el.off();
-		if (this.onchange !== undefined) {
-			this.$el.on('input', this.onchange);
-		}
-		this.$el.summernote({
-			disableDragAndDrop: true,
-			dialogsInBody: true,
-			toolbar: this.item.toolbar || [
-				// [groupName, [list of button]]
-				['style', ['bold', 'italic', 'underline', 'clear']],
-				['link', ['linkDialogShow', 'unlink']],
-				['font', ['strikethrough', 'superscript', 'subscript']],
-				['fontsize', ['fontsize']],
-				['color', ['color']],
-				['para', ['ul', 'ol', 'paragraph']],
-				['height', ['height']],
-				['view', ['fullscreen']]
-			]
-		});
-		gform.types[this.type].set.call(this, this.value, true)
-
-		this.$el.on('summernote.change', function () {
-			this.owner.trigger('change', this);
-
-			this.owner.trigger('input', this);
-		}.bind(this)
-		);
-		gform.types[this.type].setLabel.call(this);
-
-	}, satisfied: function (value) {
-		this.value = this.get()
-		return (typeof this.value !== 'undefined' && this.value !== null && this.value !== '' && this.value !== "<p><br></p>");
-	},
-	destroy: function () {
-		this.$el.summernote('destroy');
-		if (this.$el) {
-			this.$el.off();
-		}
-	}
-
-});
-
-
-$(document).on('focusin', function (e) {
-	if ($(e.target).closest(".note-editable").length) {
-		e.stopImmediatePropagation();
-
-	}
-});
-$(document).on('click', function (e) {
-	if ($(e.target).hasClass(".note-editor")) {
-		e.stopImmediatePropagation();
-
-		$(e.target).find('.open').removeClass('open')
-	}
-});
-
-
-
-gform.types['email'] = _.extend({}, gform.types['input'], { defaults: { pre: '<i class="fa fa-envelope"></i>', validate: [{ type: 'valid_email' }] } });
-gform.types['url'] = _.extend({}, gform.types['input'], { defaults: { pre: '<i class="fa fa-link"></i>', validate: [{ type: 'valid_url' }] } });
-gform.types['tel'] = _.extend({}, gform.types['input'], { defaults: { pre: '<i class="fa fa-phone"></i>', placeholder: '+1' } });
-gform.types['password'] = _.extend({}, gform.types['input'], { defaults: { pre: '<i class="fa fa-lock"></i>' } });
-gform.types['address'] = _.extend({}, gform.types['input'], gform.types['section'], {
-	defaults: {
-		fields: [
-			{ type: "text", name: 'street', label: "Street Address", validate: [{ type: "length", max: "255" }] },
-			{ type: "text", name: 'line2', label: "Address line 2", validate: [{ type: "length", max: "150" }] },
-			{ type: "text", name: 'city', label: "City", validate: [{ type: "length", max: "255" }], columns: 6 },
-			{ type: "text", name: 'state', label: "State/Province/Region", validate: [{ type: "length", max: "255" }], columns: 6 },//,display:[{type:"not_matches",name:"country",value:"US"}]},
-			// {type:"combo",name:'state',options:'../data/states.json',format:{label:'{{name}}'},label:"State/Province/Region",columns:6},
-			{ type: "text", name: 'zip', label: "Postal/Zip Code", validate: [{ type: "length", max: "15" }], columns: 6 },
-			{ type: "select", name: 'country', options: '../data/countries.json', format: { label: '{{name}}', value: '{{code}}' }, label: "Country", validate: [{ type: "length", max: "15" }], columns: 6 }
-		]
-	}
-});
-
-
-
-
-
-
-gform.THEME = { 'bootstrap': '0.0.4.2' }
-
-gform.types['datetime'] = _.extend({}, gform.types['input'], {
-	defaults: {
-		format: { input: "MM/DD/YYYY h:mm A" },
-		elType: 'text'
-	},
-	initialize: function () {
-		this.onchangeEvent = function () {
-			this.value = this.get();
-			this.parent.trigger(['change', 'input'], this, { input: this.value });
-		}.bind(this)
-
-		// this.el.addEventListener('input', this.onchangeEvent.bind(null,true));
-		// this.el.addEventListener('change', this.onchangeEvent.bind(null));
-		var $el = $(this.el.querySelector('input[name="' + this.name + '"]'));
-
-		// $el.attr('type','text');
-		$el.datetimepicker({ format: this.format.input })
-		//   $el.data("DateTimePicker").minDate(moment("1/1/1900"));
-		$el.on("dp.change", this.onchangeEvent.bind(null, true));
-		gform.types[this.type].setLabel.call(this);
-
-	}
-});
-gform.types['date'] = _.extend({}, gform.types['datetime'], {
-	defaults: {
-		format: { input: "MM/DD/YYYY" },
-		elType: 'text'
-	},
-})
-gform.types['time'] = _.extend({}, gform.types['datetime'], {
-	defaults: {
-		format: { input: "h:mm A" },
-		elType: 'text'
-	}
-})
-// gform.prototype.modalDelay = 475;
-// gform.prototype.modal = function(data){
-// 	// var el = this.modalEl||this.el;
-
-// 	// if(!document.body.contains(el)){
-//     //     document.body.appendChild(el);
-//     //     this.modalEl.querySelector('.close').addEventListener('click', function(){
-//     //         this.modal('hide');
-//     //         (this.owner||this).trigger("modal:close");
-//     //     }.bind(this));
-//     // }
-
-
-
-// 	// $(this.modalEl||this.el).modal(data)
-// 	// return this;
-
-// 	var el = this.modalEl||this.el;
-//     if(!document.body.contains(el)){
-//         document.body.appendChild(el);
-//         el.querySelector('.close').addEventListener('click', function(){
-
-// 			(this.owner||this).trigger('closed',this);
-//         }.bind(this));
-//     }
-
-
-//     // switch(data){
-//     //     case "hide":
-//     //         // if(typeof this.type !== 'undefined'){
-//     //         //     this.owner.trigger("close_child",this);
-//     //         // }else{
-//     //         //     this.trigger("close",this);
-//     //         // }
-//     //     default:
-//     //         $(el).modal(data)
-//     // }
-// if(typeof this.modalManager ==  'undefined'){
-// 	this.modalManager = $(el).modal(data)
-
-// 	$(el).on('hidden.bs.modal', function(e){
-// 		if(this.active){this.trigger("cancel",this)};
-// 	}.bind(this))
-// }else(
-// 	this.modalManager = $(el).modal(data)
-// )
-
-
-// 	return this;
-// }
-gform.prototype.modal = function (data) {
-	var el = this.modalEl || this.el;
-
-	if (!document.body.contains(el)) {
-		document.body.appendChild(el);
-		el.querySelector('.close').addEventListener('click', function () {
-			(this.owner || this).trigger('close');
-		}.bind(this));
-	}
-
-	switch (data) {
-		case "hide":
-			gform.addClass(el, 'hidden');
-			break;
-		default:
-			gform.removeClass(el, 'hidden');
-	}
-	// $(this.el).modal(data)
-	return this;
-};
-document.body.appendChild(gform.create('<style>' + gform.render('_style', {}, 'all') + '</style>'));
-gform.stencils.combobox = `
-<div class="row clearfix form-group {{modifiers}}" data-type="{{type}}">
-	{{>_label}}
-	{{#label}}
-	{{^horizontal}}<div class="col-md-12">{{/horizontal}}
-	{{#horizontal}}<div class="col-md-8">{{/horizontal}}
-	{{/label}}
-	{{^label}}
-	<div class="col-md-12">
-	{{/label}}
-	<div class="combobox-container">
-		<div class="input-group" style="width:100%" contentEditable="false"> 
-		{{#pre}}<span class="input-group-addon">{{{pre}}}</span>{{/pre}}
-        <div style="" {{^autocomplete}}autocomplete="off"{{/autocomplete}} class="form-control {{^editable}}readonly disabled{{/editable}}" {{^editable}}readonly disabled{{/editable}} {{#limit}}maxlength="{{limit}}"{{/limit}}{{#min}} min="{{min}}"{{/min}}{{#max}} max="{{max}}"{{/max}} {{#step}} step="{{step}}"{{/step}} placeholder="{{placeholder}}" {{#editable}}contentEditable{{/editable}} type="combobox" data-type="{{elType}}{{^elType}}{{type}}{{/elType}}" name="{{name}}" id="{{name}}" value="{{value}}" ></div>
-        <ul class="combobox-list dropdown-menu "></ul>
-        <span class="input-group-addon dropdown-toggle" style="" data-dropdown="dropdown"> <span class=" status-icon" data-dropdown="dropdown"></span>  </span> 
-		</div>
-        </div>
-		{{>_addons}}
-		{{>_actions}}
-	</div>
-</div>`;
-
-gform.types['combobox'] = _.extend({}, gform.types['input'], {
-    base: "collection",
-    destroy: function () {
-        this.el.removeEventListener('change', this.onchangeEvent);
-        this.el.removeEventListener('input', this.onchangeEvent);
-        this.combo.removeEventListener('blur', this.handleBlur)
-
-    },
-    itemTemplate: '<a {{^editable}}style="color:#ccc;"{{/editable}} href="javascript:void(0);" tabindex="0" data-editable={{editable}} data-index="{{i}}" class="dropdown-item">{{{display}}}{{^display}}{{{label}}}{{/display}}</a>',
-    satisfied: function (value) {
-        value = value || this.value;
-        if (this.strict) {
-            value = (_.find(this.options, { value: value }) || { value: "" }).value;
+  //     //restore focus to element if it is still shown
+  //     var temp = this.find({id:activeEl.id});
+  //     if(temp)temp.focus();
+  // }
+  gform.processConditions = function (conditions, func, options) {
+    let { _subscribe = gform._subscribeByName, _lookup = gform._lookup } =
+      options || {};
+    let response = true;
+    if (typeof conditions === "string") {
+      if (
+        conditions === "show" ||
+        conditions === "edit" ||
+        conditions === "parse"
+      ) {
+        conditions = this.item[conditions];
+      }
+      if (typeof conditions == "string" && conditions.indexOf("method:") == 0) {
+        if (
+          typeof this.owner.methods !== "undefined" &&
+          typeof this.owner.methods[conditions.split("method:")[1]] == "function"
+        ) {
+          func.call(
+            this,
+            this.owner.methods[conditions.split("method:")[1]].call(null, {
+              form: this.owner,
+              field: this,
+            }),
+            { form: this.owner, field: this }
+          );
         }
-        if (_.isArray(value)) { return !!value.length; }
-        return (typeof value !== 'undefined' && value !== null && value !== '' && !(typeof value == 'number' && isNaN(value)));
+      }
+    }
+    if (typeof conditions === "boolean") {
+      response = func.call(this, conditions, { form: this.owner, field: this });
+    }
+    if (typeof conditions === "function") {
+      response = func.call(
+        this,
+        conditions.call(null, { form: this.owner, field: this }),
+        { form: this.owner, field: this }
+      );
+    }
+    if (typeof conditions === "object") {
+      var callback = function (rules, func, _lookup, e) {
+        func.call(this, gform._rules.call(this, rules, _lookup), e);
+      }.bind(this, conditions, func, _lookup);
+      _subscribe.call(this, conditions, callback);
+      response = callback({ field: this, form: this.owner, event: "create" });
+    }
+    return response;
+  };
+  
+  gform._subscribeByName = function (conditions, callback) {
+    if (!(this.owner instanceof gform)) return;
+  
+    for (var i in conditions) {
+      if (typeof conditions[i].conditions == "object") {
+        gform._subscribeByName.call(this, conditions[i].conditions, callback);
+      } else {
+        var temp = gform._lookup(this, conditions[i]);
+  
+        if (
+          (conditions[i].name || this.name).indexOf("/") !== 0 &&
+          typeof temp !== "undefined"
+        ) {
+          // if(typeof temp !== "undefined"){
+          this.eventlist = this.eventlist || [];
+  
+          this.owner.on("change:" + temp.path, callback, this.eventlist);
+  
+          // }else{
+          // 	this.owner.on('change:' + (this.parent.find(conditions[i].name||this.name)||this.parent).path||(conditions[i].name||this.name), callback)
+          // }
+        } else {
+          this.owner.on("change:" + (conditions[i].name || this.name), callback);
+        }
+      }
+    }
+  };
+  
+  gform._rules = function (rules, _lookup, op) {
+    var op = op || "and";
+    return _.reduce(
+      rules,
+      function (result, rule) {
+        var s;
+        if (typeof rule.conditions !== "undefined") {
+          s = gform._rules.call(this, rule.conditions, _lookup, rule.op);
+        } else {
+          s = gform.conditions[rule.type](this, rule, _lookup);
+        }
+        if (op == "or") {
+          return result || s;
+        } else {
+          return result && s;
+        }
+      }.bind(this),
+      op == "and"
+    );
+  };
+  
+  gform.conditions = {
+    // requires: (field, args, _lookup = _lookup) => _lookup(field, args, _lookup).satisfied(),
+    requires: (field, args, _lookup = _lookup) => {
+      let targetField = _lookup(field, args);
+      return targetField ? targetField.satisfied() : false;
+    },
+    // valid_previous: function(gform, args) {},
+    not_matches: (field, args, _lookup) => {
+      let targetField = _lookup(field, args);
+      if (!targetField) return;
+      var val = args[args.attribute || "value"];
+      var localval = targetField[args.attribute || "value"];
+  
+      if (typeof val == "object" && val !== null && localval !== null) {
+        return val.indexOf(localval) == -1;
+      } else {
+        return val !== localval;
+      }
+    },
+    test: (field, args, _lookup) => args.test.call(this, field, args),
+    contains: (field, args, _lookup) => {
+      let targetField = _lookup(field, args);
+  
+      var val = args.value;
+      var localval = null;
+      if (targetField && typeof targetField !== "undefined") {
+        if (targetField.array != false) {
+          localval = field.parent.find(args.name).parent.get()[args.name];
+        } else {
+          localval = targetField.value;
+        }
+      } else {
+        targetField =
+          field.parent.find(args.name) ||
+          field.owner.filter({ path: args.name }, args.depth || 10)[0];
+        if (typeof targetField == "undefined") {
+          return false;
+        }
+      }
+  
+      if (typeof val == "object" && val !== null && localval !== null) {
+        if (typeof localval == "object") {
+          return _.intersection(val, localval).length > 0;
+        } else if (typeof localval == "string") {
+          return _.some(val, function (filter) {
+            return localval.indexOf(filter) >= 0;
+          });
+        }
+      } else {
+        return (
+          typeof localval !== "undefined" &&
+          localval !== null &&
+          localval.indexOf(val) !== -1
+        );
+      }
+    },
+    matches: (field, args, _lookup) => {
+      let targetField = _lookup(field, args);
+      if (!targetField) return;
+  
+      var val = args[args.attribute || "value"];
+      var localval = targetField[args.attribute || "value"];
+      if (typeof val == "object" && val !== null && localval !== null) {
+        return val.indexOf(localval) !== -1;
+      } else {
+        return val == localval;
+      }
+    },
+  
+    matches_bool: (field, args, _lookup) => {
+      let targetField = _lookup(field, args);
+      if (!targetField) return;
+  
+      var val = args[args.attribute || "value"];
+      var localval = targetField[args.attribute || "value"];
+      return (val == "false" || !val) == (localval == "false" || !localval);
+    },
+    matches_numeric: (field, args, _lookup) => {
+      let targetField = _lookup(field, args);
+      if (!targetField) return;
+  
+      var val = args[args.attribute || "value"];
+      var localval = parseInt(targetField[args.attribute || "value"]);
+      if (typeof val == "object" && val !== null && localval !== null) {
+        return (
+          _.map(val, function (vals) {
+            return parseInt(vals);
+          }).indexOf(localval) !== -1
+        );
+      } else {
+        return parseInt(val) == localval;
+      }
+    },
+    numeric: function (field, args, _lookup) {
+      let targetField = _lookup(field, args);
+      if (!targetField) return;
+  
+      var val = args[args.attribute || "value"];
+      var localval = parseInt(targetField[args.attribute || "value"]);
+  
+      if (!(gform.regex.decimal.test(value) || value === "")) {
+        return "{{label}} must contain only numbers";
+      }
+  
+      args.min =
+        typeof this.min == "number"
+          ? this.min
+          : typeof args.min == "number"
+          ? args.min
+          : null;
+      if (args.min !== null && parseFloat(value) < parseFloat(args.min)) {
+        return "{{label}} must contain a number not less than {{args.min}} ";
+      }
+  
+      args.max =
+        typeof this.max == "number"
+          ? this.max
+          : typeof args.max == "number"
+          ? args.max
+          : null;
+      if (args.max !== null && parseFloat(value) > parseFloat(args.max)) {
+        return "{{label}} must contain a number not more than {{args.max}}";
+      }
+  
+      if (typeof val == "object" && val !== null && localval !== null) {
+        return (
+          _.map(val, function (vals) {
+            return parseInt(vals);
+          }).indexOf(localval) !== -1
+        );
+      } else {
+        return parseInt(val) == localval;
+      }
+    },
+  };
+  gform.prototype.validate = function (force) {
+    this.valid = true;
+    _.each(this.fields, gform.validateItem.bind(null, force));
+    if (!this.valid) {
+      this.trigger("invalid", { errors: this.errors });
+    } else {
+      this.trigger("valid");
+    }
+    this.trigger("validation");
+  
+    return this.valid;
+  };
+  gform.prototype.clearValidation = function () {
+    this.valid = true;
+    _.each(this.filter({ valid: false }), field => {
+      field.valid = true;
+      field.errors = "";
+      gform.handleError(field);
+    });
+    return this.valid;
+  };
+  gform.handleError = gform.update;
+  
+  gform.validateItem = function (force, item) {
+    var value = item.get();
+    if (force || !item.valid || item.required || item.satisfied(value)) {
+      item.valid = true;
+      item.errors = "";
+      if (item.parsable && typeof item.validate === "object") {
+        var errors = [];
+        if (item.required) {
+          errors = gform.validation.call(item, [
+            _.find(item.validate, { type: "required" }) || { type: "required" },
+          ]);
+          // var type = item.satisfied(item.get()) ? false : "{{label}} is required";
+          // if (type) {
+          //   errors.push(
+          //     gform.renderString(item.required.message || type, {
+          //       label: item.label,
+          //       value: value,
+          //       args: item.required,
+          //     })
+          //   );
+          // }
+        }
+        if (!errors.length || errors[0] == undefined) {
+          errors = gform.validation.call(item, item.validate);
+        }
+        errors = _.compact(errors);
+        if (typeof item.display === "undefined" || item.visible) {
+          item.valid = !errors.length;
+          item.errors = errors.join("<br>");
+          gform.handleError(item);
+        }
+      }
+    }
+    if (item.parsable) {
+      //validate sub fields
+      if (typeof item.fields !== "undefined") {
+        _.each(item.fields, gform.validateItem.bind(null, force));
+      }
+    }
+    if (item.errors) {
+      item.owner.trigger("invalid:" + item.name, { errors: item.errors });
+    } else {
+      item.owner.trigger("valid:" + item.name);
+    }
+    item.owner.errors[item.name] = item.errors;
+    item.owner.errors = _.pickBy(item.owner.errors);
+    item.owner.valid = item.valid && item.owner.valid;
+    // return item.valid;
+  };
+  
+  gform.validation = function (rules, op) {
+    var op = op || "and";
+    var value = this.get();
+    var errors = _.map(
+      rules,
+      function (v, it) {
+        if (typeof it.type == "string") {
+          if (
+            typeof it.conditions == "undefined" ||
+            gform._rules.call(this, it.conditions)
+          ) {
+            var type = v[it.type].call(this, value, it);
+            if (type) {
+              return gform.renderString(it.message || type, {
+                label: this.label,
+                value: value,
+                args: it,
+              });
+            }
+          }
+        } else if (typeof it.tests !== "undefined") {
+          return gform.validation.call(this, it.tests, it.op).join("<br>");
+        }
+      }.bind(this, gform.validations)
+    );
+    if (op == "and" || _.compact(errors).length == rules.length) {
+      return errors;
+    } else {
+      return [];
+    }
+  };
+  
+  gform.regex = {
+    numeric: /^[0-9]+$/,
+    decimal: /^\-?[0-9]*\.?[0-9]*$/,
+    url: /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/,
+    date: /^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$/,
+    email: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6}$/i,
+  };
+  
+  gform.validations = {
+    none: function (value) {
+      return false;
+    },
+  
+    required: function (value) {
+      return this.satisfied(value) ? false : "{{label}} is required";
+    },
+    unique: function (value, args) {
+      debugger;
+      const am = gform._lookup(this, args);
+  
+      return _.filter(
+        _.map(
+          am.get(),
+          _.difference(this.relative.split("."), am.path.split(".")).join(".")
+        ),
+        i => i == value
+      ).length > 1
+        ? "{{label}} is a duplicate"
+        : false;
+  
+      // return this.parent.get()[this.name].indexOf(this.value) == this.index
+      //   ? false
+      //   : "{{label}} is a duplicate";
+    },
+    pattern: function (value, args) {
+      var r = args.regex;
+      if (typeof r == "string") {
+        if (typeof gform.regex[r] !== "undefined") {
+          r = gform.regex[r];
+        } else {
+          r = new RegExp(args.regex, args.flags);
+        }
+      }
+      return r.test(value) || value === "" ? false : args.message;
+    },
+    custom: function (value, args) {
+      if (
+        typeof args.test === "function" ||
+        (typeof args.test === "string" &&
+          typeof this.owner.methods[args.test] == "function")
+      ) {
+        args.test = this.owner.methods[args.test] || args.test;
+      }
+      // return args.test.call(this, value, args);
+      args.field = this;
+      args.form = this.owner;
+      args.value = value;
+      return args.test.call(null, args);
+    },
+    matches: function (value, args) {
+      if (typeof args.name !== "undefined") {
+        var temp = this.parent.find(args.name);
+        if (typeof temp == "undefined") {
+          return "Matching field not defined";
+        }
+        args.label = temp.label;
+        args.value = temp.get();
+        return value == args.value
+          ? false
+          : '"{{label}}" does not match the "{{args.label}}" field';
+      } else if (typeof args.value !== "undefined") {
+        if (_.isArray(args.value)) {
+          return args.value.indexOf(value) !== -1
+            ? false
+            : '"{{label}}" does not match "{{args.value}}"';
+        } else {
+          return value == args.value
+            ? false
+            : '"{{label}}" does not match "{{args.value}}"';
+        }
+      }
+    },
+    date: function (value) {
+      return gform.regex.date.test(value) || value === ""
+        ? false
+        : "{{label}} should be in the format MM/DD/YYYY";
+    },
+    valid_url: function (value) {
+      return gform.regex.url.test(value) || value === ""
+        ? false
+        : "{{label}} must contain a valid Url";
+    },
+    valid_email: function (value) {
+      return gform.regex.email.test(value) || value === ""
+        ? false
+        : "{{label}} must contain a valid email address";
+    },
+    length: function (value, args) {
+      if (
+        !gform.regex.numeric.test(args.max) &&
+        !gform.regex.numeric.test(args.min)
+      ) {
+        return "Invalid length requirement";
+      }
+  
+      if (
+        typeof args.max == "number" &&
+        typeof args.min == "number" &&
+        args.min == args.max
+      ) {
+        if (args.min == value.length) {
+          return false;
+        } else {
+          return (
+            "{{label}} must be exactly " + args.min + " characters in length"
+          );
+        }
+      }
+      if (typeof args.max == "number" && value.length > args.max) {
+        return "{{label}} must not exceed " + args.max + " characters in length";
+      }
+      if (
+        typeof args.min == "number" &&
+        value.length > 0 &&
+        value.length < args.min
+      ) {
+        return "{{label}} must be at least " + args.min + " characters in length";
+      }
+      return false;
+    },
+    numeric: function (value, args) {
+      if (!(gform.regex.decimal.test(value) || value === "")) {
+        return "{{label}} must contain only numbers";
+      }
+  
+      args.min =
+        typeof parseFloat(this.min) == "number"
+          ? parseFloat(this.min)
+          : typeof parseFloat(args.min) == "number"
+          ? parseFloat(args.min)
+          : null;
+      if (args.min !== null && parseFloat(value) < parseFloat(args.min)) {
+        return "{{label}} must contain a number not less than {{args.min}} ";
+      }
+  
+      args.max =
+        typeof parseFloat(this.max) == "number"
+          ? parseFloat(this.max)
+          : typeof parseFloat(args.max) == "number"
+          ? parseFloat(this.max)
+          : null;
+      if (args.max !== null && parseFloat(value) > parseFloat(args.max)) {
+        return "{{label}} must contain a number not more than {{args.max}}";
+      }
+      // if((typeof args.step == 'number' || typeof this.step == 'number') && parseFloat(value) > parseFloat(args.max)){
+      // 	return '{{label}} must contain a number less than {{args.max}}'
+      // }
+    },
+  };
+  gform.stencils = {
+    _style: `.array_container + button.create {
+            display: none;
+    
+          }
+    
+          .array_container:empty + button.create{
+            display: inline-block;
+          }
+          .array_container .actions {
+            margin-bottom: -15px;
+        }
+        .array_container fieldset > .actions {
+            margin-bottom: 0;
+        }
+        .gform_isArray > fieldset:before {
+            content: "";
+            border: dashed 1px #102e7946;
+            border-right:0px;
+            width:10px;
+            position: absolute;
+            bottom: 1px;
+            left: 7px;
+            top: 2px;
+          }
+          fieldset:disabled .actions{
+            display:none;
+          }
+    
+          fieldset fieldset {
+            margin-left: 10px !important;
+          }
+        .form-control[disabled],.form-control[readonly],fieldset[disabled] .form-control,form[disabled] .form-control {
+            cursor: not-allowed;
+            background-color: #eee;
+            opacity: 1
+        }
+    input + .falseLabel {
+        display: inline;
+    }
+    input + .falseLabel+ .trueLabel {
+        display: none;
+    }
+    input:checked + .falseLabel + .trueLabel {
+        display: inline;
+    }
+    input:checked + .falseLabel {
+        display: none;
+    }
+    .combobox-container .form-control[contenteditable="false"]
+    {
+        background: #eee;
+    }
+    .combobox-selected .caret {
+        display: none;
+    }
+    /* :not doesn't work in IE8 */
+    .combobox-container:not(.combobox-selected) .fa-times {
+        display: none;
+    }
+    
+    
+    .combobox-container:not(.loaded) .status-icon,
+    .combobox-container:not(.loaded) .status-icon:after\ {
+      border-radius: 50%;
+      width: 10em;
+      height: 10em;
+        color:red;
+    }
+    .combobox-container:not(.loaded) .status-icon {
+      margin: 0px auto;
+            position: absolute !important;
+        top: 7px;
+        right: 7px;
+      font-size: 2px;
+      position: relative;
+      text-indent: -9999em;
+      border-top: 1.1em solid rgba(255, 255, 255, 0.2);
+      border-right: 1.1em solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1.1em solid rgba(255, 255, 255, 0.2);
+      border-left: 1.1em solid #333333;
+      -webkit-transform: translateZ(0);
+      -ms-transform: translateZ(0);
+      transform: translateZ(0);
+      -webkit-animation: load8 1.1s infinite linear;
+      animation: load8 1.1s infinite linear;
+    }
+    @-webkit-keyframes load8 {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @keyframes load8 {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    
+    .combobox-container.loaded .status-icon {
+             background: #eee url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor' aria-hidden='true'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/></svg>") no-repeat center 1px;
+            background-size: 20px 20px;
+        width: 100%;
+        height: 100%;
+            display:inline-block;
+    }
+    
+    .combobox-container.loaded:not(.combobox-selected) .status-icon {
+     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor' aria-hidden='true'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/></svg>");
+    }
+    
+    
+    .combobox-list {
+        max-height: 300px;
+        overflow-y: auto;
+        width: 100%;
+    }
+    .combobox-container .form-control{
+        overflow: hidden;white-space: nowrap;position: absolute;width:auto;right:37px;left:0;
+    }
+    .combobox-container .form-control:empty::before {
+        content: attr(placeholder);
+        color: #aaa; 
+    }
+    
+    .combobox-container .form-control:empty:focus::before {
+        content: "";
+    }
+    .combobox-container .dropdown-toggle{
+        height: 34px;position: relative;border-left: solid 1px #ccc;width: 38px;
+    }
+    @media (min-width: 992px) {
+        .row .col-md-Infinity:first-child{margin-left: 15px;}
+        .col-md-Infinity{display:inline-block;padding:0 20px 0 0}
+    }
+    
+    @media (max-width: 991px) {
+        .row .col-md-Infinity:first-child{margin-top: 5px !important;}
+        .row .col-md-Infinity{margin-left: 15px;}
+    }
+    /* The switch - the box around the slider */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 4rem;
+        height: 2.2rem;
+        margin: .5em;
+    }
+    
+    /* Hide default HTML checkbox */
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    /* The slider */
+    .switch .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: 0.2s;
+        transition: 0.2s;
+        border: solid 0.1rem #c8c8c8;
+    }
+    
+    .switch .slider:before {
+        position: absolute;
+        content: "";
+        height: 1.8rem;
+        width: 1.8rem;
+        left: 0.1rem;
+        bottom: 0.1rem;
+        background-color: white;
+        -webkit-transition: 0.2s;
+        transition: 0.2s;
+    }
+    
+    input:checked + .slider {
+        background-color: #1690d8;
+    }
+    
+    input:focus + .slider {
+        border-color: #1690d8;
+        box-shadow: 0 0 0 0.125em rgba(50, 115, 220, 0.25);
+    }
+    
+    input:checked + .slider:before {
+        -webkit-transform: translateX(1.8rem);
+        -ms-transform: translateX(1.8rem);
+        transform: translateX(1.8rem);
+    }
+    input:disabled + .slider {
+        background-color: #ddd;
+    }
+    /* Rounded sliders */
+    .switch .slider.round {
+        border-radius: 2rem;
+    }
+    
+    .switch .slider.round:before {
+        border-radius: 50%;
+    }
+    
+    .gform-info {
+        position:absolute;
+        right:10px;
+        cursor: pointer;
+        font-weight: bold;
+        width: 2.2rem;
+        height: 2.2rem;
+        margin-right: 0.5rem;
+        line-height: 2.2rem;
+        color: #fff;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.38);
+        border-radius: 50%;
+      }
+      .gform-info:after {
+        content: "?";
+      }
+      .gform-info:hover {
+        box-shadow: 0px 0px 2px #000;
+      }
+      
+      .info-close {
+        float: right;
+        cursor: pointer;
+        border: solid 1px;
+        border-radius: 0.5rem;
+        font-weight: bold;
+        padding: 0 0.7rem;
+      }
+      .info-close:after {
+        content: "X";
+      }
+      #tooltip {
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+        max-width: 400px;
+      }
+      #tooltip .title {
+        font-weight: bold;
+        margin-right: 40px;
+      }
+      
+      #tooltip hr,
+      #tooltip .gform-add, #tooltip .gform-minus {
+        display: none;
+      }
+    
+    .gform-append{
+        margin-bottom:5px;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      #arrow,
+      #arrow::before {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        z-index: -1;
+      }
+      
+      #arrow::before {
+        content: "";
+        transform: rotate(45deg);
+        background: #333;
+      }
+     
+    
+      
+    
+    
+    
+    
+    
+      
+          label.required:after,
+        legend.required:after {
+            content: "*";
+            color: #f00;
+        }
+    
+        html,body{
+            -webkit-overflow-scrolling : touch !important;
+            overflow: auto !important;
+            height: 100% !important;
+        }
+        @media print {
+            body {
+                height: auto !important;
+            }
+        }
+    
+        .table>tbody.table-row+tbody.table-row{border-top:1px}
+    `,
+    // _form:`<form id="{{name}}" style="overflow:hidden" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform {{#horizontal}} smart-form-horizontal form-horizontal{{/horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>{{^legendTarget}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/legendTarget}}</form>`,
+    _container: `<form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform {{modifiers}}{{#horizontal}} form-horizontal{{/horizontal}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>{{^legendTarget}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/legendTarget}}</form><div class="gform-footer"></div>`,
+    text: `<div class="row clearfix form-group {{modifiers}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12">{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8">{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12">
+        {{/label}}
+            {{#pre}}<div class="input-group col-xs-12"><span class="input-group-addon">{{{pre}}}</span>{{/pre}}
+        {{^pre}}{{#post}}<div class="input-group">{{/post}}{{/pre}}
+            <input {{^autocomplete}}autocomplete="off"{{/autocomplete}} class="form-control" {{^editable}}readonly disabled{{/editable}} {{#limit}}maxlength="{{limit}}"{{/limit}} min="{{min}}" {{#max}} max="{{max}}"{{/max}} {{#step}} step="{{step}}"{{/step}} placeholder="{{placeholder}}" type="{{elType}}{{^elType}}{{type}}{{/elType}}" name="{{name}}" id="{{id}}" value="" />
+            {{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
+        {{^post}}{{#pre}}</div>{{/pre}}{{/post}}
+            {{#limit}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/limit}}
+    
+            {{>_addons}}
+            {{>_actions}}
+        </div>
+    </div>`,
+    output: `
+    <div class="row">
+    <div>
+            {{>_label}}
+            
+        <div class="col-xs-12">
+        <output name="{{name}}" id="{{id}}">{{{display}}}{{^display}}&nbsp;{{/display}}</output>
+            {{>_addons}}
+            {{>_actions}} 
+            </div>
+        </div>
+        </div>
+    `,
+    grid: `<div class="row">
+    <fieldset id="{{id}}" name="{{name}}" class="row"  style="margin-bottom:20px">
+        {{>_label}}
+        <div class="col-xs-12">
+            <table class="table table-striped" style="margin-bottom:0">
+                <thead>
+                    <tr>
+                        <th></th>
+                        {{#options}}
+                        <th><label>{{label}}</label></th>
+                        {{/options}}
+                    </tr>
+                </thead>
+                <tbody>
+                {{#fields}}
+                    <tr>
+                        <td><label style="font-weight: 500;" for="{{id}}">{{{label}}}</label></td>
+                        {{#options}}
+                        <td>
+                        {{#multiple}}
+                            <div><input name="{{id}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{value}}"/>
+                        {{/multiple}}
+                        {{^multiple}}
+                            <input style="margin-right: 5px;" name="{{id}}" {{#selected}} checked=selected {{/selected}}  value="{{value}}" type="radio">
+                        {{/multiple}}
+                        </td>
+                        {{/options}}
+                    </tr>
+                    {{/fields}}
+                </tbody>
+            </table>
+            {{>_addons}}
+            {{>_actions}}
+        </div>
+    </fieldset>
+    </div>`,
+    switch: `<div class="row clearfix {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12" style="margin:0 0 5px">{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8" style="margin:0 0 15px">{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12">
+        {{/label}}
+        <div>
+        <span class="falseLabel">{{{options.0.label}}} </span>
+            <label class="switch">
+            <input name="{{name}}" type="checkbox" {{^editable}}disabled{{/editable}} {{#options.1.selected}}checked=checked{{/options.1.selected}} value="{{value}}" id="{{id}}" />
+            <span class="slider round"></span>
+            </label>
+            <span class="trueLabel">{{{options.1.label}}}</span>
+            </div>
+            {{>_addons}}
+            {{>_actions}}
+        </div>
+    </div>`,
+    // switch: `
+    // <div class="row clearfix {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" name="{{name}}" data-type="{{type}}">
+    // {{>_label}}
+    // <div class="col-md-12" style="margin:0 0 5px">
+    // <label class="switch">
+    // <input name="{{name}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{value}}" id="{{name}}" />
+    // <span class="slider round"></span>
+    // </label>
+    // </div>
+  
+    //     {{>_error}}
+    //     </div>
+    //     {{>_actions}}
+    // </div>`,
+    hidden: `<input type="hidden" name="{{name}}" value="{{value}}" />{{>_addons}}`,
+    textarea: `<div class="row clearfix form-group {{modifiers}} {{#array}}isArray" data-min="{{array.min}}" data-max="{{array.max}}{{/array}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>
+        {{/label}}
+            <textarea class="form-control"  {{^editable}}readonly disabled{{/editable}} {{#limit}}maxlength="{{limit}}"{{/limit}} style="width:100%;height:auto;min-height:20px" rows="{{size}}{{^size}}3{{/size}}" name="{{name}}" id="{{id}}" placeholder="{{placeholder}}"></textarea>
+            {{#limit}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/limit}}
+            {{>_addons}}
+                {{>_actions}}
+        </div>
+    </div>`,
+  
+    contenteditable: `<div class="row clearfix form-group {{modifiers}} {{#array}}isArray" data-min="{{array.min}}" data-max="{{array.max}}{{/array}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8" {{#advanced}}style="padding:0px 13px"{{/advanced}}>{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12" {{#advanced}}style="padding:0px 13px"{{/advanced}}>
+        {{/label}}
+    
+            <div class="formcontrol" style="height:auto" id={{id}}><div placeholder="{{placeholder}}" style="outline:none;border:solid 1px #cbd5dd;{{^unstyled}}background:#fff;padding:10px{{/unstyled}}" name="{{name}}">{{content}}{{value}}</div></div>
+            {{#limit}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/limit}}
+            {{>_addons}}
+                {{>_actions}}
+        </div>
+    </div>`,
+    select: `<div class="row clearfix form-group {{modifiers}} {{#size}}size={{size}}{{/size}} {{#array}}isArray" data-min="{{array.min}}" data-max="{{array.max}}{{/array}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12">{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8">{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12">
+        {{/label}}		
+        {{#limit}}{{#multiple}}<small class="count text-muted" style="display:block;text-align:right">0/{{limit}}</small>{{/multiple}}{{/limit}}
+    
+            {{#pre}}<div class="input-group"><span class="input-group-addon">{{{pre}}}</span>{{/pre}} 
+            {{^pre}}{{#post}}<div class="input-group">{{/post}}{{/pre}}
+            {{#mapOptions.waiting}}<i class="fa fa-spinner fa-spin" style="font-size:20px;position:absolute;top:7px;left:22px;color:#666"></i>{{/mapOptions.waiting}}
+                <select class="form-control test"  {{#multiple}}multiple=multiple{{/multiple}} {{#size}}size={{size}}{{/size}}  name="{{name}}{{#multiple}}[]{{/multiple}}" value="{{value}}" id="{{id}}" />
+                {{#options}}
+                {{^optgroup}}
+                {{#visible}}<option {{#selected}}selected='selected'{{/selected}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}} value="{{i}}">{{{label}}}</option>{{/visible}}
+                {{/optgroup}}
+                {{#optgroup}}
+                {{#visible}}{{#optgroup.label}}
+                <optgroup label="{{label}}" data-id="{{optgroup.id}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}">
+                {{/optgroup.label}}
+                        {{#options}}
+                        {{#visible}}<option data-id="{{optgroup.id}}" {{#selected}}selected='selected'{{/selected}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}  value="{{i}}">{{{label}}}</option>{{/visible}}
+                        {{/options}}
+                        {{#optgroup.label}}
+                </optgroup>
+                {{/optgroup.label}}{{/visible}}
+                {{/optgroup}}
+                {{/options}}
+                </select>
+            {{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
+            {{^post}}{{#pre}}</div>{{/pre}}{{/post}}
+            {{>_addons}}
+            {{>_actions}}
+        </div>
+    </div>`,
+    radio: `<div class="row clearfix form-group {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" name="{{name}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12 {{#size}}row{{/size}}" {{#size}}style="padding-top: 5px;"{{/size}}>{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8 {{#size}}row{{/size}}" {{#size}}style="padding-top: 5px;"{{/size}}>{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12" {{#size}}style="padding-top: 5px;"{{/size}}>
+        {{/label}}
+        {{#limit}}{{#multiple}}<small class="count text-muted" style="display:block;text-align:left">0/{{limit}}</small>{{/multiple}}{{/limit}}
+    
+                {{#options}}
+                    {{^optgroup}}
+    
+                        {{#multiple}}
+                        <div class="checkbox {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
+                            <label class="noselect"><input name="{{name}}_{{value}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{i}}"/> {{{label}}}</label>
+                        </div>
+                        {{/multiple}}
+                        {{^multiple}}
+                        <div class="radio {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
+                            <label {{^horizontal}}class="radio-inline"{{/horizontal}}><input style="margin-right: 5px;" name="{{id}}" {{#selected}} checked=selected {{/selected}}  value="{{i}}" type="radio"><span class="noselect" style="font-weight:normal">{{{label}}}{{^label}}&nbsp;{{/label}}</span></label>        
+                        </div>
+                        {{/multiple}}
+    
+                    {{/optgroup}}
+                {{#optgroup}}
+                {{#optgroup.label}}
+                <b class="text-muted" data-id="{{optgroup.id}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}">{{label}}</b>
+                {{/optgroup.label}}
+                        {{#options}}
+    
+                        {{#multiple}}
+                        <div class="checkbox {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
+                            <label class="noselect"><input data-id="{{optgroup.id}}" name="{{name}}_{{value}}" type="checkbox" {{#selected}} checked {{/selected}} value="{{i}}"/> {{{label}}}</label>
+                        </div>
+                        {{/multiple}}
+                        {{^multiple}}
+                        <div class="radio {{#size}}col-md-{{size}}{{/size}}" {{#size}}style="margin-top: -5px;"{{/size}}>
+                            <label {{^horizontal}}class="radio-inline"{{/horizontal}}><input data-id="{{optgroup.id}}" style="margin-right: 5px;" name="{{id}}" {{#selected}} checked=selected {{/selected}}  value="{{i}}" type="radio"><span class="noselect" style="font-weight:normal">{{{label}}}{{^label}}&nbsp;{{/label}}</span></label>        
+                        </div>
+                        {{/multiple}}
+    
+                        {{/options}}
+    
+                {{/optgroup}}
+                {{/options}}
+    
+    
+    
+    
+    
+    
+            {{>_addons}}
+            {{>_actions}}
+        </div>
+    </div>`,
+    custom_radio: `<div class="row clearfix form-group {{modifiers}} {{#multiple.duplicate}}dupable" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/multiple.duplicate}}" name="{{name}}" data-type="{{type}}">
+    {{>_label}}
+    {{#multiple.duplicate}}
+    <div class="duplicate add btn btn-default"><i class="fa fa-plus"></i></div>
+    <div class="btn btn-default remove"><i class="fa fa-minus"></i></div>
+    {{/multiple.duplicate}}
+    {{#label}}
+    {{^horizontal}}<div class="col-md-12">{{/horizontal}}
+    {{#horizontal}}<div class="col-md-8">{{/horizontal}}
+    {{/label}}
+    {{^label}}
+    <div class="col-md-12">
+    {{/label}}
+        {{#pre}}<div class="input-group"><span class="input-group-addon">{{{pre}}}</span>{{/pre}}
+        {{^pre}}{{#post}}<div class="input-group">{{/post}}{{/pre}}
+            <div class="custom-group"  name="{{name}}" style="max-height:200px;overflow-y:scroll;">
+    
+            {{#options}}
+            {{^optgroup}}
+    
+            <button type="button" href="javascript:void(0);" data-id="{{optgroup.id}}" name="{{id}}" data-id="{{optgroup.id}}" class="{{^selected}} {{defaultClass}}{{/selected}}{{#selected}} {{selectedClass}}{{/selected}}"  value="{{i}}"  data-value="{{value}}">
+            {{{label}}}{{^label}}&nbsp;{{/label}}
+            </button>
+    
+            {{/optgroup}}
+        {{#optgroup}}
+        {{#optgroup.label}}
+        <b class="text-muted" data-id="{{optgroup.id}} {{^editable}}disabled{{/editable}} {{^visible}}hidden{{/visible}}">{{label}}</b>
+        {{/optgroup.label}}
+                {{#options}}
+                
+                <button type="button" href="javascript:void(0);" data-id="{{optgroup.id}}" name="{{id}}" data-id="{{optgroup.id}}" class="{{^selected}} {{defaultClass}}{{/selected}}{{#selected}} {{selectedClass}}{{/selected}}"  value="{{i}}"  data-value="{{value}}">
+                {{{label}}}{{^label}}&nbsp;{{/label}}
+                </button>
+    
+    
+                {{/options}}
+    
+        {{/optgroup}}
+        {{/options}}
+            </div>
+        {{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
+        {{^post}}{{#pre}}</div>{{/pre}}{{/post}}
+        {{>_addons}}
+        {{>_actions}}
+    </div>
+    </div>`,
+    fieldset_array:
+      '<div><div class="col-xs-12">{{#array}}{{#append.enable}}<button data-ref="{{ref}}" data-parent="{{parent.id}}" class="gform-append btn btn-info btn-xs pull-right">{{{append.label}}}{{^append.label}}<i class="fa fa-plus"></i> Add {{{label}}}{{/append.label}}</button>{{/append.enable}}{{/array}}<legend>{{label}}</legend><div class="list-group gform-template_row"></div></div></div>',
+  
+    _fieldset: `<div class=""><fieldset data-type="fieldset" style="" name="{{name}}" id="{{id}}" class="{{modifiers}}" >
+    {{#array}}
+    <div data-name="{{name}}" data-ref="{{am.id}}" class="btn-group hidden-print actions">
+        {{#remove.enable}}
+        <div data-id="{{id}}" class="btn btn-white gform-minus">{{{remove.label}}}{{^remove.label}}<i data-id="{{id}}"  class="fa fa-minus text-danger"></i>{{/remove.label}}</div>
+        {{/remove.enable}}
+        {{#duplicate.enable}}
+        <div data-id="{{id}}" class="gform-add btn btn-white">{{{duplicate.label}}}{{^duplicate.label}}<i data-id="{{id}}"  class="fa fa-plus text-success"></i>{{/duplicate.label}}</div>
+        {{/duplicate.enable}}
+    </div>
+    {{^section}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/section}}
+    {{/array}}
+    {{^section}}{{#label}}<legend>{{{label}}}</legend>{{/label}}{{/section}}
+    <div style="position:relative;top:-20px">{{>_addons}}</div>
+    </fieldset></div>`,
+    _actions: `{{#array}}
+        <div data-name="{{name}}" data-ref="{{am.id}}" data-parent="{{parent.id}}" class="btn-group hidden-print actions pull-right">
+        {{#remove.enable}}
+        <div data-id="{{id}}" class="btn btn-white gform-minus">{{{remove.label}}}{{^remove.label}}<i class="fa fa-minus text-danger"></i>{{/remove.label}}</div>
+        {{/remove.enable}}
+        {{#duplicate.enable}}
+        <div data-id="{{id}}" class="gform-add btn btn-white">{{{duplicate.label}}}{{^duplicate.label}}<i class="fa fa-plus text-success"></i>{{/duplicate.label}}</div>
+        {{/duplicate.enable}}
+    
+        </div>
+        {{/array}}`,
+    _tooltip: `<div id="tooltip" role="tooltip">
+    <span class="info-close"></span>
+    <div class="tooltip-body"></div>
+    <div id="arrow" data-popper-arrow></div>
+    </div>`,
+    _info: `<div>
+    <div class="title">More&nbsp;Information</div>
+    <hr>
+      <div>{{info}}</div>
+    </div> `,
+    _label: `
+        {{^hideLabel}}
+        {{#label}}
+        <label for="{{name}}" {{^horizontal}}style="text-align:left"{{/horizontal}} class="control-label {{^horizontal}}col-md-12{{/horizontal}}{{#horizontal}}col-md-4{{/horizontal}}">{{{label}}}{{#required}}{{{requiredText}}}{{/required}}{{suffix}}</label>{{/label}}
+    {{#info}}<b class="gform-info" data-id="{{id}}"></b>{{/info}}
+    {{/hideLabel}}
+        `,
+    _addons: `<span class="help-inline"> {{{help}}}</span>
+    <span class="font-xs text-danger" style="display:block;"></span>`,
+    checkbox: `<div class="row clearfix {{modifiers}} {{#array}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/array}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12" style="margin:0 0 5px">{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8" style="margin:0 0 15px">{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12" style="margin: -10px 0 5px;"">
+        {{/label}}
+            <div class="checkbox">
+                <label class="{{alt-display}}" for="{{id}}">
+                    <input name="{{name}}" id="{{id}}" type="checkbox" {{^editable}}disabled{{/editable}} {{#options.1.selected}}checked=checked{{/options.1.selected}}>{{^format.display}}<span class="falseLabel">{{{options.0.label}}}</span><span class="trueLabel">{{{options.1.label}}}</span>{{/format.display}}{{format.display}}&nbsp;
+                </label>
+            </div>
+        {{#post}}<span class="input-group-addon">{{{post}}}</span></div>{{/post}}
+            {{>_addons}}
+            {{>_actions}}
+        </div>
+    </div>`,
+    scale: `
+    <div class="row clearfix form-group {{modifiers}} {{#multiple.duplicate}}isArray" data-min="{{multiple.min}}" data-max="{{multiple.max}}{{/multiple.duplicate}}" name="{{name}}" data-type="{{type}}">
+        {{>_label}}
+        {{>_actions}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12">{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8">{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12">
+        {{/label}}
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        {{#format.low}}<th></th>{{/format.low}}
+                        {{#options}}
+                        <th><label for="{{name}}_{{i}}">{{{label}}}</label></th>
+                        {{/options}}
+                        {{#format.high}}<th></th>{{/format.high}}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        {{#format.low}}<td><label style="font-weight: 500;" for="{{name}}_1">{{{format.low}}}</label></td>{{/format.low}}
+                        {{#options}}
+                        <td>
+                            <input data-label="{{label}}" id="{{name}}_{{i}}" name="{{id}}" value="{{i}}" {{^editable}}readonly disabled{{/editable}} type="radio" {{#selected}}checked=checked{{/selected}} >
+                        </td>
+                        {{/options}}
+                        {{#format.high}}<td><label style="font-weight: 500;" for="{{name}}_{{options.length}}">{{{format.high}}}</label></td>{{/format.high}}
+                    </tr>
+            </tbody>
+                </table>
+            {{>_addons}}
+        </div>
+    </div>`,
+    button: `<button class="btn btn-default hidden-print {{modifiers}}" type="button" style="margin:0 15px">{{{label}}}</button>`,
+    tab_container: `
+    <form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform tab-content {{#horizontal}} smart-form-horizontal form-horizontal{{/horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>{{^legendTarget}}{{#legend}}<legend>{{{legend}}}</legend>{{/legend}}{{/legendTarget}}    
+        <ul class="nav nav-tabs" style="margin-bottom:15px">
+            {{#fields}}
+                {{#section}}
+                <li {{^index}}class="active"{{/index}}>
+                    <a href="#tabs{{id}}" data-toggle="tab">{{{legend}}}</a>
+                </li>
+                {{/section}}		
+            {{/fields}}
+        </ul></form>
+        </form><div class="gform-footer"></div>`,
+    tab_fieldset: `{{#section}}<div class="tab-pane {{^index}}active{{/index}} " id="tabs{{id}}">{{/section}}{{>_fieldset}}{{#section}}</div>{{/section}}`,
+    modal_container: `<div class="hidden">
+        <div style="display:block;overflow-x: hidden;overflow-y: auto;" class=" modal gform {{modifiers}} {{#horizontal}} form-horizontal{{/horizontal}}" id="myModal" name="modal_{{name}}" data-update="{{update}}" data-append="{{append}}" {{#focus}}tabindex="-1"{{/focus}} role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header {{modal.header_class}}">
+                    <button type="button" class="close" data-action="kill" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">{{#icon}}<i class="fa fa-{{icon}}"></i> {{/icon}}{{{title}}}{{{legend}}}&nbsp;</h4>
+                </div>
+                <div class="modal-body">
+                    {{{body}}}
+                    {{^sections}}
+                    <form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform {{#options.horizontal}} smart-form-horizontal form-horizontal{{/options.horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}></form>
+                    {{/sections}}
+                    {{#sections}}
+                    <form id="{{name}}" {{^autocomplete}}autocomplete="false"{{/autocomplete}} name="{{name}}" class="gform tab-content {{#options.horizontal}} smart-form-horizontal form-horizontal{{/options.horizontal}} {{modifiers}}" {{#action}}action="{{action}}"{{/action}} onsubmit="return false;" {{#method}}method="{{method}}"{{/method}}>   
+                    <ul class="nav nav-tabs" style="margin-bottom:15px">
+                        {{#fields}}
+                        {{#section}}
+                        <li {{^index}}class="active"{{/index}}>
+                            <a href="#tabs{{id}}" data-toggle="tab">{{{legend}}}</a>
+                        </li>
+                        {{/section}}		
+                        {{/fields}}
+                    </ul></form>
+                    {{/sections}}
+                    
+                </div>
+                <div class="modal-footer gform-footer">
+                    {{{footer}}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+        <div class="modal-backdrop in">
+    </div>
+    </div>
+    `,
+    modal_fieldset: `{{>_fieldset}}`,
+    child_modal_footer: `<button type="button" class="btn btn-danger hidden-print pull-left gform-minus"><i class="fa fa-times"></i> Delete</button><button class="btn btn-default hidden-print done" style="margin:0 15px"><i class="fa fa-check"></i> Done</button>`,
+  
+    template:
+      '<div><div class="col-xs-12">{{#array}}{{#append.enable}}<button data-ref="{{am.id}}" class="gform-append btn btn-info btn-xs pull-right">{{{append.label}}}{{^append.label}}<i class="fa fa-plus"></i> Add {{{label}}}{{/append.label}}</button>{{/append.enable}}<legend>{{label}}</legend>{{/array}}</div></div>',
+    template_item: `<div style="position:relative;top: -6px;">{{>_actions}}</div><div class="gform-template_container">{{{format.template}}}{{^format.template}}{{{display}}}{{/format.template}}</div>`,
+    table:
+      '<div><div class="col-xs-12" style="overflow:scroll">{{#array}}<legend>{{{label}}}</legend>{{#append.enable}}<button type="button" data-id="{{ref}}"  class="gform-append btn btn-info btn-xs" style="top: -10px;position: relative;">{{{append.label}}}{{^append.label}}<i class="fa fa-plus"></i> Add {{{label}}}{{/append.label}}</button>{{/append.enable}}{{/array}}<table class="table table-bordered table-striped table-hover table-fixed {{#array.sortable.enable}}sortable{{/array.sortable.enable}}"><thead>{{#labels}}<th>{{{.}}}</th>{{/labels}}</thead></table></div></div>',
+  };
+  
+  // gform.columns = 12;
+  
+  gform.columnClasses = _.map(new Array(13), function (item, i) {
+    return "col-xs-12 col-sm-" + i;
+  });
+  gform.offsetClasses = _.map(new Array(13), function (item, i) {
+    return "col-xs-offset-0 col-sm-offset-" + i;
+  });
+  gform.prototype.options.inline = true;
+  gform.prototype.options.columns = 12;
+  
+  gform.prototype.options.default.suffix = "";
+  
+  gform.handleError = function (field) {
+    var error_container = field.el.querySelector(".font-xs.text-danger");
+  
+    if (!field.valid) {
+      field.el.classList.add("has-error");
+      if (!!error_container) error_container.innerHTML = field.errors;
+    } else {
+      field.el.classList.remove("has-error");
+      // field.el.classList.add('has-success')
+      // field.el.querySelector('.font-xs.text-danger').innerHTML = '';
+      if (!!error_container) error_container.innerHTML = "";
+    }
+  };
+  
+  gform.types["reset"] = _.defaultsDeep(
+    {
+      toString: function () {
+        return "";
+      },
+    },
+    gform.types["button"],
+    {
+      defaults: {
+        label: '<i class="fa fa-times"></i> Reset',
+        action: "reset",
+        modifiers: "btn btn-default",
+      },
+    }
+  );
+  gform.types["cancel"] = _.defaultsDeep(
+    {
+      toString: function () {
+        return "";
+      },
+    },
+    gform.types["button"],
+    {
+      defaults: {
+        label: '<i class="fa fa-times"></i> Cancel',
+        action: "cancel",
+        modifiers: "btn btn-danger",
+      },
+    }
+  );
+  gform.types["save"] = _.defaultsDeep(
+    {
+      toString: function () {
+        return "";
+      },
+    },
+    gform.types["button"],
+    {
+      defaults: {
+        label: '<i class="fa fa-check"></i> Save',
+        action: "save",
+        modifiers: "btn btn-success",
+      },
+    }
+  );
+  gform.types["clear"] = _.defaultsDeep(
+    {
+      toString: function () {
+        return "";
+      },
+    },
+    gform.types["button"],
+    {
+      defaults: {
+        label: '<i class="fa fa-times"></i> Clear',
+        action: "clear",
+        modifiers: "btn btn-warning",
+      },
+    }
+  );
+  
+  gform.types["color"] = _.extend({}, gform.types["input"], {
+    defaults: {
+      pre: '<i style="display: block;width:20px;height:20px;margin: 0 -5px;background-color:{{value}}"></i>',
+      elType: "text",
+      value: "#000000",
     },
     toString: function (name, display) {
-        if (!display) {
-            return '<dt>' + this.label + '</dt> <dd>' + (((typeof this.combo !== 'undefined') ? this.combo.innerText : this.get()) || '(empty)') + '</dd><hr>'
-        } else {
-            return (typeof this.combo !== 'undefined') ? this.combo.innerText : this.get();
-        }
+      this.value = this.get(); //shouldn't need this here - but we do for now
+      if (!display) {
+        return (
+          "<dt>" +
+          this.label +
+          '</dt> <dd><div style="white-space:nowrap"><span style="width:20px;height:20px;display: inline-block;top: 5px;position: relative;background:' +
+          this.value +
+          ';"></span> ' +
+          (this.value || '<span class="text-muted">(empty)</span>') +
+          "</div></dd><hr>"
+        );
+      } else {
+        return this.value;
+      }
     },
-    focus: function () {
-        if (!this.active) return;
-        var node = this.el.querySelector('[type=combobox]');
-        if (node !== null) {
-            node.focus();
-            if (node.textContent == '') return;
-            var sel = window.getSelection();
-            var focus = sel.focusNode;
-
-            if (focus !== null && focus !== document) {
-                var range = document.createRange();
-                range.selectNode(focus);
-                range.collapse(false);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            }
-        }
-
-    },
-    render: function () {
-        if (typeof this.mapOptions == 'undefined') {
-            this.mapOptions = new gform.mapOptions(this, this.value, 0, this.owner.collections)
-            this.mapOptions.on('change', function () {
-                this.options = this.mapOptions.getoptions()
-                if (this.shown) {
-                    this.renderMenu();
-                }
-                if (typeof this.value !== 'undefined') {
-                    gform.types[this.type].set.call(this, this.value);
-                }
-            }.bind(this))
-        }
-        this.options = this.mapOptions.getoptions();
-        this.internalValue = this.value || "";
-        return gform.render('combobox', this);
-    },
-    get: function () {
-        return ((this.strict) ? (_.find(this.options, { value: this.value }) || { value: "" }) : this).value;
-
-    },
-    set: function (value, silent, input) {
-        // console.log('input:' + input);
-
-        value = (typeof value == "string") ? value.replace((/  |\r\n|\n|\r/gm), "") : value
-        var item = _.find(this.options, { value: value }) || _.find(this.options, { label: value })
-        if (typeof item !== 'undefined') {
-            if (!input || (input == 'nosearch' && (this.el.querySelector('[type=combobox]') !== document.activeElement || this.combo.innerText !== item.label))) {
-                this.combo.innerText = item.label;
-                gform.addClass(this.el.querySelector('.combobox-container'), 'combobox-selected');
-            }
-            this.internalValue = item.value;
-        } else {
-            if (typeof this.search == 'string' && typeof this.owner.methods[this.search] !== 'function' && input !== 'nosearch') {
-                gform.removeClass(this.el.querySelector('.combobox-container'), 'loaded');
-                gform.ajax({
-                    sourceID: 'set' + this.id,
-                    path: gform.renderString(this.search, { value: value }), success: this.searchData.bind(this, value)
-                })
-            } else if ((typeof this.search == "function" || typeof this.owner.methods[this.search] == 'function') && input !== 'nosearch') {
-                gform.removeClass(this.el.querySelector('.combobox-container'), 'loaded');
-
-                async function asyncCall() {
-                    return await new Promise(function (resolve) {
-
-                        let response = (this.owner.methods[this.search] || this.search).call(this, { value: value }, resolve)
-                        if (typeof response == 'object') {
-                            resolve(response);
-                        }
-                    }.bind(this));
-
-                }
-
-                ;
-                // const promise1 = new Promise((resolve, reject) => {
-                //     setTimeout(resolve, 500, 'one');
-                // });
-
-                const promise2 = new Promise((resolve, reject) => {
-                    setTimeout(resolve, 2000, []);
-                });
-
-                Promise.race([asyncCall.call(this), promise2]).then(this.searchData.bind(this, value));
-
-            }
-            this.internalValue = value || "";
-
-            if ('el' in this) {
-                if (this.combo.innerHTML !== value) {
-                    this.combo.innerHTML = value;
-                    gform.types.combobox.focus.call(this);
-                }
-
-                if (typeof value == 'undefined' || (typeof value !== 'undefined' && this.combo.innerText !== value)) {
-                    this.combo.innerText = this.value || "";
-
-                    this.trigger(['undefined'], this);
-                }
-                gform.toggleClass(this.el.querySelector('.combobox-container'), 'combobox-selected', this.value !== "");
-            }
-
-        }
-        gform.types[this.type].setLabel.call(this);
-        if (!silent) {
-            this.parent.trigger(['change'], this);
-        }
-    },
-    edit: function (state) {
-        this.editable = state;
-        this.el.querySelector('.form-control').setAttribute("contenteditable", state ? "true" : "false");
-        gform.toggleClass(this.el, 'disabled', !state)
+    set: function (value) {
+      if ("el" in this) {
+        this.el.querySelector('input[name="' + this.name + '"]').value = value;
+        this.el.querySelector(".input-group-addon i").style.backgroundColor =
+          value;
+      }
     },
     initialize: function () {
-        this.onchangeEvent = _.debounce(function (input) {
-            this.renderMenu();
-            this.set(this.combo.innerText, false, true);
-            this.parent.trigger(['input'], this, { input: this.value });
-        }.bind(this), 300)
-        // }.bind(this)
+      // this.onchangeEvent = function(){
+      // 	this.value = this.get();
+      // 	this.parent.trigger(['change','input'], this,{input:this.value});
+      // }.bind(this)
+  
+      this.onchangeEvent = function (input) {
+        //   this.input = input;
+        this.value = this.get();
+        if (this.el.querySelector(".count") != null) {
+          var text = this.value.length;
+          if (this.limit > 1) {
+            text += "/" + this.limit;
+          }
+          this.el.querySelector(".count").innerHTML = text;
+        }
+        //   this.update({value:this.get()},true);
+        //   gform.types[this.type].focus.call(this)
         gform.types[this.type].setup.call(this);
-        this.processOptions = function (option) {
-
-            option.visible = ('visible' in option) ? option.visible : true
-            option.editable = ('editable' in option) ? option.editable : true
-
-            if (typeof option.optgroup !== 'undefined') {
-                if (typeof option.optgroup.options !== 'undefined' && option.optgroup.options.length) {
-                    _.each(option.optgroup.options, this.processOptions.bind(this))
-                }
-            } else {
-                option = this.createLI(false, option)
-            }
+        this.owner.trigger("change", this, { input: this.value });
+  
+        if (input) {
+          this.owner.trigger("input", this, { input: this.value });
         }
-        this.createLI = function (force, option) {
-
-            if (typeof option !== 'undefined' && typeof option !== 'object') {
-                option = { label: option, value: option }
-            }
-            option.i = (option.i || (++index));
-            // if (typeof this.format !== 'undefined') {
-            //     if (typeof this.format.label !== 'undefined') {
-            //         option.label = gform.renderString(this.format.label, option);
-            //     }
-            //     if (typeof this.format.display !== 'undefined') {
-            //         option.display = gform.renderString(this.format.display, option);
-            //     }
-            //     if (typeof this.format.value == 'string') {
-            //         option.value = gform.renderString(this.format.value, option);
-            //     } else if (typeof this.format.value == 'function') {
-            //         option.value = this.format.value.call(this, option)
-            //     }
-            // }
-            if (!('processed' in option)) {
-
-                option = _.reduce(['label', 'display', 'value'/*,'cleanlabel'*/], function (format, option, prop) {
-                    if (prop in format) {
-                        if (prop in option) {
-                            option.original = option.original || {};
-                            option.original[prop] = option[prop]
-                        }
-                        option[prop] = (typeof format[prop] == 'string') ?
-
-                            (format[prop] in option) ? option[format[prop]] : gform.renderString(format[prop], option)
-
-                            : (typeof format[prop] == 'function') ?
-                                format[prop].call(this, option)
-                                : option[prop]
-                    }
-                    option.processed = true;
-                    return option;
-                }.bind(this, this.format), option)
-            }
-            option.visible = ('visible' in option) ? option.visible : true
-            option.editable = ('editable' in option) ? option.editable : true
-            if (this.filter !== false && (force || this.combo.innerText == "" || _.score(option.label.toLowerCase(), this.combo.innerText.toLowerCase()) > .6)) {
-                var li = document.createElement("li");
-                li.innerHTML = gform.renderString(gform.types[this.type].itemTemplate, option);
-                this.menu.appendChild(li);
-                option.filter = true;
-            } else {
-                // if (this.filter == false) {
-                //     var li = document.createElement("li");
-                //     li.innerHTML = gform.renderString(gform.types[this.type].itemTemplate, option);
-                //     this.menu.appendChild(li);
-                // }
-                option.filter = false;
-            }
-            return option;
+      }.bind(this);
+  
+      this.el.addEventListener("input", this.onchangeEvent.bind(null, true));
+      this.el.querySelector(".input-group-addon i").addEventListener(
+        "click",
+        function () {
+          this.focus();
         }.bind(this)
-        this.searchData = function (value, data) {
-            if (data.length > 0 && this.combo.innerText == value) {
-                if (!this.active) return;
-                this.menu.style.display = 'none';
-                this.shown = false;
-                this.menu.innerHTML = "";
-
-                index = this.options.length;
-                this.options = this.mapOptions.getoptions();
-
-                this.menu.innerHTML = "";
-                this.options = this.options.concat(_.map(data, this.createLI.bind(null, true)))
-
-                if (typeof this.custom == 'object') {
-                    var li = document.createElement("li");
-                    li.innerHTML = gform.renderString('<a {{^editable}}style="color:#ccc;"{{/editable}} href="javascript:void(0);" tabindex="0" data-editable={{editable}} data-index="{{custom.name}}" class="dropdown-item">{{{custom.display}}}</a>', this);
-                    this.menu.appendChild(li);
-                }
-
-                var first = this.menu.querySelector('li');
-                if (first !== null) {
-                    gform.addClass(first, 'active')
-                } else {
-                    this.internalValue = null;
-                }
-                var item = _.find(this.options, { value: value }) || _.find(this.options, { label: value })
-                this.shown = (typeof item == 'undefined' && data.length > 0) && this.el.contains(document.activeElement);
-                this.menu.style.display = (this.shown) ? 'block' : 'none';
-
-                this.set((item || { value: value }).value, true, 'nosearch')
-
-                this.parent.trigger(['change'], this, { input: this.value });
-            }
-            gform.addClass(this.el.querySelector('.combobox-container'), 'loaded');
-
-        }
-        this.renderMenu = function () {
-            if (!this.active) return;
-            this.menu.style.display = 'none';
-            this.shown = false;
-            this.menu.innerHTML = "";
-            this.options = this.mapOptions.getoptions();
-            _.each(this.options, this.processOptions.bind(this))
-
-            var first = this.menu.querySelector('li');
-            if (first !== null) {
-                gform.addClass(first, 'active')
-                this.menu.style.display = 'block';
-                this.shown = true;
-            }
-            if (typeof this.search == 'undefined') {
-                if (typeof this.custom == 'object') {
-
-                    this.menu.style.display = 'block';
-                    this.shown = true;
-
-                    var li = document.createElement("li");
-                    li.innerHTML = gform.renderString('<a {{^editable}}style="color:#ccc;"{{/editable}} href="javascript:void(0);" tabindex="0" data-editable={{editable}} data-index="{{custom.name}}" class="dropdown-item">{{{custom.display}}}</a>', this);
-                    this.menu.appendChild(li);
-                }
-            }
-
-        }
-        this.shown = false;
-        this.input = this.input || false;
-        this.menu = this.el.querySelector('ul')
-        this.combo = this.el.querySelector('.form-control');
-        this.set = gform.types[this.type].set.bind(this);
-
-        this.select = function (index) {
-            if (!isNaN(parseInt(index))) {
-                var item = _.find(this.options, { i: parseInt(index) })
-                this.set(item.value);
-                this.parent.trigger(['input'], this, { input: this.value });
-
-                this.menu.style.display = 'none';
-                this.shown = false;
-                gform.types.combobox.focus.call(this);
-            } else {
-                if (typeof this.custom == 'object' && this.custom.name == index) {
-                    if (typeof this.custom.action == 'function') {
-                        this.custom.action.call(this, { form: this.owner, field: this, event: this.custom.name })
-                    }
-                    this.parent.trigger(index, this);
-
-                }
-            }
-        }
-        $(this.el).on('click', ".dropdown-item", function (e) {
-            ;
-            if (e.currentTarget.dataset.editable != "false" && e.currentTarget.dataset.editable != false) this.select(e.currentTarget.dataset.index);
-            e.stopPropagation();
-        }.bind(this))
-
-        this.el.addEventListener('mouseup', function (e) {
-            if (typeof e.target.dataset.dropdown !== "undefined" && this.editable) {
-
-                e.stopPropagation();
-                if (this.el.querySelector('.combobox-selected') !== null) {
-                    this.set(null, false, 'nosearch');
-                    this.parent.trigger(['input'], this, { input: "" });
-                    this.renderMenu();
-                } else {
-                    if (this.shown) {
-                        this.menu.style.display = 'none';
-                        this.shown = false;
-                    } else {
-                        this.renderMenu();
-                    }
-                }
-                gform.types.combobox.focus.call(this);
-            }
-            this.mousedropdown = false;
-        }.bind(this))
-        let field = this;
-        this.el.addEventListener('focusin', () => {
-            if (!field.active) field.el.querySelector('.form-control').blur();
+      );
+  
+      $(this.el.querySelector('input[name="' + this.name + '"]')).attr(
+        "type",
+        "text"
+      );
+      this.el.querySelector(".input-group-addon i").style.backgroundColor =
+        this.get();
+      $(this.el.querySelector('input[name="' + this.name + '"]'))
+        .colorpicker({
+          format: "hex",
+          container: $(this.el).find(".input-group"),
         })
-        this.el.addEventListener('mousedown', function (e) {
-            if (typeof e.target.dataset.dropdown !== "undefined") {
-
-                this.mousedropdown = true;
-            }
-        }.bind(this))
-
-        this.el.addEventListener('keydown', function (e) {
-            if (!this.shown) {
-                if (e.keyCode == 40) { this.renderMenu(); }
-                if (e.keyCode == 13) { e.preventDefault(); }
-                return;
-            }
-            switch (e.keyCode) {
-                case 9: // tab
-                case 13: // enter
-                    e.preventDefault();
-                    let activeEl = this.menu.querySelector('li.active a');
-                    if (activeEl !== null) {
-                        this.select(activeEl.dataset.index);
-                    }
-                    break;
-                case 27: // escape
-                    e.preventDefault();
-                    this.menu.style.display = 'none';
-                    this.shown = false;
-                    break;
-
-                case 38: // up arrow
-                    e.preventDefault();
-                    var active = this.menu.querySelector('.active');
-                    gform.removeClass(active, 'active');
-
-                    prev = active.previousElementSibling;
-
-                    if (!prev) {
-                        var list = this.menu.querySelectorAll('li');
-                        prev = list[list.length - 1];
-                    }
-
-                    gform.addClass(prev, 'active')
-
-                    var active = $(this.menu).find('.active');
-                    //fixscroll
-                    if (active.length) {
-                        var top = active.position().top;
-                        var bottom = top + active.height();
-                        var scrollTop = $(this.menu).scrollTop();
-                        var menuHeight = $(this.menu).height();
-                        if (bottom > menuHeight) {
-                            $(this.menu).scrollTop(scrollTop + bottom - menuHeight);
-                        } else if (top < 0) {
-                            $(this.menu).scrollTop(scrollTop + top);
-                        }
-                    }
-                    break;
-
-                case 40: // down arrow
-                    e.preventDefault();
-                    var active = this.menu.querySelector('.active');
-                    gform.removeClass(active, 'active');
-                    next = active.nextElementSibling;
-                    if (!next) {
-                        next = this.menu.querySelector('li')
-                    }
-                    gform.addClass(next, 'active')
-                    var active = $(this.menu.querySelector('.active'));
-                    //fixscroll
-                    if (active.length) {
-                        var top = active.position().top;
-                        var bottom = top + active.height();
-                        var scrollTop = $(this.menu).scrollTop();
-                        var menuHeight = $(this.menu).height();
-                        if (bottom > menuHeight) {
-                            $(this.menu).scrollTop(scrollTop + bottom - menuHeight);
-                        } else if (top < 0) {
-                            $(this.menu).scrollTop(scrollTop + top);
-                        }
-                    }
-                    break;
-            }
-            e.stopPropagation();
-        }.bind(this))
-
-        $(this.menu).on('mouseenter', 'li', function (e) {
-            this.mousedover = true;
-            if (this.menu.querySelector('.active') !== null) {
-                gform.removeClass(this.menu.querySelector('.active'), 'active')
-            }
-            gform.addClass(e.currentTarget, 'active')
-        }.bind(this))
-
-        $(this.menu).on('mouseleave', 'li', function (e) {
-            this.mousedover = false;
-        }.bind(this))
-
-        /*look into clean up this way*/
-        this.handleBlur = function (e) {
-            if (e.sourceCapabilities == null) return;
-            /*clean up value to just be a string*/
-            var input = document.createElement("input");
-            input.value = this.combo.innerText;
-            this.combo.innerHTML = input.value
-
-
-            if (!(
-                gform.hasClass(e.relatedTarget, 'dropdown-item') ||
-                gform.hasClass(e.relatedTarget, 'dropdown-toggle') ||
-                this.mousedropdown
-            )) {
-                if (this.shown) {
-                    var list = _.filter(this.options, { filter: true });
-                    if (this.strict) {
-                        if (list.length == 1) {
-                            this.set(list[0].value);
-                        } else {
-                            list = _.filter(this.options, { label: this.combo.innerText });
-                            if (list.length) {
-                                this.set(list[0].value);
-                            }
-                        }
-                    } else {
-                        this.set(this.combo.innerText)
-                    }
-                    if (!this.mousedover && this.shown) {
-                        setTimeout(function () {
-                            this.menu.style.display = 'none'; this.shown = false;
-                        }.bind(this), 200);
-                    }
-                    this.parent.trigger(['input'], this, { input: this.value });
-                    this.menu.style.display = 'none';
-                    this.shown = false;
-                } else { }
-
-                if (this.strict) {
-                    let updateVal = this.value || this.combo.innerText;
-                    this.set(updateVal, true, 'nosearch');
-                    let newVal = gform.types[this.type].get.call(this)
-                    this.set(newVal)
-                    if (updateVal !== newVal) this.parent.trigger(['input'], this, { input: newVal });
-                } else {
-                    if (typeof _.find(this.options, { value: this.value }) !== "undefined") {
-                        this.set(this.value)
-                    } else {
-                        this.parent.trigger(['undefined'], this);
-                    }
-                }
-            }
-        }.bind(this);
-        this.combo.addEventListener('blur', this.handleBlur)
-        this.options = this.mapOptions.getoptions();
-        if (typeof this.search == 'string' && typeof this.value !== 'undefined' && this.value !== "") {
-            gform.removeClass(this.el.querySelector('.combobox-container'), 'loaded');
-            gform.ajax({
-                sourceID: 'init' + this.id,
-                path: gform.renderString(this.search, { value: this.value }), success: function (data) {
-                    index = this.options.length;
-                    this.options = this.options.concat(_.map(data, this.createLI.bind(null, false)))
-                    if (typeof this.value !== 'undefined') {
-                        this.set(this.value);
-                    }
-                    this.parent.trigger(['options'], this);
-                    gform.addClass(this.el.querySelector('.combobox-container'), 'loaded');
-                }.bind(this)
-            })
-        } else
-            if (typeof this.search == 'function' && typeof this.value !== 'undefined' && this.value !== "") {
-                gform.removeClass(this.el.querySelector('.combobox-container'), 'loaded');
-
-                index = this.options.length;
-                this.options = this.options.concat(_.map(this.search.call(this, { value: value }), this.createLI.bind(null, false)))
-                if (typeof this.value !== 'undefined') {
-                    this.set(this.value);
-                }
-                this.parent.trigger(['options'], this);
-                gform.addClass(this.el.querySelector('.combobox-container'), 'loaded');
-
-
-            } else {
-                gform.addClass(this.el.querySelector('.combobox-container'), 'loaded');
-
-                if (typeof this.value !== 'undefined') {
-                    this.set(this.value);
-                }
-            }
-
-
-        this.el.addEventListener('input', this.onchangeEvent.bind(null, true));
+        .on(
+          "changeColor",
+          function (ev) {
+            this.el.querySelector(".input-group-addon i").style.backgroundColor =
+              this.get();
+            this.parent.trigger("change", this);
+            this.parent.trigger("input", this);
+          }.bind(this)
+        );
+      gform.types[this.type].setLabel.call(this);
+    },
+  });
+  
+  gform.types["contentEditable"] = gform.types["summernote"] = _.extend(
+    {},
+    gform.types["input"],
+    {
+      render: function () {
+        //   return gform.render(this.type, this);
+        return gform.render("contenteditable", this);
+      },
+      set: function (value) {
+        //   this.el.querySelector('textarea[name="' + this.name + '"]').value = value;
+  
+        // if(typeof this.lastSaved === 'undefined'){
+        // 	this.lastSaved = value;
+        // }
+        // this.editor.setContent(value)
+        this.$el.summernote("code", value);
+        // this.value = value;
+        // this.$el.html(value)
+  
+        // return this.$el;
+      },
+      get: function () {
+        //   return this.el.querySelector('textarea[name="' + this.name + '"]').value;
+        return "el" in this ? this.$el.summernote("code") : this.internalValue;
+      },
+      initialize: function () {
+        this.$el = $(this.el).find(".formcontrol > div");
+        this.$el.off();
+        if (this.onchange !== undefined) {
+          this.$el.on("input", this.onchange);
+        }
+        this.$el.summernote({
+          disableDragAndDrop: true,
+          dialogsInBody: true,
+          toolbar: this.item.toolbar || [
+            // [groupName, [list of button]]
+            ["style", ["bold", "italic", "underline", "clear"]],
+            ["link", ["linkDialogShow", "unlink"]],
+            ["font", ["strikethrough", "superscript", "subscript"]],
+            ["fontsize", ["fontsize"]],
+            ["color", ["color"]],
+            ["para", ["ul", "ol", "paragraph"]],
+            ["height", ["height"]],
+            ["view", ["fullscreen"]],
+          ],
+        });
+        gform.types[this.type].set.call(this, this.value, true);
+  
+        this.$el.on(
+          "summernote.change",
+          function () {
+            this.owner.trigger("change", this);
+  
+            this.owner.trigger("input", this);
+          }.bind(this)
+        );
+        gform.types[this.type].setLabel.call(this);
+      },
+      satisfied: function (value) {
+        this.value = this.get();
+        return (
+          typeof this.value !== "undefined" &&
+          this.value !== null &&
+          this.value !== "" &&
+          this.value !== "<p><br></p>"
+        );
+      },
+      destroy: function () {
+        this.$el.summernote("destroy");
+        if (this.$el) {
+          this.$el.off();
+        }
+      },
     }
-});
+  );
+  
+  $(document).on("focusin", function (e) {
+    if ($(e.target).closest(".note-editable").length) {
+      e.stopImmediatePropagation();
+    }
+  });
+  $(document).on("click", function (e) {
+    if ($(e.target).hasClass(".note-editor")) {
+      e.stopImmediatePropagation();
+  
+      $(e.target).find(".open").removeClass("open");
+    }
+  });
+  
+  gform.types["email"] = _.extend({}, gform.types["input"], {
+    defaults: {
+      pre: '<i class="fa fa-envelope"></i>',
+      validate: [{ type: "valid_email" }],
+    },
+  });
+  gform.types["url"] = _.extend({}, gform.types["input"], {
+    defaults: {
+      pre: '<i class="fa fa-link"></i>',
+      validate: [{ type: "valid_url" }],
+    },
+  });
+  gform.types["tel"] = _.extend({}, gform.types["input"], {
+    defaults: { pre: '<i class="fa fa-phone"></i>', placeholder: "+1" },
+  });
+  gform.types["password"] = _.extend({}, gform.types["input"], {
+    defaults: { pre: '<i class="fa fa-lock"></i>' },
+  });
+  gform.types["address"] = _.extend(
+    {},
+    gform.types["input"],
+    gform.types["section"],
+    {
+      defaults: {
+        fields: [
+          {
+            type: "text",
+            name: "street",
+            label: "Street Address",
+            validate: [{ type: "length", max: "255" }],
+          },
+          {
+            type: "text",
+            name: "line2",
+            label: "Address line 2",
+            validate: [{ type: "length", max: "150" }],
+          },
+          {
+            type: "text",
+            name: "city",
+            label: "City",
+            validate: [{ type: "length", max: "255" }],
+            columns: 6,
+          },
+          {
+            type: "text",
+            name: "state",
+            label: "State/Province/Region",
+            validate: [{ type: "length", max: "255" }],
+            columns: 6,
+          }, //,display:[{type:"not_matches",name:"country",value:"US"}]},
+          // {type:"combo",name:'state',options:'../data/states.json',format:{label:'{{name}}'},label:"State/Province/Region",columns:6},
+          {
+            type: "text",
+            name: "zip",
+            label: "Postal/Zip Code",
+            validate: [{ type: "length", max: "15" }],
+            columns: 6,
+          },
+          {
+            type: "select",
+            name: "country",
+            options: "../data/countries.json",
+            format: { label: "{{name}}", value: "{{code}}" },
+            label: "Country",
+            validate: [{ type: "length", max: "15" }],
+            columns: 6,
+          },
+        ],
+      },
+    }
+  );
+  
+  gform.THEME = { bootstrap: "0.0.4.2" };
+  
+  gform.types["datetime"] = _.extend({}, gform.types["input"], {
+    defaults: {
+      format: { input: "MM/DD/YYYY h:mm A" },
+      elType: "text",
+    },
+    initialize: function () {
+      this.onchangeEvent = function () {
+        this.value = this.get();
+        this.parent.trigger(["change", "input"], this, { input: this.value });
+      }.bind(this);
+  
+      var $el = $(this.el.querySelector('input[name="' + this.name + '"]'));
+  
+      $el.datetimepicker({ format: this.format.input });
+      $el.on("dp.change", this.onchangeEvent.bind(null, true));
+      gform.types[this.type].setLabel.call(this);
+  
+      this.onchangeEvent = function (input) {
+        //   this.input = input;
+        this.value = this.get();
+        if (this.el.querySelector(".count") != null) {
+          var text = (this.value + "").length;
+          if (this.limit > 1) {
+            text += "/" + this.limit;
+          }
+          this.el.querySelector(".count").innerHTML = text;
+        }
+        //   this.update({value:this.get()},true);
+        //   gform.types[this.type].focus.call(this)
+        gform.types[this.type].setup.call(this);
+        this.parent.trigger(["change"], this, { input: this.value });
+        if (input) {
+          this.parent.trigger(["input"], this, { input: this.value });
+        }
+      }.bind(this);
+      var $el = $(this.el.querySelector('input[name="' + this.name + '"]'));
+  
+      $el.datetimepicker({ format: this.format.input });
+      $el.on("dp.change", this.onchangeEvent.bind(null, true));
+      gform.types[this.type].setup.call(this);
+    },
+  });
+  gform.types["date"] = _.extend({}, gform.types["datetime"], {
+    defaults: {
+      format: { input: "MM/DD/YYYY" },
+      elType: "text",
+    },
+  });
+  gform.types["time"] = _.extend({}, gform.types["datetime"], {
+    defaults: {
+      format: { input: "h:mm A" },
+      elType: "text",
+    },
+  });
+  // gform.prototype.modalDelay = 475;
+  // gform.prototype.modal = function(data){
+  // 	// var el = this.modalEl||this.el;
+  
+  // 	// if(!document.body.contains(el)){
+  //     //     document.body.appendChild(el);
+  //     //     this.modalEl.querySelector('.close').addEventListener('click', function(){
+  //     //         this.modal('hide');
+  //     //         (this.owner||this).trigger("modal:close");
+  //     //     }.bind(this));
+  //     // }
+  
+  // 	// $(this.modalEl||this.el).modal(data)
+  // 	// return this;
+  
+  // 	var el = this.modalEl||this.el;
+  //     if(!document.body.contains(el)){
+  //         document.body.appendChild(el);
+  //         el.querySelector('.close').addEventListener('click', function(){
+  
+  // 			(this.owner||this).trigger('closed',this);
+  //         }.bind(this));
+  //     }
+  
+  //     // switch(data){
+  //     //     case "hide":
+  //     //         // if(typeof this.type !== 'undefined'){
+  //     //         //     this.owner.trigger("close_child",this);
+  //     //         // }else{
+  //     //         //     this.trigger("close",this);
+  //     //         // }
+  //     //     default:
+  //     //         $(el).modal(data)
+  //     // }
+  // if(typeof this.modalManager ==  'undefined'){
+  // 	this.modalManager = $(el).modal(data)
+  
+  // 	$(el).on('hidden.bs.modal', function(e){
+  // 		if(this.active){this.trigger("cancel",this)};
+  // 	}.bind(this))
+  // }else(
+  // 	this.modalManager = $(el).modal(data)
+  // )
+  
+  // 	return this;
+  // }
+  gform.prototype.modal = function (data) {
+    var el = this.modalEl || this.el;
+  
+    if (!document.body.contains(el)) {
+      document.body.appendChild(el);
+      el.querySelector(".close").addEventListener(
+        "click",
+        function () {
+          (this.owner || this).trigger("close");
+        }.bind(this)
+      );
+    }
+  
+    switch (data) {
+      case "hide":
+        gform.addClass(el, "hidden");
+        break;
+      default:
+        gform.removeClass(el, "hidden");
+    }
+    // $(this.el).modal(data)
+    return this;
+  };
+  document.body.appendChild(
+    gform.create("<style>" + gform.render("_style", {}, "all") + "</style>")
+  );
+  gform.stencils.combobox = `
+    <div class="row clearfix form-group {{modifiers}}" data-type="{{type}}">
+        {{>_label}}
+        {{#label}}
+        {{^horizontal}}<div class="col-md-12">{{/horizontal}}
+        {{#horizontal}}<div class="col-md-8">{{/horizontal}}
+        {{/label}}
+        {{^label}}
+        <div class="col-md-12">
+        {{/label}}
+        <div class="combobox-container">
+            <div class="input-group" style="width:100%" contentEditable="false"> 
+            {{#pre}}<span class="input-group-addon">{{{pre}}}</span>{{/pre}}
+            <div style="" {{^autocomplete}}autocomplete="off"{{/autocomplete}} class="form-control {{^editable}}readonly disabled{{/editable}}" {{^editable}}readonly disabled{{/editable}} {{#limit}}maxlength="{{limit}}"{{/limit}}{{#min}} min="{{min}}"{{/min}}{{#max}} max="{{max}}"{{/max}} {{#step}} step="{{step}}"{{/step}} placeholder="{{placeholder}}" {{#editable}}contentEditable{{/editable}} type="combobox" data-type="{{elType}}{{^elType}}{{type}}{{/elType}}" name="{{name}}" id="{{name}}" value="{{value}}" ></div>
+            <ul class="combobox-list dropdown-menu "></ul>
+            <span class="input-group-addon dropdown-toggle" style="" data-dropdown="dropdown"> <span class=" status-icon" data-dropdown="dropdown"></span>  </span> 
+            </div>
+            </div>
+            {{>_addons}}
+            {{>_actions}}
+        </div>
+    </div>`;
+  
+  gform.types["combobox"] = _.extend({}, gform.types["input"], {
+    base: "collection",
+    destroy: function () {
+      this.el.removeEventListener("change", this.onchangeEvent);
+      this.el.removeEventListener("input", this.onchangeEvent);
+      this.combo.removeEventListener("blur", this.handleBlur);
+    },
+    itemTemplate:
+      '<a {{^editable}}style="color:#ccc;"{{/editable}} href="javascript:void(0);" tabindex="0" data-editable={{editable}} data-index="{{i}}" class="dropdown-item">{{{display}}}{{^display}}{{{label}}}{{/display}}</a>',
+    satisfied: function (value) {
+      value = value || this.value;
+      if (this.strict) {
+        value = (_.find(this.options, { value: value }) || { value: "" }).value;
+      }
+      if (_.isArray(value)) {
+        return !!value.length;
+      }
+      return (
+        typeof value !== "undefined" &&
+        value !== null &&
+        value !== "" &&
+        !(typeof value == "number" && isNaN(value))
+      );
+    },
+    toString: function (name, display) {
+      if (!display) {
+        return (
+          "<dt>" +
+          this.label +
+          "</dt> <dd>" +
+          ((typeof this.combo !== "undefined"
+            ? this.combo.innerText
+            : this.get()) || "(empty)") +
+          "</dd><hr>"
+        );
+      } else {
+        return typeof this.combo !== "undefined"
+          ? this.combo.innerText
+          : this.get();
+      }
+    },
+    focus: function () {
+      if (!this.active) return;
+      var node = this.el.querySelector("[type=combobox]");
+      if (node !== null) {
+        node.focus();
+        if (node.textContent == "") return;
+        var sel = window.getSelection();
+        var focus = sel.focusNode;
+  
+        if (focus !== null && focus !== document) {
+          var range = document.createRange();
+          range.selectNode(focus);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+    },
+    render: function () {
+      if (typeof this.mapOptions == "undefined") {
+        this.mapOptions = new gform.mapOptions(
+          this,
+          this.value,
+          0,
+          this.owner.collections
+        );
+        this.mapOptions.on(
+          "change",
+          function () {
+            this.options = this.mapOptions.getoptions();
+            if (this.shown) {
+              this.renderMenu();
+            }
+            if (typeof this.value !== "undefined") {
+              gform.types[this.type].set.call(this, this.value);
+            }
+          }.bind(this)
+        );
+      }
+      this.options = this.mapOptions.getoptions();
+      this.internalValue = this.value || "";
+      return gform.render("combobox", this);
+    },
+    get: function () {
+      return (
+        this.strict
+          ? _.find(this.options, { value: this.value }) || { value: "" }
+          : this
+      ).value;
+    },
+    set: function (value, silent, input) {
+      // console.log('input:' + input);
+  
+      value =
+        typeof value == "string" ? value.replace(/  |\r\n|\n|\r/gm, "") : value;
+      var item =
+        _.find(this.options, { value: value }) ||
+        _.find(this.options, { label: value });
+      if (typeof item !== "undefined") {
+        if (
+          !input ||
+          (input == "nosearch" &&
+            (this.el.querySelector("[type=combobox]") !==
+              document.activeElement ||
+              this.combo.innerText !== item.label))
+        ) {
+          this.combo.innerText = item.label;
+          gform.addClass(
+            this.el.querySelector(".combobox-container"),
+            "combobox-selected"
+          );
+        }
+        this.internalValue = item.value;
+      } else {
+        if (
+          typeof this.search == "string" &&
+          typeof this.owner.methods[this.search] !== "function" &&
+          input !== "nosearch"
+        ) {
+          gform.removeClass(
+            this.el.querySelector(".combobox-container"),
+            "loaded"
+          );
+  
+          let path = this.search || "";
+          if (path[0] !== "/") {
+            path = (this.owner.options.rootpath || "") + this.search;
+          }
+          gform.ajax({
+            sourceID: "set" + this.id,
+            path: gform.renderString(path, { value: value }),
+  
+            success: this.searchData.bind(this, value),
+          });
+        } else if (
+          (typeof this.search == "function" ||
+            typeof this.owner.methods[this.search] == "function") &&
+          input !== "nosearch"
+        ) {
+          gform.removeClass(
+            this.el.querySelector(".combobox-container"),
+            "loaded"
+          );
+  
+          async function asyncCall() {
+            return await new Promise(
+              function (resolve) {
+                let response = (
+                  this.owner.methods[this.search] || this.search
+                ).call(this, { value: value }, resolve);
+                if (typeof response == "object") {
+                  resolve(response);
+                }
+              }.bind(this)
+            );
+          }
+  
+          // const promise1 = new Promise((resolve, reject) => {
+          //     setTimeout(resolve, 500, 'one');
+          // });
+  
+          const promise2 = new Promise((resolve, reject) => {
+            setTimeout(resolve, 2000, []);
+          });
+  
+          Promise.race([asyncCall.call(this), promise2]).then(
+            this.searchData.bind(this, value)
+          );
+        }
+        this.internalValue = value || "";
+  
+        if ("el" in this) {
+          if (this.combo.innerHTML !== value) {
+            this.combo.innerHTML = value;
+            gform.types.combobox.focus.call(this);
+          }
+  
+          if (
+            typeof value == "undefined" ||
+            (typeof value !== "undefined" && this.combo.innerText !== value)
+          ) {
+            this.combo.innerText = this.value || "";
+  
+            this.trigger(["undefined"], this);
+          }
+          gform.toggleClass(
+            this.el.querySelector(".combobox-container"),
+            "combobox-selected",
+            this.value !== ""
+          );
+        }
+      }
+      gform.types[this.type].setLabel.call(this);
+      if (!silent) {
+        this.parent.trigger(["change"], this);
+      }
+    },
+    edit: function (state) {
+      this.editable = state;
+      this.el
+        .querySelector(".form-control")
+        .setAttribute("contenteditable", state ? "true" : "false");
+      gform.toggleClass(this.el, "disabled", !state);
+    },
+    initialize: function () {
+      this.onchangeEvent = _.debounce(
+        function (input) {
+          this.renderMenu();
+          this.set(this.combo.innerText, false, true);
+          this.parent.trigger(["input"], this, { input: this.value });
+        }.bind(this),
+        300
+      );
+      // }.bind(this)
+      gform.types[this.type].setup.call(this);
+      this.processOptions = function (option) {
+        option.visible = "visible" in option ? option.visible : true;
+        option.editable = "editable" in option ? option.editable : true;
+  
+        if (typeof option.optgroup !== "undefined") {
+          if (
+            typeof option.optgroup.options !== "undefined" &&
+            option.optgroup.options.length
+          ) {
+            _.each(option.optgroup.options, this.processOptions.bind(this));
+          }
+        } else {
+          option = this.createLI(false, option);
+        }
+      };
+      this.createLI = function (force, option) {
+        if (typeof option !== "undefined" && typeof option !== "object") {
+          option = { label: option, value: option };
+        }
+        option.i = option.i || ++index;
+        // if (typeof this.format !== 'undefined') {
+        //     if (typeof this.format.label !== 'undefined') {
+        //         option.label = gform.renderString(this.format.label, option);
+        //     }
+        //     if (typeof this.format.display !== 'undefined') {
+        //         option.display = gform.renderString(this.format.display, option);
+        //     }
+        //     if (typeof this.format.value == 'string') {
+        //         option.value = gform.renderString(this.format.value, option);
+        //     } else if (typeof this.format.value == 'function') {
+        //         option.value = this.format.value.call(this, option)
+        //     }
+        // }
+        if (!("processed" in option)) {
+          option = _.reduce(
+            ["label", "display", "value" /*,'cleanlabel'*/],
+            function (format, option, prop) {
+              if (prop in format) {
+                if (prop in option) {
+                  option.original = option.original || {};
+                  option.original[prop] = option[prop];
+                }
+                option[prop] =
+                  typeof format[prop] == "string"
+                    ? format[prop] in option
+                      ? option[format[prop]]
+                      : gform.renderString(format[prop], option)
+                    : typeof format[prop] == "function"
+                    ? format[prop].call(this, option)
+                    : option[prop];
+              }
+              option.processed = true;
+              return option;
+            }.bind(this, this.format),
+            option
+          );
+        }
+        option.visible = "visible" in option ? option.visible : true;
+        option.editable = "editable" in option ? option.editable : true;
+        if (
+          this.filter !== false &&
+          (force ||
+            this.combo.innerText == "" ||
+            _.score(
+              option.label.toLowerCase(),
+              this.combo.innerText.toLowerCase()
+            ) > 0.6)
+        ) {
+          var li = document.createElement("li");
+          li.innerHTML = gform.renderString(
+            gform.types[this.type].itemTemplate,
+            option
+          );
+          this.menu.appendChild(li);
+          option.filter = true;
+        } else {
+          // if (this.filter == false) {
+          //     var li = document.createElement("li");
+          //     li.innerHTML = gform.renderString(gform.types[this.type].itemTemplate, option);
+          //     this.menu.appendChild(li);
+          // }
+          option.filter = false;
+        }
+        return option;
+      }.bind(this);
+      this.searchData = function (value, data) {
+        if (data.length > 0 && this.combo.innerText == value) {
+          if (!this.active) return;
+          this.menu.style.display = "none";
+          this.shown = false;
+          this.menu.innerHTML = "";
+  
+          index = this.options.length;
+          this.options = this.mapOptions.getoptions();
+  
+          this.menu.innerHTML = "";
+          this.options = this.options.concat(
+            _.map(data, this.createLI.bind(null, true))
+          );
+  
+          if (typeof this.custom == "object") {
+            var li = document.createElement("li");
+            li.innerHTML = gform.renderString(
+              '<a {{^editable}}style="color:#ccc;"{{/editable}} href="javascript:void(0);" tabindex="0" data-editable={{editable}} data-index="{{custom.name}}" class="dropdown-item">{{{custom.display}}}</a>',
+              this
+            );
+            this.menu.appendChild(li);
+          }
+  
+          var first = this.menu.querySelector("li");
+          if (first !== null) {
+            gform.addClass(first, "active");
+          } else {
+            this.internalValue = null;
+          }
+          var item =
+            _.find(this.options, { value: value }) ||
+            _.find(this.options, { label: value });
+          this.shown =
+            typeof item == "undefined" &&
+            data.length > 0 &&
+            this.el.contains(document.activeElement);
+          this.menu.style.display = this.shown ? "block" : "none";
+  
+          this.set((item || { value: value }).value, true, "nosearch");
+  
+          this.parent.trigger(["change"], this, { input: this.value });
+        }
+        gform.addClass(this.el.querySelector(".combobox-container"), "loaded");
+      };
+      this.renderMenu = function () {
+        if (!this.active) return;
+        this.menu.style.display = "none";
+        this.shown = false;
+        this.menu.innerHTML = "";
+        this.options = this.mapOptions.getoptions();
+        _.each(this.options, this.processOptions.bind(this));
+  
+        var first = this.menu.querySelector("li");
+        if (first !== null) {
+          gform.addClass(first, "active");
+          this.menu.style.display = "block";
+          this.shown = true;
+        }
+        if (typeof this.search == "undefined") {
+          if (typeof this.custom == "object") {
+            this.menu.style.display = "block";
+            this.shown = true;
+  
+            var li = document.createElement("li");
+            li.innerHTML = gform.renderString(
+              '<a {{^editable}}style="color:#ccc;"{{/editable}} href="javascript:void(0);" tabindex="0" data-editable={{editable}} data-index="{{custom.name}}" class="dropdown-item">{{{custom.display}}}</a>',
+              this
+            );
+            this.menu.appendChild(li);
+          }
+        }
+      };
+      this.shown = false;
+      this.input = this.input || false;
+      this.menu = this.el.querySelector("ul");
+      this.combo = this.el.querySelector(".form-control");
+      this.set = gform.types[this.type].set.bind(this);
+  
+      this.select = function (index) {
+        if (!isNaN(parseInt(index))) {
+          var item = _.find(this.options, { i: parseInt(index) });
+          this.set(item.value);
+          this.parent.trigger(["input"], this, { input: this.value });
+  
+          this.menu.style.display = "none";
+          this.shown = false;
+          gform.types.combobox.focus.call(this);
+        } else {
+          if (typeof this.custom == "object" && this.custom.name == index) {
+            if (typeof this.custom.action == "function") {
+              this.custom.action.call(this, {
+                form: this.owner,
+                field: this,
+                event: this.custom.name,
+              });
+            }
+            this.parent.trigger(index, this);
+          }
+        }
+      };
+      $(this.el).on(
+        "click",
+        ".dropdown-item",
+        function (e) {
+          if (
+            e.currentTarget.dataset.editable != "false" &&
+            e.currentTarget.dataset.editable != false
+          )
+            this.select(e.currentTarget.dataset.index);
+          e.stopPropagation();
+        }.bind(this)
+      );
+  
+      this.el.addEventListener(
+        "mouseup",
+        function (e) {
+          if (typeof e.target.dataset.dropdown !== "undefined" && this.editable) {
+            e.stopPropagation();
+            if (this.el.querySelector(".combobox-selected") !== null) {
+              this.set(null, false, "nosearch");
+              this.parent.trigger(["input"], this, { input: "" });
+              this.renderMenu();
+            } else {
+              if (this.shown) {
+                this.menu.style.display = "none";
+                this.shown = false;
+              } else {
+                this.renderMenu();
+              }
+            }
+            gform.types.combobox.focus.call(this);
+          }
+          this.mousedropdown = false;
+        }.bind(this)
+      );
+      let field = this;
+      this.el.addEventListener("focusin", () => {
+        if (!field.active) field.el.querySelector(".form-control").blur();
+      });
+      this.el.addEventListener(
+        "mousedown",
+        function (e) {
+          if (typeof e.target.dataset.dropdown !== "undefined") {
+            this.mousedropdown = true;
+          }
+        }.bind(this)
+      );
+  
+      this.el.addEventListener(
+        "keydown",
+        function (e) {
+          if (!this.shown) {
+            if (e.keyCode == 40) {
+              this.renderMenu();
+            }
+            if (e.keyCode == 13) {
+              e.preventDefault();
+            }
+            return;
+          }
+          switch (e.keyCode) {
+            case 9: // tab
+            case 13: // enter
+              e.preventDefault();
+              let activeEl = this.menu.querySelector("li.active a");
+              if (activeEl !== null) {
+                this.select(activeEl.dataset.index);
+              }
+              break;
+            case 27: // escape
+              e.preventDefault();
+              this.menu.style.display = "none";
+              this.shown = false;
+              break;
+  
+            case 38: // up arrow
+              e.preventDefault();
+              var active = this.menu.querySelector(".active");
+              gform.removeClass(active, "active");
+  
+              prev = active.previousElementSibling;
+  
+              if (!prev) {
+                var list = this.menu.querySelectorAll("li");
+                prev = list[list.length - 1];
+              }
+  
+              gform.addClass(prev, "active");
+  
+              var active = $(this.menu).find(".active");
+              //fixscroll
+              if (active.length) {
+                var top = active.position().top;
+                var bottom = top + active.height();
+                var scrollTop = $(this.menu).scrollTop();
+                var menuHeight = $(this.menu).height();
+                if (bottom > menuHeight) {
+                  $(this.menu).scrollTop(scrollTop + bottom - menuHeight);
+                } else if (top < 0) {
+                  $(this.menu).scrollTop(scrollTop + top);
+                }
+              }
+              break;
+  
+            case 40: // down arrow
+              e.preventDefault();
+              var active = this.menu.querySelector(".active");
+              gform.removeClass(active, "active");
+              next = active.nextElementSibling;
+              if (!next) {
+                next = this.menu.querySelector("li");
+              }
+              gform.addClass(next, "active");
+              var active = $(this.menu.querySelector(".active"));
+              //fixscroll
+              if (active.length) {
+                var top = active.position().top;
+                var bottom = top + active.height();
+                var scrollTop = $(this.menu).scrollTop();
+                var menuHeight = $(this.menu).height();
+                if (bottom > menuHeight) {
+                  $(this.menu).scrollTop(scrollTop + bottom - menuHeight);
+                } else if (top < 0) {
+                  $(this.menu).scrollTop(scrollTop + top);
+                }
+              }
+              break;
+          }
+          e.stopPropagation();
+        }.bind(this)
+      );
+  
+      $(this.menu).on(
+        "mouseenter",
+        "li",
+        function (e) {
+          this.mousedover = true;
+          if (this.menu.querySelector(".active") !== null) {
+            gform.removeClass(this.menu.querySelector(".active"), "active");
+          }
+          gform.addClass(e.currentTarget, "active");
+        }.bind(this)
+      );
+  
+      $(this.menu).on(
+        "mouseleave",
+        "li",
+        function (e) {
+          this.mousedover = false;
+        }.bind(this)
+      );
+  
+      /*look into clean up this way*/
+      this.handleBlur = function (e) {
+        if (e.sourceCapabilities == null) return;
+        /*clean up value to just be a string*/
+        var input = document.createElement("input");
+        input.value = this.combo.innerText;
+        this.combo.innerHTML = input.value;
+  
+        if (
+          !(
+            gform.hasClass(e.relatedTarget, "dropdown-item") ||
+            gform.hasClass(e.relatedTarget, "dropdown-toggle") ||
+            this.mousedropdown
+          )
+        ) {
+          if (this.shown) {
+            var list = _.filter(this.options, { filter: true });
+            if (this.strict) {
+              if (list.length == 1) {
+                this.set(list[0].value);
+              } else {
+                list = _.filter(this.options, { label: this.combo.innerText });
+                if (list.length) {
+                  this.set(list[0].value);
+                }
+              }
+            } else {
+              this.set(this.combo.innerText);
+            }
+            if (!this.mousedover && this.shown) {
+              setTimeout(
+                function () {
+                  this.menu.style.display = "none";
+                  this.shown = false;
+                }.bind(this),
+                200
+              );
+            }
+            this.parent.trigger(["input"], this, { input: this.value });
+            this.menu.style.display = "none";
+            this.shown = false;
+          } else {
+          }
+  
+          if (this.strict) {
+            let updateVal = this.value || this.combo.innerText;
+            this.set(updateVal, true, "nosearch");
+            let newVal = gform.types[this.type].get.call(this);
+            this.set(newVal);
+            if (updateVal !== newVal)
+              this.parent.trigger(["input"], this, { input: newVal });
+          } else {
+            if (
+              typeof _.find(this.options, { value: this.value }) !== "undefined"
+            ) {
+              this.set(this.value);
+            } else {
+              this.parent.trigger(["undefined"], this);
+            }
+          }
+        }
+      }.bind(this);
+      this.combo.addEventListener("blur", this.handleBlur);
+      this.options = this.mapOptions.getoptions();
+      if (
+        typeof this.search == "string" &&
+        typeof this.value !== "undefined" &&
+        this.value !== ""
+      ) {
+        gform.removeClass(this.el.querySelector(".combobox-container"), "loaded");
+  
+        let path = this.search || "";
+        if (path[0] !== "/") {
+          path = (this.owner.options.rootpath || "") + this.search;
+        }
+        gform.ajax({
+          sourceID: "init" + this.id,
+          path: gform.renderString(path, { value: this.value }),
+          success: function (data) {
+            index = this.options.length;
+            this.options = this.options.concat(
+              _.map(data, this.createLI.bind(null, false))
+            );
+            if (typeof this.value !== "undefined") {
+              this.set(this.value);
+            }
+            this.parent.trigger(["options"], this);
+            gform.addClass(
+              this.el.querySelector(".combobox-container"),
+              "loaded"
+            );
+          }.bind(this),
+        });
+      } else if (
+        typeof this.search == "function" &&
+        typeof this.value !== "undefined" &&
+        this.value !== ""
+      ) {
+        gform.removeClass(this.el.querySelector(".combobox-container"), "loaded");
+  
+        index = this.options.length;
+        this.options = this.options.concat(
+          _.map(
+            this.search.call(this, { value: value }),
+            this.createLI.bind(null, false)
+          )
+        );
+        if (typeof this.value !== "undefined") {
+          this.set(this.value);
+        }
+        this.parent.trigger(["options"], this);
+        gform.addClass(this.el.querySelector(".combobox-container"), "loaded");
+      } else {
+        gform.addClass(this.el.querySelector(".combobox-container"), "loaded");
+  
+        if (typeof this.value !== "undefined") {
+          this.set(this.value);
+        }
+      }
+  
+      this.el.addEventListener("input", this.onchangeEvent.bind(null, true));
+    },
+  });
