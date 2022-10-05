@@ -245,6 +245,9 @@ class Identity extends Authenticatable
         if ($this->first_name == '' || $this->last_name == '' || is_null($this->first_name) || is_null($this->last_name)) {
             abort(400,'Identities must have a first and last name');
         }
+        if (preg_replace("/[^a-z]/",'',strtolower($this->first_name)) == '' || preg_replace("/[^a-z]/",'',strtolower($this->last_name)) == '') {
+            abort(400,'Identities must have a valid first and last name with alphabetic characters');
+        }
         $ids = $this->set_ids;
         $no_ids = true;
         if (!is_array($ids)) {
