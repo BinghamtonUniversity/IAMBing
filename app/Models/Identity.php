@@ -116,7 +116,6 @@ class Identity extends Authenticatable
     }
 
     public function username_generate($template, $iterator = 0) {
-        // Derive username
         $obj = [
             'first_name' => str_split(preg_replace("/[^a-z]/",'',strtolower($this->first_name)), 1),
             'last_name' => str_split(preg_replace("/[^a-z]/",'',strtolower($this->last_name)), 1),
@@ -125,8 +124,21 @@ class Identity extends Authenticatable
             'ids'=>$this->ids,
             'additional_attributes' => $this->additional_attributes,
         ];
+        $empty_obj = [
+            'first_name' => '',
+            'last_name' => '',
+            'iterator' => $iterator,
+            'default_username' => '',
+            'ids' => [],
+            'additional_attributes' => [],
+        ];
         $m = new \Mustache_Engine;
-        return $m->render($template, $obj);
+        $username = $m->render($template, $obj);
+        $empty_username = $m->render($template, $empty_obj);
+        if ($username == $empty_username) {
+            abort(400,'Missing Required Fields for Username / Account ID Generation');
+        }
+        return $username;
     }
 
     private function username_check_available($username) {
