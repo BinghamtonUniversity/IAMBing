@@ -216,7 +216,7 @@ class Identity extends Authenticatable
         }
         $must_save = false;
         // Create and Set New username
-        if (($this->first_name !== '' && $this->last_name !== '' && $this->first_name !== null && $this->last_name !== null) &&
+        if (($this->first_name !== '' && $this->last_name !== '' && !is_null($this->first_name) && !is_null($this->last_name)) &&
             (!isset($this->default_username) || $this->default_username === '' || $this->default_username === null)) {
             $is_taken = false;
             $iterator = 0;
@@ -236,7 +236,8 @@ class Identity extends Authenticatable
             $this->default_username = $username;
             $must_save = true;
         }
-        if (!isset($this->default_email) || is_null($this->default_email) || $this->default_email === '') {
+        if (($this->default_username !== '' && !is_null($this->default_username)) &&
+            (!isset($this->default_email) || is_null($this->default_email) || $this->default_email === '')) {
             $default_email_configuration = Configuration::where('name','default_email_domain')->first();
             if (!is_null($default_email_configuration)) {
                 $default_email_domain = $default_email_configuration->config;
