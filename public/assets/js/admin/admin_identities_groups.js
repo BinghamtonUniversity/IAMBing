@@ -15,7 +15,7 @@ ajax.get('/api/identities/'+id+'/groups',function(data) {
         {name:"group_id","label":"Group",type:"select",options:"/api/groups",format:{label:"{{name}}", value:"{{id}}"}},
     ], data: data
     }).on("model:created",function(grid_event) {
-        ajax.post('/api/groups/'+grid_event.model.attributes.group_id+'/members',{identity_id:id},function(data) {
+        ajax.post('/api/groups/'+grid_event.model.attributes.group_id+'/members/'+id,{},function(data) {
             grid_event.model.update(data)
         },function(data) {
             grid_event.model.undo();
