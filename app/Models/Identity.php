@@ -562,6 +562,9 @@ class Identity extends Authenticatable
         static::updated(function ($identity) {
             $identity->save_actions();
         });
+        static::saving(function ($identity) {
+            $identity->check_unique_id_collision();
+        });
         static::saved(function($identity){
             $identity->save_actions();
         });
