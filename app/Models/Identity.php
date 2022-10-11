@@ -125,8 +125,8 @@ class Identity extends Authenticatable
             'additional_attributes' => $this->additional_attributes,
         ];
         $empty_obj = [
-            'first_name' => '',
-            'last_name' => '',
+            'first_name' => [],
+            'last_name' => [],
             'iterator' => $iterator,
             'default_username' => '',
             'ids' => [],
@@ -135,8 +135,8 @@ class Identity extends Authenticatable
         $m = new \Mustache_Engine;
         $username = $m->render($template, $obj);
         $empty_username = $m->render($template, $empty_obj);
-        if ($username == $empty_username) {
-            abort(400,'Missing Required Fields for Username / Account ID Generation');
+        if ($username === $empty_username) {
+            abort(400,'Missing Required Fields for Username / Account ID Generation. Generated: "'.$username.'", Empty: "'.$empty_username.'"');
         }
         return $username;
     }
