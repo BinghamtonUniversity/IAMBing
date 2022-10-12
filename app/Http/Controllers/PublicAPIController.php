@@ -258,7 +258,7 @@ class PublicAPIController extends Controller {
                         }
                     }
                 }
-                elseif($api_identity_key ==='attributes'){
+                elseif($api_identity_key ==='additional_attributes'){
                     foreach($api_identity_value as $key=>$value){
                         $res->whereHas('identity_attributes', function($q) use ($key,$value){
                             $q->where('name',$key)->where('value',is_array($value)?implode(',',$value):$value);
