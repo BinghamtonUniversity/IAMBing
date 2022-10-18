@@ -396,11 +396,11 @@ class Identity extends Authenticatable
         });
         
         return [
-            'current_groups' => $current_groups->toArray(),
+            'current_groups' => $current_groups->values()->toArray(),
             'current_groups_obj' => $current_groups_obj,
-            'lost_groups' => $lost_groups->toArray(), 
+            'lost_groups' => $lost_groups->values()->toArray(), 
             'lost_groups_obj' => $lost_groups_obj, 
-            'lost_entitlements' => $lost_entitlements->toArray(),
+            'lost_entitlements' => $lost_entitlements->values()->toArray(),
             'lost_entitlements_obj' => $lost_entitlements_obj,
             'impacted_accounts' => $impacted_accounts->values()->toArray(),
         ];
