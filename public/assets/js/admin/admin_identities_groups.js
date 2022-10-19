@@ -15,12 +15,14 @@ ajax.get('/api/identities/'+id+'/groups',function(data) {
         {name:"group_id","label":"Group",type:"select",options:"/api/groups",format:{label:"{{name}}", value:"{{id}}"}},
     ], data: data
     }).on("model:created",function(grid_event) {
+        toastr.info('Processing... Please Wait')
         ajax.post('/api/groups/'+grid_event.model.attributes.group_id+'/members/'+id,{},function(data) {
             grid_event.model.update(data)
         },function(data) {
             grid_event.model.undo();
         });
     }).on("model:deleted",function(grid_event) {
+        toastr.info('Processing... Please Wait')
         ajax.delete('/api/groups/'+grid_event.model.attributes.group_id+'/members/'+id,{},
             function(data) {},
             function(data) {
