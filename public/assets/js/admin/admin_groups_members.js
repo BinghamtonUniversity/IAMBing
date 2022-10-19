@@ -28,6 +28,7 @@ ajax.get('/api/groups/'+id+'/members',function(data) {
                 {"type":"button","label":"Submit","action":"save","modifiers":"btn btn-success"},
             ]}
         ).modal().on('save',function(event) {
+            toastr.info('Processing... Please Wait')
             var data = event.form.get();
             ajax.post('/api/groups/'+id+'/members/'+data.id,{},function(data) {
                 grid_event.grid.add(data);
@@ -39,6 +40,7 @@ ajax.get('/api/groups/'+id+'/members',function(data) {
             event.form.trigger('close');
         });
     }).on("model:deleted",function(grid_event) {
+        toastr.info('Processing... Please Wait')
         ajax.delete('/api/groups/'+id+'/members/'+grid_event.model.attributes.id,{},
             function(data) {},
             function(data) {
@@ -56,6 +58,7 @@ ajax.get('/api/groups/'+id+'/members',function(data) {
                 {"type":"button","label":"Submit","action":"save","modifiers":"btn btn-warning"},
             ]}
         ).modal().on('save',function(event) {
+            toastr.info('Processing... Please Wait')
             var data = event.form.get();
             ajax.post('/api/groups/'+id+'/members_bulk/'+data.unique_id_type,{unique_ids:data.unique_ids},
             function(data) {
@@ -83,6 +86,7 @@ ajax.get('/api/groups/'+id+'/members',function(data) {
                 {"type":"button","label":"Submit","action":"save","modifiers":"btn btn-warning"},
             ]}
         ).modal().on('save',function(event) {
+            toastr.info('Processing... Please Wait')
             var data = event.form.get();
             ajax.delete('/api/groups/'+id+'/members_bulk/'+data.unique_id_type,{unique_ids:data.unique_ids},
             function(data) {

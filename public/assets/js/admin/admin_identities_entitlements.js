@@ -61,6 +61,7 @@ ajax.get('/api/identities/'+id+'/entitlements',function(data) {
             form_event.form.trigger('close');
         }).modal()
     }).on("model:edited",function(grid_event) {
+        toastr.info('Processing... Please Wait')
         ajax.put('/api/identities/'+id+'/entitlements/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {
             grid_event.model.update(data)
         },function(data) {
