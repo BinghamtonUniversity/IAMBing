@@ -10,7 +10,7 @@ ajax.get('/api/groups/'+id+'/entitlements',function(data) {
         count:20,
         schema:[
             {type:"hidden", name:"id"},
-            {name:"entitlement_id","label":"Entitlement",type:"select",options:"/api/entitlements",format:{label:"{{name}}", value:"{{id}}"}}
+            {name:"entitlement_id","label":"Entitlement",type:"select",options:"/api/entitlements",format:{label:"{{system.name}}: {{name}}", value:"{{id}}"}}
         ], 
         data: data
     })

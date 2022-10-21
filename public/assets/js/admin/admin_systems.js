@@ -1,4 +1,5 @@
 ajax.get('/api/systems',function(data) {
+    data = data.reverse();
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
 	name: 'systems',
     search: false,columns: false,upload:false,download:false,title:'Systems',

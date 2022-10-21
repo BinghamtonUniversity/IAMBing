@@ -11,7 +11,7 @@ ajax.get('/api/identities/'+id+'/entitlements',function(data) {
     count:20,
     schema:[
         {type:"hidden", name:"id"},
-        {name:"entitlement_id","label":"Entitlement",type:"select",options:"/api/entitlements",format:{label:"{{name}}", value:"{{id}}"},edit:false},
+        {name:"entitlement_id","label":"Entitlement",type:"select",options:"/api/entitlements",format:{label:"{{system.name}}: {{name}}", value:"{{id}}"},edit:false},
         {type:"switch", label: "Automatic / Manual Override",name: "override",value:false,options:[{value:false,label:'Automatic Entitlement'},{value:true,label:'Manual Entitlement'}],help:'If "Manual Entitlement" is not selected, this entitlement may be updated or deleted by this identity\'s automatically calculated entitlements!'},
         {name:"type","label":"Type",type:"select",options:[{label:'Add',value:'add'},{label:'Remove',value:'remove'}],show:[{type:'matches',name:'override',value:true}]},
         {type:"switch", label: "Expire?",name: "expire",value:false,options:[{value:false,label:'No Expiration'},{value:true,label:'Set Expiration Date'}],show:[{type:'matches',name:'override',value:true}]},
@@ -31,7 +31,7 @@ ajax.get('/api/identities/'+id+'/entitlements',function(data) {
             "legend":"Add Manual Override Entitlement",
             "name": "override_entitlement",
             "fields": [
-                {name:"entitlement_id","label":"Entitlement",type:"select",options:"/api/entitlements",format:{label:"{{name}}", value:"{{id}}"},edit:true},
+                {name:"entitlement_id","label":"Entitlement",type:"select",options:"/api/entitlements?override_add=true",format:{label:"{{system.name}}: {{name}}", value:"{{id}}"},edit:true},
                 {type:"switch", label: "Automatic / Manual Override",name: "override",value:true,show:false,parse:true},
                 {name:"type","label":"Type",type:"select",options:[{label:'Add',value:'add'},{label:'Remove',value:'remove'}],show:[{type:'matches',name:'override',value:true}]},
                 {type:"switch", label: "Expire?",name: "expire",value:false,options:[{value:false,label:'No Expiration'},{value:true,label:'Set Expiration Date'}]},

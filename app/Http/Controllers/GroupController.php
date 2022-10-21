@@ -20,10 +20,10 @@ class GroupController extends Controller
 {
     public function get_all_groups(){
         if(Auth::user()->identity_permissions->pluck('permission')->contains('view_groups') || Auth::user()->identity_permissions->pluck('permission')->contains('manage_groups')){
-            return Group::get();
+            return Group::orderBy('name','asc')->get();
         }
         // If identity doesn't have manage_groups permissions, then only return the groups they're an admin of
-        return Group::whereIn('id',Auth::user()->admin_groups->pluck('group_id'))->get();  
+        return Group::whereIn('id',Auth::user()->admin_groups->pluck('group_id'))->orderBy('name','asc')->get();  
     }
     
     public function get_group(Group $group){
@@ -68,7 +68,7 @@ class GroupController extends Controller
     public function get_members(Request $request, Group $group){
         $identities = Identity::select('id','first_name','last_name')->whereHas('group_memberships',function($q) use ($group) {
             $q->where('group_id',$group->id);
-        })->get();
+        })->orderBy('last_name','asc')->orderBy('first_name','asc')->get();
         $identities_modified = [];
         foreach($identities as $identity) {
             $identities_modified[] = [

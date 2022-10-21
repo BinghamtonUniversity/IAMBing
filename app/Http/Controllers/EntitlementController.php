@@ -16,8 +16,12 @@ class EntitlementController extends Controller
         if ($request->has('limit')) {
             $entitlements->where($request->limit,true);    
         }
-        return $entitlements->get();
+        if ($request->has('override_add') && $request->override_add === 'true') {
+            $entitlements->where('override_add',true);    
+        }
+        return $entitlements->orderBy('system_id')->orderBy('name','asc')->get();
     }
+
     public function get_entitlement(Entitlement $entitlement){
         return $entitlement;
     }

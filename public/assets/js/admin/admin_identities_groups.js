@@ -12,7 +12,7 @@ ajax.get('/api/identities/'+id+'/groups',function(data) {
     count:20,
     schema:[
         {type:"hidden", name:"id"},
-        {name:"group_id","label":"Group",type:"select",options:"/api/groups",format:{label:"{{name}}", value:"{{id}}"}},
+        {name:"group_id","label":"Group",type:"select",options:"/api/groups",format:{label:"{{name}} ({{type}})", value:"{{id}}"}},
     ], data: data
     }).on("model:created",function(grid_event) {
         toastr.info('Processing... Please Wait')

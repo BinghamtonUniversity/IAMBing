@@ -15,6 +15,7 @@ ajax.get('/api/configuration/',function(app_config) {
     ];
 
     ajax.get('/api/groups',function(data) {
+        data = data.reverse();
         gdg = new GrapheneDataGrid({el:'#adminDataGrid',
         name: 'groups',
         search: false,columns: false,upload:false,download:false,title:'Groups',

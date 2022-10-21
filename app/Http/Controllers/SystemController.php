@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class SystemController extends Controller
 {
     public function get_all_systems(){
-        return System::all();
+        return System::orderBy('name','asc')->get();
     }
     public function get_system(System $system){
         return $system;

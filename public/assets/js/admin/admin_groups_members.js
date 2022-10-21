@@ -7,6 +7,7 @@ var mymodal = new gform(
 );
 
 ajax.get('/api/groups/'+id+'/members',function(data) {
+    data = data.reverse();
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
     name: 'groups_members',
     search: false,columns: false,upload:false,download:false,title:'Identities',

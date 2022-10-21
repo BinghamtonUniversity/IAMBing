@@ -1,4 +1,5 @@
 ajax.get('/api/entitlements',function(data) {
+    data = data.reverse();
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
     name: 'entitlements',
     search: false,columns: false,upload:false,download:false,title:'Entitlements',
