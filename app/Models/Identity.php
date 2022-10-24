@@ -357,11 +357,11 @@ class Identity extends Authenticatable
         if ($future_groups_remove->count() === 0) {
             return false; // Exist prematurely if no impact is found.
         }
-        $current_groups = Group::select('id','name')->whereHas('members',function($q) use ($identity) {
+        $current_groups = Group::select('id','name','slug')->whereHas('members',function($q) use ($identity) {
             $q->select('group_id')->where('identity_id',$identity->id);
         })->get();
         $current_groups_obj = $current_groups->values()->mapWithKeys(function ($value, $key) {
-            return [preg_replace('/\s+/','_',preg_replace("/[^a-z]/",' ',strtolower($value['name']))) => true];
+            return [$value['slug'] => true];
         });
 
         $future_groups_add = GroupActionQueue::select('group_id','scheduled_date')->where('identity_id',$identity->id)->where('action','add')->get();
@@ -370,7 +370,7 @@ class Identity extends Authenticatable
 
         $lost_groups = $current_groups->whereIn('id',$lost_group_ids);
         $lost_groups_obj = $lost_groups->values()->mapWithKeys(function ($value, $key) {
-            return [preg_replace('/\s+/', '_', preg_replace("/[^a-z]/", ' ', strtolower($value['name']))) => true];
+            return [$value['slug'] => true];
         });
         // Include Scheduled Deletion Date in Lost Groups Array
         $lost_groups = $lost_groups->map(function($item,$key) use ($future_groups_remove) {

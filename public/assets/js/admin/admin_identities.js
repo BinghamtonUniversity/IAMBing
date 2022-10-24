@@ -455,8 +455,8 @@ var manage_identity = function(identity_id) {
 <div class="panel panel-default">
     <ul class="list-group">
         <li class="list-group-item"><b>To:</b> {{#to}}{{#email}}{{email}}{{/email}}{{^email}}{{.}}{{/email}}, {{/to}}</li>
-        <li class="list-group-item"><b>Cc:</b> {{#cc}}{{#email}}{{email}}{{/email}}{{^email}}{{.}}{{/email}}, {{/cc}}</li>
-        <li class="list-group-item"><b>Bcc:</b> {{#bcc}}{{#email}}{{email}}{{/email}}{{^email}}{{.}}{{/email}}, {{/bcc}}</li>
+        {{#cc.0}}<li class="list-group-item"><b>Cc:</b> {{#cc}}{{#email}}{{email}}{{/email}}{{^email}}{{.}}{{/email}}, {{/cc}}</li>{{/cc.0}}
+        {{#bcc.0}}<li class="list-group-item"><b>Bcc:</b> {{#bcc}}{{#email}}{{email}}{{/email}}{{^email}}{{.}}{{/email}}, {{/bcc}}</li>{{/bcc.0}}
         <li class="list-group-item"><b>Subject:</b> {{subject}}</li>
         <li class="list-group-item">{{{body}}}</li>
     </ul>
