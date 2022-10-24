@@ -319,7 +319,7 @@ class Identity extends Authenticatable
     // This needs to point to a particilar date in the future
     public function future_impact_email($end_user_visible_only=true) {
         $identity = $this;
-        $impact = $this->future_impact_calculate($end_user_visible_only);
+        $impact = $identity->future_impact_calculate($end_user_visible_only);
         if ($impact === false) {
             return false;
         }
@@ -329,13 +329,24 @@ class Identity extends Authenticatable
         }
         $m = new \Mustache_Engine;
         $email = [];
-        $email['body'] = preg_replace("/\n\n\n+/","\n\n",$m->render($config->config->body, ['identity'=>$this,'impact'=>$impact]));
-        $email['subject'] = $m->render($config->config->subject, ['identity'=>$this,'impact'=>$impact]);
-        $recipients_string = $m->render($config->config->recipients, $this);
+        $identity->future_impact = $impact;
+        $email['body'] = preg_replace("/\n\n\n+/","\n\n",$m->render($config->config->body,$identity));
+        $email['subject'] = $m->render($config->config->subject, $identity);
+        $email['to'] = $email['cc'] = $email['bcc'] = [];
+        $recipients_string = $m->render($config->config->recipients, $identity);
         $recipients = array_filter(explode(',',str_replace(' ','',$recipients_string)));
-        $email['to'] = [];
         foreach($recipients as $recipient) {
             $email['to'][] = ['email'=>$recipient,'name'=>$identity->first_name.' '.$identity->last_name];
+        }
+        $recipients_cc_string = $m->render($config->config->recipients_cc,$identity);
+        $recipients_cc = array_filter(explode(',',str_replace(' ','',$recipients_cc_string)));
+        foreach($recipients_cc as $recipient) {
+            $email['cc'][] = $recipient;
+        }
+        $recipients_bcc_string = $m->render($config->config->recipients_bcc,$identity);
+        $recipients_bcc = array_filter(explode(',',str_replace(' ','',$recipients_bcc_string)));
+        foreach($recipients_bcc as $recipient) {
+            $email['bcc'][] = $recipient;
         }
         return $email;
     }

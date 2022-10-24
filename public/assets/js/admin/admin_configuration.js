@@ -84,6 +84,7 @@ gforms.default_username_template = new gform(
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');
@@ -102,6 +103,7 @@ gforms.default_email_domain = new gform(
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');
@@ -113,26 +115,28 @@ gforms.action_queue_remove_email = new gform(
         {type:"hidden", name:"id"},
         {type:"hidden", name:"name", value:'action_queue_remove_email'},
         {type: "fieldset",label:'Email Configuration',columns:12,name: "config",fields: [
-            {type:"text", name:"recipients", label:"Email Recipients", edit:true,raw:true,value:"{{default_email}}",help:"This is a comma separated list of email addresses defined using mustache syntax against the identity"},
+            {type:"text", name:"recipients", label:"Email Recipients (To)", edit:true,raw:true,value:"{{default_email}}",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"recipients_cc", label:"Email Recipients (Cc)", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"recipients_bcc", label:"Email Recipients (Bcc)", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
             {type:"text", name:"subject", label:"Email Subject", edit:true, raw:true, value:"Notification of Account Changes"},
             {type:"textarea", name:"body", label:"Email Body", edit:true, raw:true,value:
-`{{identity.first_name}} {{identity.last_name}},
+`{{first_name}} {{last_name}},
 
 Your affiliation(s) have recently changed, and you are no a member of the following population(s) effective the dates specified below:
-{{#impact.lost_groups}}
+{{#future_impact.lost_groups}}
     * {{name}} {{#scheduled_date}}({{scheduled_date}}){{/scheduled_date}}
-{{/impact.lost_groups}}
+{{/future_impact.lost_groups}}
 
 With this change, you will lose access to the following services:
-{{#impact.lost_entitlements}}
+{{#future_impact.lost_entitlements}}
     * {{name}}
-{{/impact.lost_entitlements}}
+{{/future_impact.lost_entitlements}}
 
 These changes will impact the following accounts which currently 
 belong to you:
-{{#impact.impacted_accounts}}
+{{#future_impact.impacted_accounts}}
     * {{account_id}} ({{system.name}})
-{{/impact.impacted_accounts}}`
+{{/future_impact.impacted_accounts}}`
             },
     ]}],
     "el":".action_queue_remove_email",
@@ -141,6 +145,7 @@ belong to you:
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');
@@ -159,6 +164,7 @@ gforms.default_email_domain = new gform(
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');
@@ -179,6 +185,7 @@ gforms.identity_attributes = new gform(
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');
@@ -198,6 +205,7 @@ gforms.identity_unique_ids = new gform(
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');
@@ -216,6 +224,7 @@ gforms.affiliations = new gform(
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');
@@ -314,6 +323,7 @@ gforms.username_availability = new gform(
     ]
 }
 ).on('save',function(e) {
+    toastr.info('Processing... Please Wait')
     var form_data = e.form.get();
     ajax.put('/api/configuration/'+form_data.name,form_data,function(data) {
         toastr.success('Configuration Updated');

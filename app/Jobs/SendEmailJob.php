@@ -36,6 +36,7 @@ class SendEmailJob implements ShouldQueue
         $this->subject = isset($config['subject'])?$config['subject']:'';
         $this->to = isset($config['to'])?$config['to']:[];
         $this->cc = isset($config['cc'])?$config['cc']:[];
+        $this->bcc = isset($config['bcc'])?$config['bcc']:[];
     }
 
     public function handle() {
@@ -43,14 +44,17 @@ class SendEmailJob implements ShouldQueue
         $subject = $this->subject;
         $to = $this->to;
         $cc = $this->cc;
+        $bcc = $this->bcc;
 
-        Mail::raw($body, function($message) use ($subject,$to,$cc) {
+        Mail::raw($body, function($message) use ($subject,$to,$cc,$bcc) {
             $message->subject($subject);
             foreach($to as $recipient) {
                 if (is_string($recipient) && $this->send_email_check($recipient)) {
                     $message->to($recipient);
                 } else if (isset($recipient['name']) && isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
                     $message->to($recipient['email'],$recipient['name']);
+                } else if (isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
+                    $message->to($recipient['email']);
                 }
             }
             foreach($cc as $recipient) {
@@ -58,6 +62,17 @@ class SendEmailJob implements ShouldQueue
                     $message->to($recipient);
                 } else if (isset($recipient['name']) && isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
                     $message->to($recipient['email'],$recipient['name']);
+                } else if (isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
+                    $message->to($recipient['email']);
+                }
+            }
+            foreach($bcc as $recipient) {
+                if (is_string($recipient) && $this->send_email_check($recipient)) {
+                    $message->to($recipient);
+                } else if (isset($recipient['name']) && isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
+                    $message->to($recipient['email'],$recipient['name']);
+                } else if (isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
+                    $message->to($recipient['email']);
                 }
             }
         });
