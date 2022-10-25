@@ -115,9 +115,9 @@ gforms.action_queue_remove_email = new gform(
         {type:"hidden", name:"id"},
         {type:"hidden", name:"name", value:'action_queue_remove_email'},
         {type: "fieldset",label:'Email Configuration',columns:12,name: "config",fields: [
-            {type:"text", name:"recipients", label:"Email Recipients (To)", edit:true,raw:true,value:"{{default_email}}",help:"This is a comma separated list of email addresses defined using mustache syntax"},
-            {type:"text", name:"recipients_cc", label:"Email Recipients (Cc)", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
-            {type:"text", name:"recipients_bcc", label:"Email Recipients (Bcc)", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"to", label:"Email To:", edit:true,raw:true,value:"{{default_email}}",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"cc", label:"Email Cc:", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"bcc", label:"Email Bcc:", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
             {type:"text", name:"subject", label:"Email Subject", edit:true, raw:true, value:"Notification of Account Changes"},
             {type:"textarea", name:"body", label:"Email Body", edit:true, raw:true,value:
 `{{first_name}} {{last_name}},

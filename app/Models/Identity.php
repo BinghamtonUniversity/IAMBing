@@ -333,19 +333,19 @@ class Identity extends Authenticatable
         $email['body'] = preg_replace("/\n\n\n+/","\n\n",$m->render($config->config->body,$identity));
         $email['subject'] = $m->render($config->config->subject, $identity);
         $email['to'] = $email['cc'] = $email['bcc'] = [];
-        $recipients_string = $m->render($config->config->recipients, $identity);
-        $recipients = array_filter(explode(',',str_replace(' ','',$recipients_string)));
-        foreach($recipients as $recipient) {
+        $to_string = $m->render($config->config->to, $identity);
+        $to = array_filter(explode(',',str_replace(' ','',$to_string)));
+        foreach($to as $recipient) {
             $email['to'][] = ['email'=>$recipient,'name'=>$identity->first_name.' '.$identity->last_name];
         }
-        $recipients_cc_string = $m->render($config->config->recipients_cc,$identity);
-        $recipients_cc = array_filter(explode(',',str_replace(' ','',$recipients_cc_string)));
-        foreach($recipients_cc as $recipient) {
+        $cc_string = $m->render($config->config->cc,$identity);
+        $cc = array_filter(explode(',',str_replace(' ','',$cc_string)));
+        foreach($cc as $recipient) {
             $email['cc'][] = $recipient;
         }
-        $recipients_bcc_string = $m->render($config->config->recipients_bcc,$identity);
-        $recipients_bcc = array_filter(explode(',',str_replace(' ','',$recipients_bcc_string)));
-        foreach($recipients_bcc as $recipient) {
+        $bcc_string = $m->render($config->config->bcc,$identity);
+        $bcc = array_filter(explode(',',str_replace(' ','',$bcc_string)));
+        foreach($bcc as $recipient) {
             $email['bcc'][] = $recipient;
         }
         return $email;
