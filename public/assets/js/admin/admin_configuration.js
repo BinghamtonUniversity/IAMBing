@@ -20,7 +20,7 @@ $('#adminDataGrid').html(`
         <div class='col-xs-12'>
             <h3>Group Action Queue Email Settings</h3>
             <div class="alert alert-info">
-                This is the email template which will be used when an identity is added to the group action queue would a delayed "remove" action.
+                This is the email template which will be used when an identity is added to the group action queue with a delayed "remove" action.
             </div>
             <div class="action_queue_remove_email"></div>
         </div>
@@ -115,9 +115,9 @@ gforms.action_queue_remove_email = new gform(
         {type:"hidden", name:"id"},
         {type:"hidden", name:"name", value:'action_queue_remove_email'},
         {type: "fieldset",label:'Email Configuration',columns:12,name: "config",fields: [
-            {type:"text", name:"to", label:"Email To:", edit:true,raw:true,value:"{{default_email}}",help:"This is a comma separated list of email addresses defined using mustache syntax"},
-            {type:"text", name:"cc", label:"Email Cc:", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
-            {type:"text", name:"bcc", label:"Email Bcc:", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"to", label:"Email To", edit:true,raw:true,value:"{{default_email}}",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"cc", label:"Email Cc", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
+            {type:"text", name:"bcc", label:"Email Bcc", edit:true,raw:true,value:"",help:"This is a comma separated list of email addresses defined using mustache syntax"},
             {type:"text", name:"subject", label:"Email Subject", edit:true, raw:true, value:"Notification of Account Changes"},
             {type:"textarea", name:"body", label:"Email Body", edit:true, raw:true,value:
 `{{first_name}} {{last_name}},
