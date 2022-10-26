@@ -623,13 +623,16 @@ ajax.get('/api/configuration',function(configuration) {
             $.ajax({
                 url: '/api/identities/'+app.data.identity_id+'/accounts/'+e.target.dataset.id,
                 success: function(account_data) {
-                    debugger;
                     var output = '';
                     var template = _.find(systems,{id:account_data.system_id}).config.template;
                     if (template !== null && template !== '' && typeof account_data.info.content === 'object') {
                         output += Ractive({template:template,data:account_data.info.content}).toHTML();
+                        output += '<div><a class="btn btn-primary" role="button" data-toggle="collapse" href="#rawresponse" style="margin:15px 0px;">Show/Hide Raw Response</a></div><div class="collapse" id="rawresponse">'
                     }
-                    output += '<pre>'+JSON.stringify(account_data.info,null,2)+'</pre>';
+                    output += '<pre style="margin:0px;">'+JSON.stringify(account_data.info,null,2)+'</pre>';
+                    if (template !== null && template !== '' && typeof account_data.info.content === 'object') {
+                        output += '</div>'
+                    }
                     mymodal.modal().set({output:output});
                 },
                 error: function(data){
