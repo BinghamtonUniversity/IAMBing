@@ -252,7 +252,9 @@ class Identity extends Authenticatable
             $must_save = true;
         }
         if ($must_save == true) {
-            $this->save();
+            // This forces the object to save. For Some reason, calling $this->save()
+            // doesn't always fire correctly.
+            Identity::where('id',$this->id)->update($this->attributes);
         }
     }
 
