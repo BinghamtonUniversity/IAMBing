@@ -775,3 +775,15 @@ a.list-group-action {
       color: #eaeaea;
   }
 }
+
+input[name=iamid] {
+  font-family: 'Roboto Mono';font-size: 18px;
+}
+
+[name=ids] input {
+  font-family: 'Roboto Mono';font-size: 18px;
+}
+
+textarea[name=template] {
+  font-family: 'Roboto Mono';font-size: 14px;
+}
