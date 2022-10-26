@@ -421,12 +421,13 @@ class Identity extends Authenticatable
     }
 
     public function recalculate_entitlements() {
+        // This code adds new accounts for any new systems
+        $identity = $this;
+
         // This shouldn't be necessary, but is an extra check in case the defaults are missing for this user.
         // (default_username, default_email, iamid)
         $identity->set_defaults();
 
-        // This code adds new accounts for any new systems
-        $identity = $this;
         $group_ids = GroupMember::select('group_id')->where('identity_id',$identity->id)->get()->pluck('group_id');
         $calculated_entitlement_ids = GroupEntitlement::select('entitlement_id')->whereIn('group_id',$group_ids)->get()->pluck('entitlement_id')->unique();
 
