@@ -176,7 +176,7 @@ class Identity extends Authenticatable
         return true;
     }
 
-    private function save_actions() {
+    private function set_ids_attributes() {
         if(!is_null($this->set_ids) || !is_null($this->set_additional_attributes)){
             $configs_res = Configuration::where('name','identity_attributes')
                                         ->orWhere('name','identity_unique_ids')
@@ -214,6 +214,9 @@ class Identity extends Authenticatable
             }
             $this->load('identity_attributes');
         }
+    }
+
+    private function set_defaults() {
         $must_save = false;
         // Create and Set New username
         if (!isset($this->default_username) || $this->default_username == '' || is_null($this->default_username)) {
@@ -418,6 +421,10 @@ class Identity extends Authenticatable
     }
 
     public function recalculate_entitlements() {
+        // This shouldn't be necessary, but is an extra check in case the defaults are missing for this user.
+        // (default_username, default_email, iamid)
+        $identity->set_defaults();
+
         // This code adds new accounts for any new systems
         $identity = $this;
         $group_ids = GroupMember::select('group_id')->where('identity_id',$identity->id)->get()->pluck('group_id');
@@ -564,19 +571,22 @@ class Identity extends Authenticatable
             $identity->check_unique_id_collision();
         });
         static::created(function ($identity) {
-            $identity->save_actions();
+            $identity->set_ids_attributes();
+            $identity->set_defaults();
         });
         static::updating(function ($identity) {
             $identity->check_unique_id_collision();
         });
         static::updated(function ($identity) {
-            $identity->save_actions();
+            $identity->set_ids_attributes();
+            $identity->set_defaults();
         });
         static::saving(function ($identity) {
             $identity->check_unique_id_collision();
         });
         static::saved(function($identity){
-            $identity->save_actions();
+            $identity->set_ids_attributes();
+            $identity->set_defaults();
         });
     }
 
