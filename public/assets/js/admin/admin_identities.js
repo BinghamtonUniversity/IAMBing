@@ -578,60 +578,69 @@ var manage_identity = function(identity_id) {
     }
 }
 
-ajax.get('/api/configuration/',function(data) {
-    var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(data,{name:'identity_unique_ids'}).config};
-    identity_form_attributes.push(unique_ids_fields);
-    var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes",fields:
-        _.map(_.find(data,{name:'identity_attributes'}).config,function(item) {
-            if (item.array == true) {item.array = {min:0,max:100}};
-            return item;
+ajax.get('/api/configuration',function(configuration) {
+    ajax.get('/api/systems',function(systems) {
+        var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(configuration,{name:'identity_unique_ids'}).config};
+        identity_form_attributes.push(unique_ids_fields);
+        var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes",fields:
+            _.map(_.find(configuration,{name:'identity_attributes'}).config,function(item) {
+                if (item.array == true) {item.array = {min:0,max:100}};
+                return item;
+            })
+        };
+        identity_form_attributes.push(identity_attributes_fields);
+        search_identities_form = new gform(
+            {"fields":[
+                {name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, account, or id"},
+                {type:'output',name:'results',label:false}
+            ],
+            "el":".identity-search",
+            "actions":[]
+        }).on('change:query',function(){
+            $('.identity-view').hide();
         })
-    };
-    identity_form_attributes.push(identity_attributes_fields);
-    search_identities_form = new gform(
-        {"fields":[
-			{name:'query',label:false,placeholder:'Search', pre:'<i class="fa fa-filter"></i>',help:"Search for name, account, or id"},
-			{type:'output',name:'results',label:false}
-        ],
-        "el":".identity-search",
-        "actions":[]
-    }).on('change:query',function(){
-        $('.identity-view').hide();
-    })
-    .on('change:query',_.debounce(function(e){
-        ajax.get('/api/identities/search/'+this.toJSON().query,function(data) {
-            var html = Ractive({template:identitylist_template,data:{identities:data}}).toHTML();
-            search_identities_form.find('results').update({value:html});
+        .on('change:query',_.debounce(function(e){
+            ajax.get('/api/identities/search/'+this.toJSON().query,function(data) {
+                var html = Ractive({template:identitylist_template,data:{identities:data}}).toHTML();
+                search_identities_form.find('results').update({value:html});
+            });
+        },500))
+    
+        app.click('.list-group-item.identity', function(e) {
+            manage_identity(e.currentTarget.dataset.id);
         });
-    },500))
-
-    app.click('.list-group-item.identity', function(e) {
-		manage_identity(e.currentTarget.dataset.id);
-    });
-    app.click('.identity-action',function(e) {
-        identity_form.trigger(e.target.dataset.action);
-    }) 
-    app.click('.future-impact-btn',function(e) {
-        identity_form.trigger('future_impact');
-    })
-    app.click('.future-impact-msg-btn',function(e) {
-        mymodal.modal().trigger('close');
-        identity_form.trigger('future_impact_msg');
-    })
-    app.click('.account-info-btn',function(e){
-        $.ajax({
-            url: '/api/identities/'+app.data.identity_id+'/accounts/'+e.target.dataset.id,
-            success: function(data) {
-                mymodal.modal().set({output:'<pre>'+JSON.stringify(data.info,null,2)+'</pre>'});
-            },
-            error: function(data){
-                console.log(data)
-                toastr.error(data.responseJSON.message)
-            }
+        app.click('.identity-action',function(e) {
+            identity_form.trigger(e.target.dataset.action);
+        }) 
+        app.click('.future-impact-btn',function(e) {
+            identity_form.trigger('future_impact');
         })
-    });
-
-    if (typeof id !== 'undefined') {
-        manage_identity(id);
-    }
+        app.click('.future-impact-msg-btn',function(e) {
+            mymodal.modal().trigger('close');
+            identity_form.trigger('future_impact_msg');
+        })
+        app.click('.account-info-btn',function(e){
+            $.ajax({
+                url: '/api/identities/'+app.data.identity_id+'/accounts/'+e.target.dataset.id,
+                success: function(account_data) {
+                    debugger;
+                    var output = '';
+                    var template = _.find(systems,{id:account_data.system_id}).config.template;
+                    if (template !== null && template !== '' && typeof account_data.info.content === 'object') {
+                        output += Ractive({template:template,data:account_data.info.content}).toHTML();
+                    }
+                    output += '<pre>'+JSON.stringify(account_data.info,null,2)+'</pre>';
+                    mymodal.modal().set({output:output});
+                },
+                error: function(data){
+                    console.log(data)
+                    toastr.error(data.responseJSON.message)
+                }
+            })
+        });
+    
+        if (typeof id !== 'undefined') {
+            manage_identity(id);
+        }    
+    })
 })

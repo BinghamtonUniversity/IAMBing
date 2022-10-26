@@ -25,8 +25,13 @@ class SystemPolicy
     }
     public function list_search(Identity $identity){
         return Permission::where('identity_id',$identity->id)->where(function ($q){
-            $q->orWhere('permission','manage_systems')
+            $q->orWhere('permission','view_identities')
+            ->orWhere('permission','manage_identities')
+            ->orWhere('permission','manage_identity_permissions')
             ->orWhere('permission','manage_identity_accounts')
+            ->orWhere('permission','merge_identities')
+            ->orWhere('permission','impersonate_identities')
+            ->orWhere('permission','manage_systems')
             ->orWhere('permission','manage_entitlements');
         })->first();
     }
