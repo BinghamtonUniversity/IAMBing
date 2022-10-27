@@ -777,13 +777,13 @@ a.list-group-action {
 }
 
 input[name=iamid] {
-  font-family: 'Roboto Mono';font-size: 18px;
+  font-family: 'Roboto Mono';
 }
 
 [name=ids] input {
-  font-family: 'Roboto Mono';font-size: 18px;
+  font-family: 'Roboto Mono';
 }
 
 textarea[name=template] {
-  font-family: 'Roboto Mono';font-size: 14px;
+  font-family: 'Roboto Mono';
 }
