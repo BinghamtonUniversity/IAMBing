@@ -30,6 +30,7 @@ class SendEmailJob implements ShouldQueue
     protected $subject;
     protected $to;
     protected $cc;
+    protected $bcc;
 
     public function __construct($config) {
         $this->body = isset($config['body'])?$config['body']:'';

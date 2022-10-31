@@ -9,6 +9,7 @@ use App\Observers\AccountObserver;
 use App\Observers\GroupMemberObserver;
 use App\Observers\IdentityEntitlementObserver;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\Model;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,5 +36,7 @@ class AppServiceProvider extends ServiceProvider
         \Str::macro('snakeToTitle', function($value, $base=36) {
             return \Str::title(str_replace('_', ' ', $value));
         });
+        // This may be useful for reducing the number of database queries and detecting sloppy code
+        // Model::preventLazyLoading();
     }
 }

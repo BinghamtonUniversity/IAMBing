@@ -601,17 +601,4 @@ class Identity extends Authenticatable
             ->where('group_id',$group_id)
             ->first();
     }
-
-    public function send_email_check() {
-        /* Send email if MAIL_LIMIT_SEND is false (Not limiting emails) */
-        if (config('mail.limit_send') === false) {
-            return true;
-        }
-        /* Send email if MAIL_LIMIT_SEND is true, and MAIL_LIMIT_ALLOW contains user's email address */
-        if (config('mail.limit_send') === true && in_array($this->default_email,config('mail.limit_allow'))) {
-            return true;
-        }
-        /* Otherwise don't send email */
-        return false;
-    }
 }
