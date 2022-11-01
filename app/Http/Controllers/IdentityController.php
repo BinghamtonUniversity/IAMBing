@@ -22,6 +22,7 @@ use App\Models\IdentityUniqueID;
 use App\Models\Log;
 use App\Models\GroupActionQueue;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 
 class IdentityController extends Controller
 {
@@ -106,40 +107,36 @@ class IdentityController extends Controller
 
     public function search($search_string='') {
         $search_elements_parsed = preg_split('/[\s,]+/',strtolower($search_string));
-        $search = []; $identities = [];
+        $search = []; $identities = []; $ids = collect();
         if (count($search_elements_parsed) === 1 && $search_elements_parsed[0]!='') {
             $search[0] = $search_elements_parsed[0];
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('id',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('iamid',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('first_name','like',$search[0].'%')
+                ->orWhere('last_name','like',$search[0].'%')->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('default_username',$search[0])
+                ->orWhere('default_email',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identity_unique_ids')->select('identity_id as id')->where('value',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('accounts')->select('identity_id as id')->where('account_id',$search[0])->limit(15)->get()->pluck('id'));
             $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
-                ->where(function ($query) use ($search) {
-                    $query->where('iamid',$search[0])
-                        ->orWhere('id',$search[0])
-                        ->orWhere('first_name','like',$search[0].'%')
-                        ->orWhere('last_name','like',$search[0].'%')
-                        ->orWhere('default_username',$search[0])
-                        ->orWhere('default_email',$search[0])
-                        ->orWhereHas('identity_unique_ids', function($q) use ($search){
-                            $q->where('value',$search[0]);
-                        })->orWhereHas('accounts', function($q) use ($search){
-                            $q->where('account_id',$search[0]);
-                        })->orWhere(function($q) use ($search) {
-                            $q->where('sponsored',true)->where('sponsor_identity_id',$search[0]);
-                        });
-                })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
-                    ->limit(25)->get()->toArray();
+                ->whereIn('id',$ids)->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
+                ->limit(15)->get()->toArray();
         } else if (count($search_elements_parsed) > 1) {
             $search[0] = $search_elements_parsed[0];
             $search[1] = $search_elements_parsed[count($search_elements_parsed)-1];
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->where('first_name','like',$search[0].'%')->where('last_name','like',$search[1].'%')
+                ->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->where('first_name','like',$search[1].'%')->where('last_name','like',$search[0].'%')
+                ->limit(15)->get()->pluck('id'));
             $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
-                ->where(function ($query) use ($search) {
-                    $query->where(function ($query) use ($search) {
-                        $query->where('first_name','like',$search[0].'%')
-                            ->where('last_name','like',$search[1].'%');
-                    })->orWhere(function ($query) use ($search) {
-                        $query->where('first_name','like',$search[1].'%')
-                            ->where('last_name','like',$search[0].'%');
-                    });
-                })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
-                    ->limit(15)->get()->toArray();
+                ->whereIn('id',$ids)->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
+                ->limit(15)->get()->toArray();
         }
         foreach($identities as $index => $identity) {
             $identities[$index] = array_intersect_key($identity, array_flip(['id','iamid','first_name','last_name','default_username','default_email']));
