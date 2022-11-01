@@ -60,20 +60,20 @@ class SendEmailJob implements ShouldQueue
             }
             foreach($cc as $recipient) {
                 if (is_string($recipient) && $this->send_email_check($recipient)) {
-                    $message->to($recipient);
+                    $message->cc($recipient);
                 } else if (isset($recipient['name']) && isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
-                    $message->to($recipient['email'],$recipient['name']);
+                    $message->cc($recipient['email'],$recipient['name']);
                 } else if (isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
-                    $message->to($recipient['email']);
+                    $message->cc($recipient['email']);
                 }
             }
             foreach($bcc as $recipient) {
                 if (is_string($recipient) && $this->send_email_check($recipient)) {
-                    $message->to($recipient);
+                    $message->bcc($recipient);
                 } else if (isset($recipient['name']) && isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
-                    $message->to($recipient['email'],$recipient['name']);
+                    $message->bcc($recipient['email'],$recipient['name']);
                 } else if (isset($recipient['email']) && $this->send_email_check($recipient['email'])) {
-                    $message->to($recipient['email']);
+                    $message->bcc($recipient['email']);
                 }
             }
         });
