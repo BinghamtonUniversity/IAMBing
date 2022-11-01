@@ -294,8 +294,10 @@ class PublicAPIController extends Controller {
         } else {
             $search_fields = collect(['default_username']);
         }
-        $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email','sponsored','sponsor_identity_id')
-        ->where(function ($query) use ($search, $search_fields) {
+
+        $ids = collect();
+        if ($search_fields->contains('iamid') || $search_fields->contains('default_username') || $search_fields->contains('default_email')) {
+            $query = DB::table('identities')->select('id');
             if ($search_fields->contains('iamid')) {
                 $query->orWhere('iamid',$search);
             }
@@ -305,20 +307,25 @@ class PublicAPIController extends Controller {
             if ($search_fields->contains('default_email')) {
                 $query->orWhere('default_email',$search);
             }
-            if ($search_fields->contains('accounts')) {
-                $query->orWhereHas('accounts', function($q) use ($search){
-                    $q->where('account_id',$search);
-                });
-            }
-            $id_names = $search_fields->diff(['iamid','default_username','default_email','accounts']);
+            $ids = $ids->merge($query->get()->pluck('id'));
+        }
+        if ($search_fields->contains('accounts')) {
+            $ids = $ids->merge(DB::table('accounts')->select('identity_id as id')->where('account_id',$search)->get()->pluck('id'));
+        }
+        $id_names = $search_fields->diff(['iamid','default_username','default_email','accounts']);
+        if (count($id_names)) {
+            $query = DB::table('identity_unique_ids')->select('identity_id as id');
             foreach($id_names as $id_name) {
-                $query->orWhereHas('identity_unique_ids', function($q) use ($id_name, $search){
-                    $q->where('value',$search);
-                    $q->where('name',$id_name);
+                $query->orWhere(function($query) use ($id_name, $search){
+                    $query->where('value',$search);
+                    $query->where('name',$id_name);
                 });
             }
-        });
-        $matches = $identities->get();
+            $ids = $ids->merge($query->get()->pluck('id'));
+        }
+        $matches = Identity::select('id','iamid','first_name','last_name','default_username','default_email','sponsored','sponsor_identity_id')
+            ->whereIn('id',$ids)->get();
+
         if (count($matches) == 0) {
             return response('Identity Not Found', 404);
         } else if (count($matches) > 1) {
