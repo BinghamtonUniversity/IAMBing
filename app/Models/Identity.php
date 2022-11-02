@@ -538,6 +538,7 @@ class Identity extends Authenticatable
         }
         $data = [
             'id'=>$this->id,
+            'iamid'=>$this->iamid,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'ids'=>$this->ids,
