@@ -11,11 +11,11 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-
 use App\Models\Identity;
 use App\Models\GroupMember;
 use App\Exceptions\FailedRecalculateException;
 use App\Models\GroupActionQueue;
+use Illuminate\Queue\Middleware\RateLimited;
 
 use Throwable;
 
@@ -24,7 +24,7 @@ class SendEmailJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 30;
-    public $tries = 2;
+    public $tries = 5;
 
     protected $body;
     protected $subject;
@@ -38,6 +38,10 @@ class SendEmailJob implements ShouldQueue
         $this->to = isset($config['to'])?$config['to']:[];
         $this->cc = isset($config['cc'])?$config['cc']:[];
         $this->bcc = isset($config['bcc'])?$config['bcc']:[];
+    }
+
+    public function middleware() {
+        return [new RateLimited('send_email_job')];
     }
 
     public function handle() {
