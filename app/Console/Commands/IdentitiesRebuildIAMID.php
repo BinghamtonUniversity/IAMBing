@@ -17,7 +17,7 @@ class IdentitiesRebuildIAMID extends Command
         ini_set('memory_limit','2048M');
 
         $this->info("Fetching all Identities. Please Wait ...");
-        $identities = Identity::select('id','iamid')->get();
+        $identities = Identity::select('id')->orderBy('id','asc')->get();
         $num_identities = count($identities);
 
         if (!$this->confirm('You are about the clear and rebuild the IAMID for '.$num_identities.' identities. This action cannot be undone. Would you like to continue?')) {
