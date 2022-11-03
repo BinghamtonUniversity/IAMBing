@@ -248,7 +248,11 @@ class Identity extends Authenticatable
             $must_save = true;
         }
         if (!isset($this->iamid) || is_null($this->iamid) || $this->iamid == '') {
-            $this->iamid = 'IAM'.strtoupper(base_convert($this->id,10,36));
+            // IAM ID is a base26 encoding of the auto-incrementing 'id' value
+            // Base 26 reduces the length of the ID (5 characters gives up to 11,881,375 numbers)
+            // Exclusions are required so no numbers resembling words will be created (ASS, FART, etc)
+            // Excluded numbers: 0,1,3,A,E,I,O,Q,U,V
+            $this->iamid = 'IAM'.strtoupper(Str::baseConvert($this->id,'0123456789','2456789BCDFGHJKLMNPRSTWXYZ'));
             $must_save = true;
         }
         if ($must_save == true) {
