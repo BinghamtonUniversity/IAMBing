@@ -14,8 +14,10 @@ class IdentitiesRebuildIAMID extends Command
     protected $description = 'Rebuild IAMIDs for all Identities';
 
     public function handle() {
-        ini_set('memory_limit','1024M');
-        $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')->get();
+        ini_set('memory_limit','2048M');
+
+        $this->info("Fetching all Identities. Please Wait ...");
+        $identities = Identity::select('id','iamid')->get();
         $num_identities = count($identities);
 
         if (!$this->confirm('You are about the clear and rebuild the IAMID for '.$num_identities.' identities. This action cannot be undone. Would you like to continue?')) {
@@ -29,8 +31,8 @@ class IdentitiesRebuildIAMID extends Command
         $bar = $this->output->createProgressBar($num_identities);
         foreach($identities as $index => $identity) {
             $percent_complete = floor(($index / $num_identities)*100).'%';
-            $identity->iamid = 'IAM'.strtoupper(Str::baseConvert($identity->id,'0123456789','2456789BCDFGHJKLMNPRSTWXYZ'));
-            $identity->save();
+            $iamid = 'IAM-'.strtoupper(Str::baseConvert($identity->id,'0123456789','2456789BCDFGHJKLMNPRSTWXYZ'));
+            Identity::where('id',$identity->id)->update(['iamid'=>$iamid]);
             $bar->advance();
         }
         $this->info("\nComplete! All IAM IDs Updated");
