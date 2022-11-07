@@ -31,7 +31,9 @@ class GroupPolicy
         $permission = Permission::where('identity_id',$identity->id);
         return $identity->is_group_admin() || $permission->where(function ($q){
                 $q->orWhere('permission','view_groups')
-                    ->orWhere('permission','manage_groups');
+                    ->orWhere('permission','manage_groups')
+                    ->orWhere('permission','manage_reports')
+                    ->orWhere('permission','view_reports');
             })->first();
     }
 
