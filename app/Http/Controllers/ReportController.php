@@ -53,31 +53,51 @@ class ReportController extends Controller
             ->select('identity_id')
             ->leftJoin('groups','group_members.group_id','=','groups.id')
             ->whereIn('group_id',$include_group_ids)
-            ->whereNotIn('identity_id',$exclude_identity_ids)->get();
+            ->where(function($query) use ($exclude_identity_ids) {
+                collect($exclude_identity_ids)->chunk(1000)->each(function($item,$key) use ($query) {
+                    $query->whereNotIn('identity_id',$item);
+                });
+            })->get();        
 
         // Get Included Identitiy IDs and Group Membership IDs
         $identity_groups = DB::table('group_members')
             ->select('identity_id','groups.id','groups.name','groups.slug')
             ->leftJoin('groups','group_members.group_id','=','groups.id')
-            ->whereIn('identity_id',$identities->pluck('identity_id'))->get();
+            ->where(function($query) use ($identities) {
+                collect($identities->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    $query->whereIn('identity_id',$item);
+                });
+            })->get();        
 
         // Get Included Identitiy IDs and Accounts
         $identity_accounts = DB::table('accounts')
             ->select('identity_id','account_id','system_id')
             ->leftJoin('systems','accounts.system_id','systems.id')
-            ->whereIn('identity_id',$identities->pluck('identity_id'))->get();
+            ->where(function($query) use ($identities) {
+                collect($identities->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    $query->whereIn('identity_id',$item);
+                });
+            })->get();        
 
         // Get Included Identitiy IDs and Accounts
         $identity_unique_ids = DB::table('identity_unique_ids')
             ->select('identity_id','name','value')
             ->whereNotNull('value')
-            ->whereIn('identity_id',$identities->pluck('identity_id'))->get();
+            ->where(function($query) use ($identities) {
+                collect($identities->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    $query->whereIn('identity_id',$item);
+                });
+            })->get();        
 
         $identities_raw = DB::table('identities')
             ->select('identities.id', 'identities.iamid','identities.first_name','identities.last_name','identities.default_username','identities.default_email')
             ->leftJoin('group_members','identities.id','=','group_members.identity_id')
             ->leftJoin('groups','group_members.group_id','=','groups.id')
-            ->whereIn('identities.id',$identities->pluck('identity_id'))->get();
+            ->where(function($query) use ($identities) {
+                collect($identities->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    $query->whereIn('identity_id',$item);
+                });
+            })->get();        
 
         $identities_indexed = collect();
         foreach($identities_raw as $identity) {
