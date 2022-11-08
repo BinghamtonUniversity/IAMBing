@@ -37,6 +37,8 @@ class ReportController extends Controller
     }
 
     public function run_report(Request $request, Report $report){
+        ini_set('memory_limit','1024M');
+
         $include_group_ids = $report->config->include_group_ids;
 
         // Get Excluded Identities IDs
@@ -45,27 +47,22 @@ class ReportController extends Controller
             $exclude_identity_ids = DB::table('group_members')
                 ->select('identity_id')
                 ->whereIn('group_id',$report->config->exclude_group_ids)
-                ->get()->pluck('identity_id');
+                ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id');
         }
 
         // Get Identities
         if (count($exclude_identity_ids) > 0) {
-            $identities = collect();
-            collect($exclude_identity_ids)->chunk(25000)->each(function($exclude_identity_ids_chunk,$key) use (&$identities,$include_group_ids) {
-                $identities = $identities->concat(DB::table('group_members')
-                    ->select('identity_id')
-                    ->leftJoin('groups','group_members.group_id','=','groups.id')
-                    ->whereIn('group_id',$include_group_ids)
-                    ->where(function($query) use ($exclude_identity_ids_chunk) {
-                        collect($exclude_identity_ids_chunk)->chunk(1000)->each(function($item,$key) use ($query) {
-                            $query->whereNotIn('identity_id',$item);
-                        });
-                    })->get());
-            });
+            $identities = DB::table('group_members')
+                ->select('identity_id')
+                ->leftJoin('groups','group_members.group_id','=','groups.id')
+                ->whereIn('group_id',$include_group_ids)
+                ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id'));
+            $identities = collect($identities)->diff($exclude_identity_ids);
         } else {
             $identities = DB::table('group_members')->select('identity_id')
-            ->leftJoin('groups','group_members.group_id','=','groups.id')
-            ->whereIn('group_id',$include_group_ids)->get();
+                ->leftJoin('groups','group_members.group_id','=','groups.id')
+                ->whereIn('group_id',$include_group_ids)
+                ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id');
         }
 
         // Get Included Identitiy IDs and Group Membership IDs
@@ -75,10 +72,10 @@ class ReportController extends Controller
                 ->select('identity_id','groups.id','groups.name','groups.slug')
                 ->leftJoin('groups','group_members.group_id','=','groups.id')
                 ->where(function($query) use ($identities_chunk) {
-                    collect($identities_chunk->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    collect($identities_chunk)->chunk(1000)->each(function($item,$key) use ($query) {
                         $query->orWhereIn('identity_id',$item);
                     });
-                })->get());
+                })->distinct()->get());
         });
 
         // Get Included Identitiy IDs and Accounts
@@ -87,11 +84,12 @@ class ReportController extends Controller
             $identity_accounts = $identity_accounts->concat(DB::table('accounts')
                 ->select('identity_id','account_id','system_id')
                 ->leftJoin('systems','accounts.system_id','systems.id')
+                ->whereNull('accounts.deleted_at')
                 ->where(function($query) use ($identities_chunk) {
-                    collect($identities_chunk->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    collect($identities_chunk)->chunk(1000)->each(function($item,$key) use ($query) {
                         $query->orWhereIn('identity_id',$item);
                     });
-                })->get());
+                })->distinct()->get());
         });        
 
         // Get Included Identitiy IDs and Accounts
@@ -101,10 +99,10 @@ class ReportController extends Controller
                 ->select('identity_id','name','value')
                 ->whereNotNull('value')
                 ->where(function($query) use ($identities_chunk) {
-                    collect($identities_chunk->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    collect($identities_chunk)->chunk(1000)->each(function($item,$key) use ($query) {
                         $query->orWhereIn('identity_id',$item);
                     });
-                })->get());
+                })->distinct()->get());
         });
 
         // Get Raw Identities
@@ -115,10 +113,10 @@ class ReportController extends Controller
                 ->leftJoin('group_members','identities.id','=','group_members.identity_id')
                 ->leftJoin('groups','group_members.group_id','=','groups.id')
                 ->where(function($query) use ($identities_chunk) {
-                    collect($identities_chunk->pluck('identity_id'))->chunk(1000)->each(function($item,$key) use ($query) {
+                    collect($identities_chunk)->chunk(1000)->each(function($item,$key) use ($query) {
                         $query->orWhereIn('identity_id',$item);
                     });
-                })->get());  
+                })->distinct()->get());  
         });      
 
         $identities_indexed = collect();
