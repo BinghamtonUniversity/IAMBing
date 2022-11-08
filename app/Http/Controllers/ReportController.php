@@ -56,7 +56,7 @@ class ReportController extends Controller
                 ->select('identity_id')
                 ->leftJoin('groups','group_members.group_id','=','groups.id')
                 ->whereIn('group_id',$include_group_ids)
-                ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id'));
+                ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id');
             $identities = collect($identities)->diff($exclude_identity_ids);
         } else {
             $identities = DB::table('group_members')->select('identity_id')
