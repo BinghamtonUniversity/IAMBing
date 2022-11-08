@@ -51,6 +51,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/group_action_queue/download_csv',[GroupActionQueueController::class,'download_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
     Route::get('/reports', [AdminController::class, 'reports'])->middleware('can:view_in_admin,App\Models\Report');
     Route::get('/reports/run/{report}',[ReportController::class,'run_report'])->middleware('can:view_reports,App\Models\Report');
+    Route::get('/reports/run2/{report}',[ReportController::class,'run_report2'])->middleware('can:view_reports,App\Models\Report');
 
     Route::group(['prefix' => 'api'], function () {
         /* Identity Methods */

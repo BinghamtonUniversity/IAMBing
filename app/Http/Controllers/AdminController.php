@@ -234,7 +234,8 @@ class AdminController extends Controller
 
         if ($identity->can('view_reports','App\Report')){
             $user_actions[] = ["|"];
-            $user_actions[] = ["name"=>"run_report","label"=>"Run Report"];
+            $user_actions[] = ["name"=>"run_report","label"=>"Run Human Readable Report"];
+            $user_actions[] = ["name"=>"run_report2","label"=>"Run Raw Data Report"];
         }
                             
         if ($identity->can('manage_groups','App\Group')){

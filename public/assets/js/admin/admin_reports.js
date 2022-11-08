@@ -55,5 +55,8 @@ ajax.get('/api/reports',function(data) {
     }).on("model:run_report",function(grid_event) {
         toastr.info("Please wait. Fetching the data...");
         window.open('/reports/run/'+grid_event.model.attributes.id, '_blank');
+    }).on("model:run_report2",function(grid_event) {
+        toastr.info("Please wait. Fetching the data...");
+        window.open('/reports/run2/'+grid_event.model.attributes.id, '_blank');
     });
 });

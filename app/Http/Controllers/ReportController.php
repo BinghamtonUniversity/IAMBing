@@ -36,7 +36,7 @@ class ReportController extends Controller
         return 'Success';
     }
 
-    public function run_report(Request $request, Report $report){
+    private function get_report_data(Report $report){
         ini_set('memory_limit','1024M');
 
         $include_group_ids = $report->config->include_group_ids;
@@ -146,7 +146,11 @@ class ReportController extends Controller
             $identities_indexed[$identity_unique_id->identity_id]->ids[$identity_unique_id->name] = $identity_unique_id;
         }
 
-        // return $identities_indexed->values();
+        return $identities_indexed;
+    }  
+
+    public function run_report(Request $request, Report $report) {
+        $identities_indexed = $this->get_report_data($report);
 
         // Convert to CSV
         $configuration = Configuration::select('config')->where('name','identity_unique_ids')->first();
@@ -211,5 +215,87 @@ class ReportController extends Controller
         return response(implode("\n",$csv_rows), 200)
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition','attachment; filename="'.$report->name.' Report - '.Carbon::now()->toDateString().'.csv');
-    }  
+    }
+
+    public function run_report2(Request $request, Report $report) {
+        $identities = $this->get_report_data($report);
+
+        // Convert to CSV
+        $configuration = Configuration::select('config')->where('name','identity_unique_ids')->first();
+        if (is_null($configuration)) {
+            abort(500,'Missing Unique IDs Configuration');
+        }
+        $unique_ids = collect($configuration->config)->mapWithKeys(function ($item, $key) {
+            return [$item->name => $item->label];
+        });
+        $systems = System::select('id','name')->get()->mapWithKeys(function ($item, $key) {
+            return [$item->id => $item->name];
+        });
+
+        $columns = [
+            'ID','IAMID','First Name','Last Name'
+        ];
+        foreach($unique_ids as $name => $label) {
+            $columns[] = $label;
+        }
+        $columns[] = 'Group'; $columns[] = 'System'; $columns[] = 'Account';
+
+        $rows = [];
+        $rows[] = $columns;
+        foreach($identities as $identity) {
+            foreach($identity->groups as $group) {
+                if (!isset($identity->accounts)) {
+                    $row = [
+                        $identity->id,
+                        $identity->iamid,
+                        $identity->first_name,
+                        $identity->last_name,
+                    ];
+                    foreach($unique_ids as $name => $label) {
+                        if (isset($identity->ids[$name])) {
+                            $row[] = $identity->ids[$name]->value;
+                        } else {
+                            $row[] = '';
+                        }
+                    }
+                    $row[] = $group->name;
+                    $row[] = '';
+                    $row[] = '';
+                    $rows[] = $row;
+                } else {
+                    foreach($identity->accounts as $system_id => $system_accounts) {
+                        foreach($system_accounts as $account) {
+                            $row = [
+                                $identity->id,
+                                $identity->iamid,
+                                $identity->first_name,
+                                $identity->last_name,
+                            ];
+                            foreach($unique_ids as $name => $label) {
+                                if (isset($identity->ids[$name])) {
+                                    $row[] = $identity->ids[$name]->value;
+                                } else {
+                                    $row[] = '';
+                                }
+                            }
+                            $row[] = $group->name;
+                            $row[] = $systems[$system_id];
+                            $row[] = $account->account_id;
+                            $rows[] = $row;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Build CSV Formatted Rows
+        $csv_rows = [];
+        foreach($rows as $row) {
+            $csv_rows[] = '"'.implode('","',array_values($row)).'"';
+        }
+        return response(implode("\n",$csv_rows), 200)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition','attachment; filename="'.$report->name.' Report - '.Carbon::now()->toDateString().'.csv');
+
+    }
 }
