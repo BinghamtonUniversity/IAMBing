@@ -8,13 +8,16 @@ var report_form_fields = [
         "name": "config",
         "showColumn":false,
         "fields": [
-            {type:"radio",label:"Include Members of the Following Groups",name:"include_group_ids",multiple:true,
+            {type:"switch",label:"Match Any / All of the Following Groups?",name:"groups_any_all",
+                options:[{value:'any',label:"Match Any Groups"},{value:'all',label:"Match All Groups"}],value:false
+            },
+            {type:"radio",label:"Groups to Include",name:"include_group_ids",multiple:true,
                 options:"/api/groups",format:{label:"{{name}} ({{type}})", value:"{{id}}"}
             },
             {type:"switch",label:"Exclude Members of Other Groups?",name:"exclude_other_groups",
                 options:[{value:false,label:"False"},{value:true,label:"True"}],value:false
             },
-            {type:"radio",label:"Exclude Members of the Following Groups",name:"exclude_group_ids",multiple:true,
+            {type:"radio",label:"Groups to Exclude",name:"exclude_group_ids",multiple:true,
                 options:"/api/groups",format:{label:"{{name}} ({{type}})", value:"{{id}}"},
                 show:[{type:'matches',name:'exclude_other_groups',value:true}]
             }

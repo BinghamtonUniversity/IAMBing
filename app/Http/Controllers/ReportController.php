@@ -50,20 +50,33 @@ class ReportController extends Controller
                 ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id');
         }
 
-        // Get Identities
-        if (count($exclude_identity_ids) > 0) {
-            $identities = DB::table('group_members')
-                ->select('identity_id')
-                ->leftJoin('groups','group_members.group_id','=','groups.id')
-                ->whereIn('group_id',$include_group_ids)
-                ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id');
-            $identities = collect($identities)->diff($exclude_identity_ids)->values();
+        // Get Identities who are in any of the specified groups
+        $identities = DB::table('group_members')->select('identity_id','group_id')
+            ->leftJoin('groups','group_members.group_id','=','groups.id')
+            ->whereIn('group_id',$include_group_ids)
+            ->distinct()->orderBy('identity_id','asc')->get();
+
+        // Match ALL group memberships (only return people who are in all groups)
+        if ($report->config->groups_any_all == 'all') {
+            $mapped_identities = [];
+            foreach($identities as $identity) {
+                if (!isset($mapped_identities[$identity->identity_id])) {
+                    $mapped_identities[$identity->identity_id] = [];
+                }
+                $mapped_identities[$identity->identity_id][] = $identity->group_id;
+            }
+            $identities = collect();
+            foreach($mapped_identities as $identity_id => $identity) {
+                if (count($mapped_identities[$identity_id]) == count($include_group_ids)) {
+                    $identities[] = $identity_id;
+                }
+            }
         } else {
-            $identities = DB::table('group_members')->select('identity_id')
-                ->leftJoin('groups','group_members.group_id','=','groups.id')
-                ->whereIn('group_id',$include_group_ids)
-                ->distinct()->orderBy('identity_id','asc')->get()->pluck('identity_id');
+            $identities = $identities->pluck('identity_id');
         }
+
+        // Remove Excluded Group Memberships
+        $identities = collect($identities)->diff($exclude_identity_ids)->values();
 
         // Get Included Identitiy IDs and Group Membership IDs
         $identity_groups = collect();
