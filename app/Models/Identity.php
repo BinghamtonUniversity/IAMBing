@@ -529,6 +529,15 @@ class Identity extends Authenticatable
     }
 
     public function get_api_identity(){
+        // This function returns a standard identity object
+        // Future Changes:
+        // • This function should take in an optional system or system ID
+        //   • If a system is not specified, the function will use all systems assocaitd with this identity
+        // • The object should include a list of all groups associated with the systems as specified above
+        // • The object should include a list of this user's group memberships, as associatd with the systems specified above
+        // • The object should include a list of this user's entitlmenents, as associatd with the systems specified above
+        // • The object should include a list of this user's accounts, as associatd with the systems specified above
+
         $affiliations = Group::select('affiliation','order')
             ->whereIn('id',$this->group_memberships->pluck('group_id'))
             ->whereNotNull('affiliation')
