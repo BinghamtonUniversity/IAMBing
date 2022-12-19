@@ -88,7 +88,7 @@ class PublicAPIController extends Controller {
                     UpdateIdentityJob::dispatch([
                         'api_identity' => $api_identity,
                         'unique_id' => $unique_id,
-                    ]);
+                    ])->onQueue('high');
                 } else {
                     // Create identity and add to group
                     UpdateIdentityJob::dispatch([
@@ -96,7 +96,7 @@ class PublicAPIController extends Controller {
                         'api_identity' => $api_identity,
                         'unique_id' => $unique_id,
                         'action'=>'add'
-                    ]);
+                    ])->onQueue('high');
                 }
                 $counts['created']++;
             }
@@ -120,7 +120,7 @@ class PublicAPIController extends Controller {
                     'group_id' => $group_id,
                     'identity_id' => $identity_id,
                     'action'=> 'add'
-                ]);
+                ])->onQueue('high');
             }
             $counts['added']++;
         }
@@ -134,7 +134,7 @@ class PublicAPIController extends Controller {
                     $identity = Identity::where('id',$identity_id)->first();
                     if ($group->delay_remove_notify) { 
                         $email = $identity->future_impact_email();
-                        if ($email !== false) { SendEmailJob::dispatch($email); } 
+                        if ($email !== false) { SendEmailJob::dispatch($email)->onQueue('low'); } 
                     }
                 } else {
                     if ($group_action->action != 'remove') {
@@ -142,7 +142,7 @@ class PublicAPIController extends Controller {
                         $identity = Identity::where('id',$identity_id)->first();
                         if ($group->delay_remove_notify) { 
                             $email = $identity->future_impact_email();
-                            if ($email !== false) { SendEmailJob::dispatch($email); } 
+                            if ($email !== false) { SendEmailJob::dispatch($email)->onQueue('low'); } 
                         }
                     }
                 }
@@ -152,7 +152,7 @@ class PublicAPIController extends Controller {
                     'group_id' => $group_id,
                     'identity_id' => $identity_id,
                     'action' => 'remove'
-                ]);
+                ])->onQueue('high');
             }
             $counts['removed']++;
         }
