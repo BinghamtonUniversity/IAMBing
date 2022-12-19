@@ -222,4 +222,31 @@ class AdminController extends Controller
             ]
         );
     }
+
+    public function reports(Request $request) {
+        $identity = Auth::user();
+        $user_actions = [];
+        if ($identity->can('manage_reports','App\Report')){
+            $user_actions[] = ["name"=>"create","label"=>"New Report"];
+            $user_actions[] = ["|"];
+            $user_actions[] = ["name"=>"edit","label"=>"Update Report"];   
+        }
+
+        if ($identity->can('view_reports','App\Report')){
+            $user_actions[] = ["|"];
+            $user_actions[] = ["name"=>"run_report","label"=>"Run Human Readable Report"];
+            $user_actions[] = ["name"=>"run_report2","label"=>"Run Raw Data Report"];
+        }
+                            
+        if ($identity->can('manage_groups','App\Group')){
+            $user_actions[] = ["|"];
+            $user_actions[] = ["label"=>"Delete",'name'=>'delete', 'min'=>1];
+        }
+        return view('default.admin',
+            ['page'=>'reports','ids'=>[],'title'=>'Reports','help'=>
+                'Manage and Run Reports',
+                'actions' => $user_actions
+            ]
+        );
+    }
 }

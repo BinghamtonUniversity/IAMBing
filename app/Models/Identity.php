@@ -248,7 +248,11 @@ class Identity extends Authenticatable
             $must_save = true;
         }
         if (!isset($this->iamid) || is_null($this->iamid) || $this->iamid == '') {
-            $this->iamid = 'IAM'.strtoupper(base_convert($this->id,10,36));
+            // IAM ID is a base26 encoding of the auto-incrementing 'id' value
+            // Base 26 reduces the length of the ID (5 characters gives up to 11,881,375 numbers)
+            // Exclusions are required so no numbers resembling words will be created (ASS, FART, etc)
+            // Excluded numbers: 0,1,3,A,E,I,O,Q,U,V
+            $this->iamid = 'IAM-'.strtoupper(Str::baseConvert($this->id,'0123456789','2456789BCDFGHJKLMNPRSTWXYZ'));
             $must_save = true;
         }
         if ($must_save == true) {
@@ -525,6 +529,15 @@ class Identity extends Authenticatable
     }
 
     public function get_api_identity(){
+        // This function returns a standard identity object
+        // Future Changes:
+        // • This function should take in an optional system or system ID
+        //   • If a system is not specified, the function will use all systems assocaitd with this identity
+        // • The object should include a list of all groups associated with the systems as specified above
+        // • The object should include a list of this user's group memberships, as associatd with the systems specified above
+        // • The object should include a list of this user's entitlmenents, as associatd with the systems specified above
+        // • The object should include a list of this user's accounts, as associatd with the systems specified above
+
         $affiliations = Group::select('affiliation','order')
             ->whereIn('id',$this->group_memberships->pluck('group_id'))
             ->whereNotNull('affiliation')
@@ -538,6 +551,7 @@ class Identity extends Authenticatable
         }
         $data = [
             'id'=>$this->id,
+            'iamid'=>$this->iamid,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
             'ids'=>$this->ids,

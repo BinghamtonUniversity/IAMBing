@@ -555,8 +555,15 @@ var manage_identity = function(identity_id) {
                             {
                                 "label": "Manage Group Action Queue",
                                 "value": "manage_group_action_queue"
+                            },
+                            {
+                                "label": "View / Run Reports",
+                                "value": "view_reports"
+                            },
+                            {
+                                "label": "Manage Reports",
+                                "value": "manage_reports"
                             }
-
                         ]
                     }
                 ],

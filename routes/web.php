@@ -11,6 +11,7 @@ use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\CASController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\GroupActionQueueController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +49,9 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/identities/{identity}/logs',[AdminController::class,'identity_logs'])->middleware('can:view,App\Models\Log');
     Route::get('/group_action_queue', [AdminController::class, 'group_action_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
     Route::get('/group_action_queue/download_csv',[GroupActionQueueController::class,'download_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
+    Route::get('/reports', [AdminController::class, 'reports'])->middleware('can:view_in_admin,App\Models\Report');
+    Route::get('/reports/run/{report}',[ReportController::class,'run_report'])->middleware('can:view_reports,App\Models\Report');
+    Route::get('/reports/run2/{report}',[ReportController::class,'run_report2'])->middleware('can:view_reports,App\Models\Report');
 
     Route::group(['prefix' => 'api'], function () {
         /* Identity Methods */
@@ -150,8 +154,12 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::get('/group_action_queue',[GroupActionQueueController::class,'get_queue'])->middleware('can:view_in_admin,App\Models\GroupActionQueue');
         Route::post('/group_action_queue/execute',[GroupActionQueueController::class,'execute'])->middleware('can:manage_group_action_queue,App\Models\GroupActionQueue');
         Route::post('/group_action_queue/remove_scheduled_date',[GroupActionQueueController::class,'remove_scheduled_date'])->middleware('can:manage_group_action_queue,App\Models\GroupActionQueue');
+
+        /* Reports Methods */
+        Route::get('/reports',[ReportController::class,'get_all_reports'])->middleware('can:view_reports,App\Models\Report');
+        Route::get('/reports/{report}',[ReportController::class,'get_report'])->middleware('can:manage_reports,App\Models\Report');
+        Route::post('/reports',[ReportController::class,'add_report'])->middleware('can:manage_reports,App\Models\Report');
+        Route::put('/reports/{report}',[ReportController::class,'update_report'])->middleware('can:manage_reports,App\Models\Report');
+        Route::delete('/reports/{report}',[ReportController::class,'delete_report'])->middleware('can:manage_reports,App\Models\Report');
     });
-
-
-
 });

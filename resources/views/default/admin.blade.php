@@ -100,6 +100,9 @@
               @can('view_in_admin',App\Models\GroupActionQueue::class)
                   <li class="visible-xs-block @if($page=="group_action_queue") active @endif"><a href="/group_action_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
               @endcan
+              @can('view_in_admin',App\Models\Report::class)
+                  <li class="visible-xs-block @if($page=="reports") active @endif"><a href="/reports"><i class="fa fa-paperclip fa-fw"></i>&nbsp; Reports</a></li>
+              @endcan
               @can('view_in_admin',App\Models\Job::class)
                 <li class="visible-xs-block"><a href="/horizon" target="_blank"><i class="fa fa-chart-line fa-fw"></i>&nbsp; Jobs (Horizon)</a></li>
               @endcan
@@ -134,6 +137,9 @@
             @endcan
             @can('view_in_admin',App\Models\GroupActionQueue::class)
                 <li class="@if($page=="group_action_queue") active @endif"><a href="/group_action_queue"><i class="fa fa-rocket fa-fw"></i>&nbsp; Action Queue</a></li>
+            @endcan
+            @can('view_in_admin',App\Models\Report::class)
+                <li class="@if($page=="reports") active @endif"><a href="/reports"><i class="fa fa-paperclip fa-fw"></i>&nbsp; Reports</a></li>
             @endcan
             @can('view_in_admin',App\Models\Job::class)
             <li><a href="/horizon" target="_blank"><i class="fa fa-fw fa-chart-line"></i>&nbsp; Jobs (Horizon)</a></li>
