@@ -212,8 +212,8 @@ class AdminController extends Controller
         }
         if ($identity->can('manage_group_action_queue','App\GroupActionQueue')){
             $user_actions[] = ''; $user_actions[] = '';
-            $user_actions[] = ["name"=>"remove_scheduled_date","label"=>"Remove Scheduled Date","type"=>"warning"];
-            $user_actions[] = ["name"=>"execute","label"=>"Execute Actions","type"=>"danger"];
+            $user_actions[] = ["name"=>"remove_scheduled_date","label"=>"Remove Scheduled Date","type"=>"warning","min"=>1,"max"=>100000];
+            $user_actions[] = ["name"=>"execute","label"=>"Execute Actions","type"=>"danger","min"=>1,"max"=>100000];
         }
         return view('default.admin',
             ['page'=>'group_action_queue','ids'=>[],'title'=>'Group Action Queue','help'=>
