@@ -152,7 +152,7 @@ class PublicAPIController extends Controller {
                     'group_id' => $group_id,
                     'identity_id' => $identity_id,
                     'action' => 'remove'
-                ])->onQueue('high');
+                ]);
             }
             $counts['removed']++;
         }
