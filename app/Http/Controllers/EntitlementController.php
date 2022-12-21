@@ -28,16 +28,21 @@ class EntitlementController extends Controller
 
     public function add_entitlement(Request $request){
         $entitlement = new Entitlement($request->all());
+        if ($entitlement->require_prerequisite != true) {
+            $entitlement->prerequisites = [];
+        }
         $entitlement->save();
         return $entitlement;
     }
     public function update_entitlement(Request $request, Entitlement $entitlement){
+        if ($entitlement->require_prerequisite != true) {
+            $entitlement->prerequisites = [];
+        }
         $entitlement->update($request->all());
         return $entitlement;
     }
-
-    public function delete_entitlement(Entitlement $entitlement,Identity $identity)
-    {
+    
+    public function delete_entitlement(Entitlement $entitlement,Identity $identity) {
         return Entitlement::where('id','=',$entitlement->id)->delete();
     }
 

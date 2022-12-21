@@ -12,8 +12,10 @@ ajax.get('/api/entitlements',function(data) {
             label:"{{name}}", value:"{{id}}"}
         },
         {type:"text", name:"name", label:"Name",required:true},
-        {type:"switch", label: "Allow Manual Override: Add Entitlement",name: "override_add",value:false,options:[{value:false,label:'Disabled'},{value:true,label:'Enabled'}]},
-        {type:"switch", label: "End User Visibility",name: "end_user_visible",value:true,options:[{value:false,label:'Not Visible'},{value:true,label:'Visible'}]},
+        {type:"switch", label:"Allow Manual Override: Add Entitlement",name: "override_add",value:false,options:[{value:false,label:'Disabled'},{value:true,label:'Enabled'}]},
+        {type:"switch", label:"End User Visibility",name: "end_user_visible",value:true,options:[{value:false,label:'Not Visible'},{value:true,label:'Visible'}]},
+        {type:"switch", label:"Require Prerequisite",name: "require_prerequisite",value:false,options:[{value:false,label:'Do Not Require'},{value:true,label:'Require'}]},
+        {type:"select", label:"Prerequisites", name:"prerequisites",array:{min:1,max:100},options:data,format:{label:"{{system.name}}: {{name}}",value:"{{id}}"},show:[{type:'matches',name:'require_prerequisite',value:true}]}
     ], data: data
     }).on("model:edited",function(grid_event) {
         ajax.put('/api/entitlements/'+grid_event.model.attributes.id,grid_event.model.attributes,function(data) {

@@ -19,6 +19,8 @@ class CreateEntitlementsTable extends Migration
             $table->string('name');
             $table->boolean('override_add')->default(false);
             $table->boolean('end_user_visible')->default(true);
+            $table->boolean('require_prerequisite')->default(false);
+            $table->json('prerequisites');
             $table->timestamps();
             $table->foreign('system_id')->references('id')->on('systems');
         });
