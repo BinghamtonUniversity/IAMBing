@@ -234,12 +234,12 @@ identity_entitlements_template = `
 -->
 <div style="font-size:20px;">
     {{#each entitlements_by_subsystem: system}}
-        <h4 style="margin-bottom:4px;border:solid;border-width:0px 0px 1px 0px;border-color:#ccc;">{{system}}</h4>
+        <h4 style="margin-bottom:4px;border:solid;border-width:0px 0px 1px 0px;border-color:#ccc6;">{{system}}</h4>
         {{#.entitlements}} 
             {{>entitlements_template}}
         {{/}}
         {{#each subsystems: subsystem}}
-            <h5 style="margin-bottom:5px;">{{subsystem}}</h5>
+            <h5 style="margin-bottom:0px;">{{subsystem}}</h5>
             {{#.}}
                 {{>entitlements_template}}
             {{/}}
@@ -262,7 +262,9 @@ identity_entitlements_template = `
 `;
 
 identity_accounts_template = `
+<!--
 <div class="well well-sm"  style="margin-bottom:10px;"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
+-->
 <div style="font-size:20px;">
     {{#systems_with_accounts_history}}
             <a href="#" class="account-info-btn label {{#if pivot.status === 'active'}}label-default{{elseif pivot.status === 'sync_error'}}label-warning{{elseif pivot.status === 'disabled'}}label-danger{{else}}label-danger{{/if}}" data-id="{{pivot.id}}">
