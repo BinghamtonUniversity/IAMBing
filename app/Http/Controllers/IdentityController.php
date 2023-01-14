@@ -40,6 +40,28 @@ class IdentityController extends Controller
         $identity->sponsored_entitlements = IdentityEntitlement::where('type','add')->where('sponsor_id',$identity->id)->with('identity')->with('entitlement')->get();
         $identity->identity_entitlements_with_sponsors = IdentityEntitlement::where('type','add')->where('identity_id',$identity->id)->whereNotNull('sponsor_id')->with('sponsor')->with('entitlement')->get();
         $identity->future_impact = $identity->future_impact_calculate(false);
+
+        // vv TJC 1/13/22 -- This is stupidly complicated and inefficient, and should be rewritten vv
+        $subsystems = $identity->identity_entitlements->pluck('subsystem')->unique()->values();
+        $abc = [];
+        foreach($identity->systems->unique('id') as $system) {
+            foreach($identity->identity_entitlements->where('system_id',$system->id) as $entitlement) {
+                if ($system->id == $entitlement->system_id) {
+                    if (isset($system->config->subsystems)) {
+                        foreach($system->config->subsystems as $subsystem) {    
+                            if ($subsystem == $entitlement->subsystem) {
+                                $abc[$system->name]['subsystems'][$subsystem][] = $entitlement;
+                            } else {
+                                $abc[$system->name]['entitlements'][] = $entitlement;
+                            }
+                        }
+                    } else {
+                        $abc[$system->name]['entitlements'][] = $entitlement;
+                    }
+                } 
+            }
+        }
+        $identity->entitlements_by_subsystem = $abc;
         return $identity;
     }
 

@@ -164,7 +164,7 @@ identityinfo_column_template = `
 identity_groups_template = `
 <div style="font-size:20px;">
 {{#groups}}
-    <a class="label label-default" href="/groups/{{id}}/members">{{name}}</a>
+    <a class="label label-default label-block" href="/groups/{{id}}/members">{{name}}</a>&nbsp;
 {{/groups}}
 </div>
 {{^groups}}
@@ -202,36 +202,49 @@ identity_affiliations_template = `
 {{/affiliations}}
 `;
 
-identity_entitlements_template = `
-<div class="well well-sm" style="margin-bottom:10px;"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
-<div style="font-size:20px;">
-{{#identity_entitlements}}
-    {{#pivot.override}}
-        {{#pivot.type === 'remove'}}
-            <div class="label label-danger" style="margin:0px;">
-                {{name}}
-                <div class="tinytext">
-                    {{#pivot.expire}}(Manually Removed Until: {{pivot.expiration_date}}){{/}}
-                    {{^pivot.expire}}(Manually Removed: No Expiration){{/}}
-                </div>
+entitlements_template = `
+{{#pivot.override}}
+    {{#pivot.type === 'remove'}}
+        <span class="label label-danger label-block">
+            {{name}}
+            <div class="tinytext">
+                {{#pivot.expire}}(Manually Removed Until: {{pivot.expiration_date}}){{/}}
+                {{^pivot.expire}}(Manually Removed: No Expiration){{/}}
             </div>
-        {{/}}
-        {{#pivot.type === 'add'}}
-            <div class="label label-success" style="margin:0px;">
-                {{name}}
-                <div class="tinytext">
-                    {{#pivot.expire}}(Manually Added Until: {{pivot.expiration_date}}){{/}}
-                    {{^pivot.expire}}(Manually Added: No Expiration){{/}}
-                </div>
-            </div>
-        {{/}}
+        </span>
     {{/}}
-{{/identity_entitlements}}
-{{#identity_entitlements}}
+    {{#pivot.type === 'add'}}
+        <span class="label label-success label-block">
+            {{name}}
+            <div class="tinytext">
+                {{#pivot.expire}}(Manually Added Until: {{pivot.expiration_date}}){{/}}
+                {{^pivot.expire}}(Manually Added: No Expiration){{/}}
+            </div>
+        </span>
+    {{/}}
+    {{/}}
     {{^pivot.override}}
-        <div class="label label-default" style="display:inline-block;margin:0px 5px 0px 0px;">{{name}}</div>
-    {{/}}
-{{/identity_entitlements}}
+    <div class="label label-default label-block">{{name}}</div>
+{{/}}
+`;
+
+identity_entitlements_template = `
+<!--
+    <div class="well well-sm" style="margin-bottom:10px;"><i class="fa fa-info-circle"></i> These are the entitlements as they are currently enforced, taking into account any manual overrides which may deviate from the default entitlement calculations</div>
+-->
+<div style="font-size:20px;">
+    {{#each entitlements_by_subsystem: system}}
+        <h4 style="border: solid;border-width: 0px 0px 1px 0px;">{{system}}</h4>
+        {{#entitlements}} 
+            {{>entitlements_template}}
+        {{/}}
+        {{#each subsystems: subsystem}}
+            <h5>{{subsystem}}</h5>
+            {{#.}}
+                {{>entitlements_template}}
+            {{/}}
+        {{/each}}
+    {{/each}}
 </div>
 {{^identity_entitlements}}
     <div class="alert alert-warning">No Entitlements</div>
@@ -247,7 +260,6 @@ identity_entitlements_template = `
     </div>
 </div>
 `;
-
 
 identity_accounts_template = `
 <div class="well well-sm"  style="margin-bottom:10px;"><i class="fa fa-info-circle"></i> These are the accounts which are currently assigned to this identity, which facilitate their entitlements.</div>
@@ -299,6 +311,7 @@ var manage_identity = function(identity_id) {
                 partials: {
                     identity_groups_template:identity_groups_template,
                     identity_entitlements_template:identity_entitlements_template,
+                    entitlements_template:entitlements_template,
                     identity_affiliations_template:identity_affiliations_template,
                     identity_accounts_template:identity_accounts_template,
                     sponsored_identities_template,

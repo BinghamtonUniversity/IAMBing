@@ -14,6 +14,7 @@ class SystemController extends Controller
 
     public function get_all_subsystems(){
         $systems = System::orderBy('name','asc')->get();
+        $subsystems = [];
         foreach($systems as $system) {
             if (isset($system->config->subsystems)) {
                 foreach($system->config->subsystems as $subsystem) {

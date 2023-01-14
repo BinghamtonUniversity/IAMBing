@@ -787,3 +787,7 @@ input[name=iamid] {
 textarea[name=template] {
   font-family: 'Roboto Mono';
 }
+
+.label-block {
+  display:inline-block !important;
+}
