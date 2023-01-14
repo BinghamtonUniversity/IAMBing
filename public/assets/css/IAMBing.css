@@ -790,4 +790,5 @@ textarea[name=template] {
 
 .label-block {
   display:inline-block !important;
+  margin:0px !important;
 }

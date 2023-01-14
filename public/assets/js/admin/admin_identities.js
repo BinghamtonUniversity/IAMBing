@@ -234,12 +234,12 @@ identity_entitlements_template = `
 -->
 <div style="font-size:20px;">
     {{#each entitlements_by_subsystem: system}}
-        <h4 style="border: solid;border-width: 0px 0px 1px 0px;">{{system}}</h4>
+        <h4 style="margin-bottom:4px;border:solid;border-width:0px 0px 1px 0px;border-color:#ccc;">{{system}}</h4>
         {{#.entitlements}} 
             {{>entitlements_template}}
         {{/}}
         {{#each subsystems: subsystem}}
-            <h5>{{subsystem}}</h5>
+            <h5 style="margin-bottom:5px;">{{subsystem}}</h5>
             {{#.}}
                 {{>entitlements_template}}
             {{/}}
