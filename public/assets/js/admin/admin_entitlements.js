@@ -11,6 +11,11 @@ ajax.get('/api/entitlements',function(data) {
         {name:"system_id","label":"System",type:"select",options:"/api/systems",format:{
             label:"{{name}}", value:"{{id}}"}
         },
+        {name:"subsystem","label":"Subsystem",type:"select",options:[
+            {type:"optgroup",options: [{label: "N/A",value:null}]},
+            {type: "optgroup",path: "/api/systems/subsystems",format:{label:"{{system}}: {{subsystem}}", value:"{{subsystem}}"}}
+        ]},
+        
         {type:"text", name:"name", label:"Name",required:true},
         {type:"switch", label:"Allow Manual Override: Add Entitlement",name: "override_add",value:false,options:[{value:false,label:'Disabled'},{value:true,label:'Enabled'}]},
         {type:"switch", label:"End User Visibility",name: "end_user_visible",value:true,options:[{value:false,label:'Not Visible'},{value:true,label:'Visible'}]},

@@ -88,7 +88,7 @@ class PublicAPIController extends Controller {
                     UpdateIdentityJob::dispatch([
                         'api_identity' => $api_identity,
                         'unique_id' => $unique_id,
-                    ])->onQueue('high');
+                    ])->onQueue($group->add_priority);
                 } else {
                     // Create identity and add to group
                     UpdateIdentityJob::dispatch([
@@ -96,7 +96,7 @@ class PublicAPIController extends Controller {
                         'api_identity' => $api_identity,
                         'unique_id' => $unique_id,
                         'action'=>'add'
-                    ])->onQueue('high');
+                    ])->onQueue($group->add_priority);
                 }
                 $counts['created']++;
             }
@@ -120,7 +120,7 @@ class PublicAPIController extends Controller {
                     'group_id' => $group_id,
                     'identity_id' => $identity_id,
                     'action'=> 'add'
-                ])->onQueue('high');
+                ])->onQueue($group->add_priority);
             }
             $counts['added']++;
         }
@@ -152,7 +152,7 @@ class PublicAPIController extends Controller {
                     'group_id' => $group_id,
                     'identity_id' => $identity_id,
                     'action' => 'remove'
-                ]);
+                ])->onQueue($group->remove_priority);
             }
             $counts['removed']++;
         }
@@ -234,7 +234,7 @@ class PublicAPIController extends Controller {
         foreach($api_identities as $api_identity){
             $res = Identity::query();
             $t_res = $res;
-            if(isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
+            if (isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
                 && !is_null($api_identity['ids'][$request['id']]) && $api_identity['ids'][$request['id']]!==""){
                 $t_res->whereHas('identity_unique_ids', function($q) use ($api_identity,$request){
                     $q->where('name',$request['id'])->where('value',$api_identity['ids'][$request['id']]);
@@ -243,7 +243,7 @@ class PublicAPIController extends Controller {
                     $counts['not_found']++;
                     continue;
                 }
-            }else{
+            } else {
                 $counts['not_found']++;
                 continue;
             }
@@ -270,9 +270,9 @@ class PublicAPIController extends Controller {
                 }
             }
             $res = $res->first();
-            if(!is_null($res)){
+            if (!is_null($res)) {
                 $counts['not_updated']++;
-            }else{
+            } else {
                 UpdateIdentityJob::dispatch([
                     'action' => 'update',
                     'api_identity' => $api_identity,

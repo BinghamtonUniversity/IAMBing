@@ -110,7 +110,7 @@ class GroupController extends Controller
                     'group_id' => $group->id,
                     'identity_id' => $identity->id,
                     'action' => 'add'
-                ]);
+                ])->onQueue($group->add_priority);
             }
         }
         return ['identities'=>$found];
@@ -149,7 +149,7 @@ class GroupController extends Controller
                     'group_id' => $group->id,
                     'identity_id' => $identity->id,
                     'action' => 'remove'
-                ]);
+                ])->onQueue($group->remove_priority);
             }
         }
         return ['identities'=>$found];

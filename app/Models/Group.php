@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
-    protected $fillable = ['name','slug','description','affiliation','type','delay_add','delay_add_days','delay_remove','delay_remove_days','delay_remove_notify'];
+    protected $fillable = ['name','slug','description','affiliation','type','delay_add','add_priority','delay_add_days','delay_remove','remove_priority','delay_remove_days','delay_remove_notify'];
     protected $casts = ['delay_add'=>'boolean','delay_add_days'=>'integer','delay_remove'=>'boolean','delay_remove_days'=>'integer','delay_remove_notify'=>'boolean'];
 
     public function members(){

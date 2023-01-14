@@ -45,6 +45,7 @@ ajax.get('/api/systems',function(data) {
 			"name": "config",
 			"showColumn":false,
 			"fields": [
+				{label: "Subsystem",name: "subsystems",array:{min:0,max:100}},
 				{type:"textarea", name:"template", label:"System Template", edit:true, raw:true,value:""},
                 {
 					"type": "fieldset","label": "Account Configuration","name": "account_config","fields": [

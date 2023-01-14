@@ -120,6 +120,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
 
         /* Systems Methods */
         Route::get('/systems',[SystemController::class,'get_all_systems'])->middleware('can:list_search,App\Models\System');
+        Route::get('/systems/subsystems',[SystemController::class,'get_all_subsystems'])->middleware('can:list_search,App\Models\System');
         Route::get('/systems/{system}',[SystemController::class,'get_system'])->middleware('can:list_search,App\Models\System');
         Route::post('/systems',[SystemController::class,'add_system'])->middleware('can:manage_systems,App\Models\System');
         Route::put('/systems/{system}',[SystemController::class,'update_system'])->middleware('can:manage_systems,App\Models\System');

@@ -22,8 +22,10 @@ class CreateGroupsTable extends Migration
             $table->unsignedInteger('order')->default(4294967295);
             $table->enum('type',['manual','auto'])->default('auto');
             $table->boolean('delay_add')->default(false);
+            $table->string('add_priority')->default('default');
             $table->unsignedInteger('delay_add_days')->nullable()->default(null);
             $table->boolean('delay_remove')->default(false);
+            $table->string('remove_priority')->default('default');
             $table->unsignedInteger('delay_remove_days')->nullable()->default(null);
             $table->boolean('delay_remove_notify')->default(false);
             $table->timestamps();
