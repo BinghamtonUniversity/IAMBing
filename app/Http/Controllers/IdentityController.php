@@ -46,19 +46,11 @@ class IdentityController extends Controller
         $abc = [];
         foreach($identity->systems->unique('id') as $system) {
             foreach($identity->identity_entitlements->where('system_id',$system->id) as $entitlement) {
-                if ($system->id == $entitlement->system_id) {
-                    if (isset($system->config->subsystems)) {
-                        foreach($system->config->subsystems as $subsystem) {    
-                            if ($subsystem == $entitlement->subsystem) {
-                                $abc[$system->name]['subsystems'][$subsystem][] = $entitlement;
-                            } else {
-                                $abc[$system->name]['entitlements'][] = $entitlement;
-                            }
-                        }
-                    } else {
-                        $abc[$system->name]['entitlements'][] = $entitlement;
-                    }
-                } 
+                if (is_null($entitlement->subsystem)) {
+                    $abc[$system->name]['entitlements'][] = $entitlement;
+                } else {
+                    $abc[$system->name]['subsystems'][$entitlement->subsystem][] = $entitlement;
+                }
             }
         }
         $identity->entitlements_by_subsystem = $abc;
