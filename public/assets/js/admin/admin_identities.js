@@ -235,7 +235,7 @@ identity_entitlements_template = `
 <div style="font-size:20px;">
     {{#each entitlements_by_subsystem: system}}
         <h4 style="border: solid;border-width: 0px 0px 1px 0px;">{{system}}</h4>
-        {{#entitlements}} 
+        {{#.entitlements}} 
             {{>entitlements_template}}
         {{/}}
         {{#each subsystems: subsystem}}
