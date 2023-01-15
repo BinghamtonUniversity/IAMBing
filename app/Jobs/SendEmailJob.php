@@ -53,7 +53,7 @@ class SendEmailJob implements ShouldQueue
 
         // Go to sleep for 5 seconds to try to slow down email sending jobs 
         // and avoid rate limiting by mail server.
-        sleep(5);
+        sleep(10);
 
         Mail::raw($body, function($message) use ($subject,$to,$cc,$bcc) {
             $message->subject($subject);
