@@ -9,6 +9,7 @@ use App\Models\Group;
 use App\Models\Identity;
 use App\Jobs\UpdateIdentityJob;
 use App\Models\GroupActionQueue;
+use App\Jobs\SendEmailJob;
 use Carbon\Carbon;
 
 class ActionsEmail extends Command
@@ -63,8 +64,7 @@ class ActionsEmail extends Command
             $percent_complete = floor(($index / $num_identities)*100).'%';
             $email = $identity->future_impact_email();
             if ($email !== false) { 
-                $this->info("Not Sending Email!");
-                // SendEmailJob::dispatch($email)->onQueue('low'); 
+                SendEmailJob::dispatch($email)->onQueue('low'); 
                 $jobs_dispatched++;
             } 
             $bar->advance();
