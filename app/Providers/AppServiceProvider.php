@@ -73,9 +73,11 @@ class AppServiceProvider extends ServiceProvider
         // This may be useful for reducing the number of database queries and detecting sloppy code
         // Model::preventLazyLoading();
 
-        // Slows down emails so they don't exceed the rate limit
-        RateLimiter::for('send_email_job', function ($job) {
-            return Limit::perMinute(30);
-        });
+        // Commenting this out because it leads to constant retries and then maxes out
+        // before executing the job. Preferring to just add manual sleeps to the individual
+        // send jobs to slow them down.
+        // RateLimiter::for('send_email_job', function ($job) {
+        //     return Limit::perMinute(30);
+        // });
     }
 }

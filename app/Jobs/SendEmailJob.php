@@ -40,9 +40,12 @@ class SendEmailJob implements ShouldQueue
         $this->bcc = isset($config['bcc'])?$config['bcc']:[];
     }
 
-    public function middleware() {
-        return [new RateLimited('send_email_job')];
-    }
+    // Commenting this out because it leads to constant retries and then maxes out
+    // before executing the job. Preferring to just add manual sleeps to the individual
+    // send jobs to slow them down.
+    // public function middleware() {
+    //     return [new RateLimited('send_email_job')];
+    // }
 
     public function handle() {
         $body = $this->body;
@@ -51,12 +54,11 @@ class SendEmailJob implements ShouldQueue
         $cc = $this->cc;
         $bcc = $this->bcc;
 
-        // Go to sleep for 10 seconds to try to slow down email sending jobs 
+        // Go to sleep for a random amount of time between 5 and 10 seconds 
+        // to try to slow down email sending jobs 
         // and avoid rate limiting by mail server.
-        // Using usleep because I think it may be implemented differently
-        // than sleep in PHP with one using interrupts and the other counting
-        // CPU clock cycles.
-        usleep(1000000);
+        $delay_seconds = random_int(5,10);
+        sleep($delay_seconds);
 
         Mail::raw($body, function($message) use ($subject,$to,$cc,$bcc) {
             $message->subject($subject);
