@@ -14,16 +14,32 @@ use App\Http\Controllers\IdentityController;
 // as specified by: API_USER and API_PASS 
 // in your .env file
 
-
 Route::get('/db/refresh',[ConfigurationController::class, 'refresh_db']);
 
 // Groups method
-Route::post('/groups/{name}/member',[PublicAPIController::class,'insert_group_member']); 
-Route::delete('/groups/{name}/member',[PublicAPIController::class,'remove_group_member']); 
-Route::post('/groups/{name}/members',[PublicAPIController::class, 'bulk_update_group_members']);
+Route::get('/groups',[PublicAPIController::class,'get_all_groups']);
+Route::get('/groups/{group_slug}',[PublicAPIController::class,'get_group']);
+Route::post('/groups',[PublicAPIController::class,'add_group']);
+Route::put('/groups/{group_slug}',[PublicAPIController::class,'update_group']);
+Route::delete('/groups/{group_slug}',[PublicAPIController::class,'delete_group']);
+Route::post('/groups/{group_slug}/entitlements/{entitlement}',[GroupController::class,'add_entitlement_to_group']);
+Route::delete('/groups/{group_slug}/entitlements/{entitlement}',[GroupController::class,'delete_entitlement_from_group']);
+
+Route::post('/groups/{group_slug}/member',[PublicAPIController::class,'insert_group_member']); 
+Route::delete('/groups/{group_slug}/member',[PublicAPIController::class,'remove_group_member']); 
+Route::post('/groups/{group_slug}/members',[PublicAPIController::class, 'bulk_update_group_members']);
 
 // Identities
 Route::get('/identities/search/{search}',[PublicAPIController::class,'identity_search']);
 Route::get('/identities/{unique_id_type}/{unique_id}',[PublicAPIController::class,'get_identity']);
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identity']);
 Route::post('/identities/bulk_update',[PublicAPIController::class, 'bulk_update_identities']);
+
+// Entitlements 
+Route::get('/entitlements',[PublicAPIController::class,'get_all_entitlements']);
+Route::get('/entitlements/{entitlement}',[PublicAPIController::class,'get_entitlement']);
+Route::post('/entitlements',[PublicAPIController::class,'add_entitlement']);
+Route::put('/entitlements/{entitlement}',[PublicAPIController::class,'update_entitlement']);
+Route::delete('/entitlements/{entitlement}',[PublicAPIController::class,'delete_entitlement']);
+Route::post('/entitlements/{entitlement}/groups/{group_slug}',[PublicAPIController::class,'add_group_to_entitlement']);
+Route::delete('/entitlements/{entitlement}/groups/{group_slug}',[PublicAPIController::class,'delete_group_from_entitlement']);

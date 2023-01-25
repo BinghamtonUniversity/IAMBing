@@ -12,20 +12,25 @@ use App\Jobs\SendEmailJob;
 use App\Models\Configuration;
 use App\Models\GroupActionQueue;
 use App\Models\System;
+use App\Models\Entitlement;
+use App\Models\GroupEntitlement;
+use App\Models\Log;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PublicAPIController extends Controller {  
     
+    // IDENTITY MANAGEMENT
     public function get_identity($unique_id_type,$unique_id){
         $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
             $q->where('name',$unique_id_type)->where('value',$unique_id);
         })->first();
         if(is_null($identity)){
-            return abort(404,'Identity Not Found');
+            return response()->json([
+                'error' => 'Identity Not Found',
+            ],404);
         }
         return $identity->get_api_identity();
     }
@@ -43,15 +48,224 @@ class PublicAPIController extends Controller {
         return $identity;
     }
 
-    public function bulk_update_group_members(Request $request, $name) {
+    public function bulk_update_identities(Request $request){
         $validated = $request->validate([
             'identities' => 'required',
             'id' => 'required',
         ]);
 
-        $group = Group::where('slug',$name)->first();
+        $counts = ["updated"=>0,"not_updated"=>0, "not_found"=>0];
+        $api_identities = $request->identities;
+        
+        foreach($api_identities as $api_identity){
+            $res = Identity::query();
+            $t_res = $res;
+            if (isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
+                && !is_null($api_identity['ids'][$request['id']]) && $api_identity['ids'][$request['id']]!==""){
+                $t_res->whereHas('identity_unique_ids', function($q) use ($api_identity,$request){
+                    $q->where('name',$request['id'])->where('value',$api_identity['ids'][$request['id']]);
+                });
+                if(is_null($t_res->first())){
+                    $counts['not_found']++;
+                    continue;
+                }
+            } else {
+                $counts['not_found']++;
+                continue;
+            }
+
+            foreach($api_identity as $api_identity_key=>$api_identity_value){
+                if($api_identity_key === 'ids'){
+                    foreach($api_identity_value as $key=>$value){
+                        if (isset($value) && !is_null($value)){
+                            $res->whereHas('identity_unique_ids', function($q) use ($key,$value){
+                                $q->where('name',$key)->where('value',$value);
+                            });
+                        }
+                    }
+                }
+                elseif($api_identity_key ==='additional_attributes'){
+                    foreach($api_identity_value as $key=>$value){
+                        $res->whereHas('identity_attributes', function($q) use ($key,$value){
+                            $q->where('name',$key)->where('value',is_array($value)?implode(',',$value):$value);
+                        });
+                    }
+                }
+                else{
+                    $res->where($api_identity_key,$api_identity_value);
+                }
+            }
+            $res = $res->first();
+            if (!is_null($res)) {
+                $counts['not_updated']++;
+            } else {
+                UpdateIdentityJob::dispatch([
+                    'action' => 'update',
+                    'api_identity' => $api_identity,
+                    'unique_id' => $request->id
+                 ]);
+                 $counts['updated']++;
+            }
+        }
+        return $counts;
+    }
+
+    public function identity_search(Request $request, $search) {
+        if ($request->has('fields')) {
+            if (is_array($request->fields)) {
+                $search_fields = collect($request->fields);
+            } else {
+                $search_fields = collect(explode(',',$request->fields));
+            }
+        } else {
+            $search_fields = collect(['default_username']);
+        }
+
+        $ids = collect();
+        if ($search_fields->contains('iamid') || $search_fields->contains('default_username') || $search_fields->contains('default_email')) {
+            $query = DB::table('identities')->select('id');
+            if ($search_fields->contains('iamid')) {
+                $query->orWhere('iamid',$search);
+            }
+            if ($search_fields->contains('default_username')) {
+                $query->orWhere('default_username',$search);
+            }
+            if ($search_fields->contains('default_email')) {
+                $query->orWhere('default_email',$search);
+            }
+            $ids = $ids->merge($query->get()->pluck('id'));
+        }
+        if ($search_fields->contains('accounts')) {
+            $ids = $ids->merge(DB::table('accounts')->select('identity_id as id')->where('account_id',$search)->get()->pluck('id'));
+        }
+        $id_names = $search_fields->diff(['iamid','default_username','default_email','accounts']);
+        if (count($id_names)) {
+            $query = DB::table('identity_unique_ids')->select('identity_id as id');
+            foreach($id_names as $id_name) {
+                $query->orWhere(function($query) use ($id_name, $search){
+                    $query->where('value',$search);
+                    $query->where('name',$id_name);
+                });
+            }
+            $ids = $ids->merge($query->get()->pluck('id'));
+        }
+        $matches = Identity::select('id','iamid','first_name','last_name','default_username','default_email','sponsored','sponsor_identity_id')
+            ->whereIn('id',$ids)->get();
+
+        if (count($matches) == 0) {
+            return response()->json([
+                'error' => 'Identity Not Found',
+            ],404);
+        } else if (count($matches) > 1) {
+            return response()->json([
+                'error' => 'Too Many Matches - Please Refine Search',
+            ],400);
+        } else {
+            return $matches[0]->get_api_identity();
+        }
+    }
+
+    // GROUP MANAGEMENT
+    public function get_all_groups(){
+        return Group::orderBy('name','asc')->get();
+    }
+
+    public function get_group(Request $request, $group_slug){
+        $group = Group::where('slug',$group_slug)->first();
         if (is_null($group)) {
-            return ['error'=>'Group does not exist!'];
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        }
+    }
+
+    public function add_group(Request $request){
+        $group = new Group($request->all());
+        $group->save();
+        return Group::where('id',$group->id)->first();
+    }
+
+    public function update_group(Request $request, $group_slug){
+        $group = Group::where('slug',$group_slug)->first();
+        if (is_null($group)) {
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        }
+
+        $group_info = $request->all();
+        if (!isset($group_info['type'])) {
+            $group_info['type'] = 'manual';
+        }
+        if ($group_info['type'] == 'manual') {
+            $group_info['delay_add'] = false;
+            $group_info['delay_remove'] = false;
+        }
+        if ($group_info['delay_add'] === false) {
+            $group_info['delay_add_days'] = null;
+        }
+        if ($group_info['delay_remove'] === false) {
+            $group_info['delay_remove_days'] = null;
+            $group_info['delay_remove_notify'] = false;
+        }
+        $group->update($group_info);
+        return Group::where('id',$group->id)->first();
+    }
+
+    public function delete_group(Request $request, $group_slug){
+        $group = Group::where('slug',$group_slug)->first();
+        if (is_null($group)) {
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        }
+
+        GroupMember::where('group_id',$group->id)->delete();
+        Log::where('type','group')->where('type_id',$group->id)->delete();
+        $group->delete();
+        return ['success' => 'Group Deleted!'];
+    }
+
+    public function add_entitlement_to_group(Request $request, $group_slug, Entitlement $entitlement){
+        $group = Group::where('slug',$group_slug)->first();
+        if (is_null($group)) {
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        }
+
+        $group_entitlement = new GroupEntitlement([
+           'group_id'=>$group->id,
+           'entitlement_id'=>$entitlement->id,
+        ]);
+        $group_entitlement->save();
+        return GroupEntitlement::where('id',$group_entitlement->id)->with('entitlement')->first();
+    }
+
+    public function delete_entitlement_from_group($group_slug, Entitlement $entitlement) {
+        $group = Group::where('slug',$group_slug)->first();
+        if (is_null($group)) {
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        }
+
+        $group_entitlement = GroupEntitlement::where('group_id',$group->id)->where('entitlement_id',$entitlement->id)->first();
+        $group_entitlement->delete();
+        return ['success' => 'Entitlement Deleted from Group!'];
+    }
+
+    public function bulk_update_group_members(Request $request, $group_slug) {
+        $validated = $request->validate([
+            'identities' => 'required',
+            'id' => 'required',
+        ]);
+
+        $group = Group::where('slug',$group_slug)->first();
+        if (is_null($group)) {
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
         }
 
         $api_identities = $request->identities;
@@ -165,8 +379,8 @@ class PublicAPIController extends Controller {
         return ['success'=>'Dispatched All Jobs to Queue','counts'=>$counts];
     }
 
-    public function insert_group_member(Request $request,$name){
-        $group = Group::where('slug',$name)->first();
+    public function insert_group_member(Request $request,$group_slug){
+        $group = Group::where('slug',$group_slug)->first();
         $identity_id = isset($request->identity_id)?$request->identity_id:null;
         $unique_id_type = isset($request->unique_id_type)?$request->unique_id_type:null;
         $unique_id = isset($request->unique_id)?$request->unique_id:null;
@@ -182,11 +396,15 @@ class PublicAPIController extends Controller {
             $identity->save();
         }
         if(!$group){
-            return ["error"=>"Group does not exist"];
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
         }
         $is_member = GroupMember::where('group_id',$group->id)->where('identity_id',$identity->id)->first();
         if($group && $is_member){
-            return ["error"=>"User is already a member!"];
+            return response()->json([
+                'error' => 'User is already a member!',
+            ],400);
         }
         if (is_null($is_member)) {
             $group_member = new GroupMember(['group_id'=>$group->id,'identity_id'=>$identity->id]);
@@ -196,8 +414,8 @@ class PublicAPIController extends Controller {
         return ['success'=>"Member has been added!"];
     }
     
-    public function remove_group_member(Request $request,$name){
-        $group = Group::where('slug',$name)->first();
+    public function remove_group_member(Request $request,$group_slug){
+        $group = Group::where('slug',$group_slug)->first();
         $identity_id = isset($request->identity_id)?$request->identity_id:null;
         $unique_id_type = isset($request->unique_id_type)?$request->unique_id_type:null;
         $unique_id = isset($request->unique_id)?$request->unique_id:null;
@@ -209,11 +427,15 @@ class PublicAPIController extends Controller {
             $identity = Identity::where('id',$identity_id)->first();
         }
         if(!$group){
-            return ["error"=>"Group does not exist"];
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
         } 
         $group_member = GroupMember::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
         if(is_null($group_member)){
-            return ["error"=>"User is not a member!"];
+            return response()->json([
+                'error' => 'User is not a member!',
+            ],400);
         }
         if (!is_null($group_member)) {
             $group_member->delete();
@@ -222,116 +444,64 @@ class PublicAPIController extends Controller {
         return ['success'=>"Member has been removed!"];
     }
 
-    public function bulk_update_identities(Request $request){
-        $validated = $request->validate([
-            'identities' => 'required',
-            'id' => 'required',
+    // Entitlements Management
+    public function get_all_entitlements(Request $request){
+        $entitlements = Entitlement::with('system');
+        return $entitlements->orderBy('system_id')->orderBy('name','asc')->get();
+    }
+
+    public function get_entitlement(Entitlement $entitlement){
+        return $entitlement;
+    }
+
+    public function add_entitlement(Request $request){
+        $entitlement = new Entitlement($request->all());
+        if ($entitlement->require_prerequisite != true) {
+            $entitlement->prerequisites = [];
+        }
+        $entitlement->save();
+        return $entitlement;
+    }
+
+    public function update_entitlement(Request $request, Entitlement $entitlement){
+        if ($entitlement->require_prerequisite != true) {
+            $entitlement->prerequisites = [];
+        }
+        $entitlement->update($request->all());
+        return $entitlement;
+    }
+    
+    public function delete_entitlement(Entitlement $entitlement) {
+        Entitlement::where('id','=',$entitlement->id)->delete();
+        return ['success' => 'Entitlement Deleted!'];
+    }
+
+    public function add_group_to_entitlement(Request $request, Entitlement $entitlement, $group_slug){
+        $group = Group::where('slug',$group_slug)->first();
+        if (is_null($group)) {
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        }
+
+        $group_entitlement = new GroupEntitlement([
+           'entitlement_id'=>$entitlement->id,
+           'group_id'=>$group->id,
         ]);
-
-        $counts = ["updated"=>0,"not_updated"=>0, "not_found"=>0];
-        $api_identities = $request->identities;
-        
-        foreach($api_identities as $api_identity){
-            $res = Identity::query();
-            $t_res = $res;
-            if (isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
-                && !is_null($api_identity['ids'][$request['id']]) && $api_identity['ids'][$request['id']]!==""){
-                $t_res->whereHas('identity_unique_ids', function($q) use ($api_identity,$request){
-                    $q->where('name',$request['id'])->where('value',$api_identity['ids'][$request['id']]);
-                });
-                if(is_null($t_res->first())){
-                    $counts['not_found']++;
-                    continue;
-                }
-            } else {
-                $counts['not_found']++;
-                continue;
-            }
-
-            foreach($api_identity as $api_identity_key=>$api_identity_value){
-                if($api_identity_key === 'ids'){
-                    foreach($api_identity_value as $key=>$value){
-                        if (isset($value) && !is_null($value)){
-                            $res->whereHas('identity_unique_ids', function($q) use ($key,$value){
-                                $q->where('name',$key)->where('value',$value);
-                            });
-                        }
-                    }
-                }
-                elseif($api_identity_key ==='additional_attributes'){
-                    foreach($api_identity_value as $key=>$value){
-                        $res->whereHas('identity_attributes', function($q) use ($key,$value){
-                            $q->where('name',$key)->where('value',is_array($value)?implode(',',$value):$value);
-                        });
-                    }
-                }
-                else{
-                    $res->where($api_identity_key,$api_identity_value);
-                }
-            }
-            $res = $res->first();
-            if (!is_null($res)) {
-                $counts['not_updated']++;
-            } else {
-                UpdateIdentityJob::dispatch([
-                    'action' => 'update',
-                    'api_identity' => $api_identity,
-                    'unique_id' => $request->id
-                 ]);
-                 $counts['updated']++;
-            }
-        }
-        return $counts;
+        $group_entitlement->save();
+        return GroupEntitlement::where('id',$group_entitlement->id)->with('group')->first();
     }
 
-    public function identity_search(Request $request, $search) {
-        if ($request->has('fields')) {
-            if (is_array($request->fields)) {
-                $search_fields = collect($request->fields);
-            } else {
-                $search_fields = collect(explode(',',$request->fields));
-            }
-        } else {
-            $search_fields = collect(['default_username']);
+    public function delete_group_from_entitlement(Entitlement $entitlement, $group_slug) {
+        $group = Group::where('slug',$group_slug)->first();
+        if (is_null($group)) {
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
         }
-
-        $ids = collect();
-        if ($search_fields->contains('iamid') || $search_fields->contains('default_username') || $search_fields->contains('default_email')) {
-            $query = DB::table('identities')->select('id');
-            if ($search_fields->contains('iamid')) {
-                $query->orWhere('iamid',$search);
-            }
-            if ($search_fields->contains('default_username')) {
-                $query->orWhere('default_username',$search);
-            }
-            if ($search_fields->contains('default_email')) {
-                $query->orWhere('default_email',$search);
-            }
-            $ids = $ids->merge($query->get()->pluck('id'));
-        }
-        if ($search_fields->contains('accounts')) {
-            $ids = $ids->merge(DB::table('accounts')->select('identity_id as id')->where('account_id',$search)->get()->pluck('id'));
-        }
-        $id_names = $search_fields->diff(['iamid','default_username','default_email','accounts']);
-        if (count($id_names)) {
-            $query = DB::table('identity_unique_ids')->select('identity_id as id');
-            foreach($id_names as $id_name) {
-                $query->orWhere(function($query) use ($id_name, $search){
-                    $query->where('value',$search);
-                    $query->where('name',$id_name);
-                });
-            }
-            $ids = $ids->merge($query->get()->pluck('id'));
-        }
-        $matches = Identity::select('id','iamid','first_name','last_name','default_username','default_email','sponsored','sponsor_identity_id')
-            ->whereIn('id',$ids)->get();
-
-        if (count($matches) == 0) {
-            return response('Identity Not Found', 404);
-        } else if (count($matches) > 1) {
-            return response('Too Many Matches - Please Refine Search', 400);
-        } else {
-            return $matches[0]->get_api_identity();
-        }
+        $group_entitlement = GroupEntitlement::where('entitlement_id','=',$entitlement->id)->where('group_id','=',$group->id)->first();
+        $group_entitlement->delete();
+        return ['success' => 'Group Deleted From Entitlement!'];
     }
+
 }

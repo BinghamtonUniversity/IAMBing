@@ -13,6 +13,7 @@ use App\Models\Account;
 use App\Models\Identity;
 use App\Models\System;
 use App\Jobs\UpdateIdentityJob;
+use App\Models\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -61,6 +62,7 @@ class GroupController extends Controller
 
     public function delete_group(Request $request, Group $group){
         GroupMember::where('group_id',$group->id)->delete();
+        Log::where('type','group')->where('type_id',$group->id)->delete();
         $group->delete();
         return 'Success';
     }
