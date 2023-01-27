@@ -30,7 +30,7 @@ ajax.get('/api/identities/'+id+'/entitlements',function(data) {
         ajax.get('/api/entitlements?override_add=true',function(data) {
             app.data.override_entitlements = data;
             app.data.filtered_entitlements = data;
-            app.data.filtered_subsystems = [{label:'None',value:null}];
+            app.data.filtered_subsystems = [{label:'N/A',value:null}];
             app.update();
             new gform({
                 "legend":"Add Manual Override Entitlement",
@@ -72,15 +72,18 @@ ajax.get('/api/identities/'+id+'/entitlements',function(data) {
                 var form_data = form_event.form.get();
                 var mysystem = _.find(form_event.form.collections.get('/api/systems'),{id:form_data.system_id})
                 if (_.has(mysystem,'config.subsystems') && Array.isArray(mysystem.config.subsystems)) {
-                    app.data.filtered_subsystems = [{label:'None',value:null}].concat(mysystem.config.subsystems);
+                    app.data.filtered_subsystems = [{label:'N/A',value:null}].concat(mysystem.config.subsystems);
                 } else {
-                    app.data.filtered_subsystems = [{label:'None',value:null}];
+                    app.data.filtered_subsystems = [{label:'N/A',value:null}];
                 }
                 gform.collections.update('filtered_subsystems', app.data.filtered_subsystems)    
             }).on('change:subsystem',function(form_event) {
                 var form_data = form_event.form.get();
-                app.data.filtered_entitlements = 
-                    _.filter(app.data.override_entitlements,{system_id:form_data.system_id,subsystem:form_data.subsystem});
+                if (form_data.subsystem !== null) {
+                    app.data.filtered_entitlements = _.filter(app.data.override_entitlements,{system_id:form_data.system_id,subsystem:form_data.subsystem});
+                } else {
+                    app.data.filtered_entitlements = _.filter(app.data.override_entitlements,{system_id:form_data.system_id});
+                }
                 gform.collections.update('filtered_entitlements', app.data.filtered_entitlements)    
             }).modal();
         });
