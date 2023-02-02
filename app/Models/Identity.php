@@ -585,7 +585,6 @@ class Identity extends Authenticatable
             'additional_attributes'=>$this->additional_attributes,
             'sponsor'=>$this->sponsored?$sponsor_info:false,
         ];
-        dd($data);
         return $data;
     }
 
