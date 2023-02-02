@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\GroupMember;
+use App\Models\GroupAdmin;
 use App\Models\Identity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -442,6 +443,71 @@ class PublicAPIController extends Controller {
             $identity->recalculate_entitlements();
         }
         return ['success'=>"Member has been removed!"];
+    }
+
+    public function insert_group_admin(Request $request,$group_slug){
+        $group = Group::where('slug',$group_slug)->first();
+        $identity_id = isset($request->identity_id)?$request->identity_id:null;
+        $unique_id_type = isset($request->unique_id_type)?$request->unique_id_type:null;
+        $unique_id = isset($request->unique_id)?$request->unique_id:null;
+        if (is_null($identity_id)) {
+            $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
+                $q->where('name',$unique_id_type)->where('value',$unique_id);
+            })->first();
+        } else {
+            $identity = Identity::where('id',$identity_id)->first();
+        }
+        if(is_null($identity)){
+            $identity = new Identity($request->all());
+            $identity->save();
+        }
+        if(!$group){
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        }
+        $is_admin = GroupAdmin::where('group_id',$group->id)->where('identity_id',$identity->id)->first();
+        if($group && $is_admin){
+            return response()->json([
+                'error' => 'User is already an admin!',
+            ],400);
+        }
+        if (is_null($is_admin)) {
+            $group_admin = new GroupAdmin(['group_id'=>$group->id,'identity_id'=>$identity->id]);
+            $group_admin->save();
+            $identity->recalculate_entitlements();
+        }
+        return ['success'=>"Admin has been added!"];
+    }
+    
+    public function remove_group_admin(Request $request,$group_slug){
+        $group = Group::where('slug',$group_slug)->first();
+        $identity_id = isset($request->identity_id)?$request->identity_id:null;
+        $unique_id_type = isset($request->unique_id_type)?$request->unique_id_type:null;
+        $unique_id = isset($request->unique_id)?$request->unique_id:null;
+        if (is_null($identity_id)) {
+            $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
+                $q->where('name',$unique_id_type)->where('value',$unique_id);
+            })->first();
+        } else {
+            $identity = Identity::where('id',$identity_id)->first();
+        }
+        if(!$group){
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        } 
+        $group_admin = GroupAdmin::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
+        if(is_null($group_admin)){
+            return response()->json([
+                'error' => 'User is not an admin!',
+            ],400);
+        }
+        if (!is_null($group_admin)) {
+            $group_admin->delete();
+            $identity->recalculate_entitlements();
+        }
+        return ['success'=>"Admin has been removed!"];
     }
 
     // Entitlements Management

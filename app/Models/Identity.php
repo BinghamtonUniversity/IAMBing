@@ -528,15 +528,20 @@ class Identity extends Authenticatable
         }
     }
 
-    public function get_api_identity(){
+    public function get_api_identity($system_id = null){
         // This function returns a standard identity object
         // Future Changes:
-        // • This function should take in an optional system or system ID
-        //   • If a system is not specified, the function will use all systems assocaitd with this identity
+        // • This function should take in an optional system or system ID -- DONE
+        //   • If a system is not specified, the function will use all systems assocaitd with this identity -- DONE
+        // • The object should include a list of this user's entitlmenents, as associatd with the systems specified above -- DONE
+        // • The object should include a list of this user's accounts, as associatd with the systems specified above -- DONE
         // • The object should include a list of all groups associated with the systems as specified above
         // • The object should include a list of this user's group memberships, as associatd with the systems specified above
-        // • The object should include a list of this user's entitlmenents, as associatd with the systems specified above
-        // • The object should include a list of this user's accounts, as associatd with the systems specified above
+        if (is_null($system_id)) {
+            $identity_account_systems = System::select('id','name')->whereIn('id',$this->accounts->pluck('system_id'))->get();
+        } else {
+            $identity_account_systems = System::select('id','name')->where('id',$system_id)->get();
+        }
 
         $affiliations = Group::select('affiliation','order')
             ->whereIn('id',$this->group_memberships->pluck('group_id'))
@@ -545,7 +550,6 @@ class Identity extends Authenticatable
             ->get()
             ->pluck('affiliation')
             ->unique()->values()->toArray();
-        $identity_account_systems = System::select('id','name')->whereIn('id',$this->accounts->pluck('system_id'))->get();
         if ($this->sponsored == true) {
             $sponsor_info = Identity::where('id',$this->sponsor_identity_id)->first()->only(['first_name','last_name','ids','iamid']);
         }
@@ -556,7 +560,7 @@ class Identity extends Authenticatable
             'last_name' => $this->last_name,
             'ids'=>$this->ids,
             'default_email'=>$this->default_email,
-            "default_username"=>$this->default_username,
+            'default_username'=>$this->default_username,
             'affiliations' => $affiliations,
             'group_memberships'=>$this->groups->map(function($q){
                 return [
@@ -564,10 +568,12 @@ class Identity extends Authenticatable
                     'slug'=>$q->slug,
                     'name'=>$q->name
                 ];
-            }),
+            })->values()->toArray(),
             'primary_affiliation' => isset($affiliations[0])?$affiliations[0]:null,
-            'entitlements'=>$this->entitlements,
-            'accounts'=>$this->accounts->map(function($q) use ($identity_account_systems){
+            'entitlements'=>$this->identity_entitlements->whereIn('system_id',$identity_account_systems->pluck('id'))->map(function($q) {
+                return $q->name;
+            })->values()->toArray(),
+            'accounts'=>$this->accounts->whereIn('system_id',$identity_account_systems->pluck('id'))->map(function($q) use ($identity_account_systems){
                 return [
                     'id'=>$q->id,
                     'account_id'=>$q->account_id,
@@ -575,10 +581,11 @@ class Identity extends Authenticatable
                     'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name,
                     'account_attributes'=>$q->account_attributes,
                 ];
-            }),
+            })->values()->toArray(),
             'additional_attributes'=>$this->additional_attributes,
             'sponsor'=>$this->sponsored?$sponsor_info:false,
         ];
+        dd($data);
         return $data;
     }
 

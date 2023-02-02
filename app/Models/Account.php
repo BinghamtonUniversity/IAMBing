@@ -34,7 +34,7 @@ class Account extends Model
 
     public function sync($action) {
         $identity = Identity::where('id',$this->identity_id)->first();
-        $myidentity = $identity->get_api_identity();
+        $myidentity = $identity->get_api_identity($this->system_id);
 
         $m = new \Mustache_Engine;
         $mysystem = System::where('id',$this->system_id)->first();

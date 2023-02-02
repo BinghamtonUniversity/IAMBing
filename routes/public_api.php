@@ -28,6 +28,8 @@ Route::delete('/groups/{group_slug}/entitlements/{entitlement}',[GroupController
 Route::post('/groups/{group_slug}/member',[PublicAPIController::class,'insert_group_member']); 
 Route::delete('/groups/{group_slug}/member',[PublicAPIController::class,'remove_group_member']); 
 Route::post('/groups/{group_slug}/members',[PublicAPIController::class, 'bulk_update_group_members']);
+Route::post('/groups/{group_slug}/admin',[PublicAPIController::class,'insert_group_admin']); 
+Route::delete('/groups/{group_slug}/admin',[PublicAPIController::class,'remove_group_admin']); 
 
 // Identities
 Route::get('/identities/search/{search}',[PublicAPIController::class,'identity_search']);
