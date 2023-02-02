@@ -497,7 +497,7 @@ class PublicAPIController extends Controller {
                 'error' => 'Group does not exist!',
             ],404);
         } 
-        $group_admin = GroupAdmin::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
+        $group_admin = GroupAdmin::where('group_id',$group->id)->where('identity_id',$identity->id)->first();
         if(is_null($group_admin)){
             return response()->json([
                 'error' => 'User is not an admin!',
