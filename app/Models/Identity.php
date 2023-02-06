@@ -207,6 +207,7 @@ class Identity extends Authenticatable
                 if(!in_array($name,$config['identity_attributes'])){
                     continue;
                 }
+                if (is_array($value)) {sort($value);}
                 IdentityAttribute::updateOrCreate(
                     ['identity_id'=>$this->id, 'name'=>$name],
                     ['value' => is_array($value)?implode(',',$value):$value,'array'=>is_array($value)]

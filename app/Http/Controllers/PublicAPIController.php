@@ -6,6 +6,8 @@ use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\GroupAdmin;
 use App\Models\Identity;
+use App\Models\IdentityUniqueID;
+use App\Models\IdentityAttribute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Jobs\UpdateIdentityJob;
@@ -49,63 +51,135 @@ class PublicAPIController extends Controller {
         return $identity;
     }
 
+    // This has been deprecated as it is very slow. Will remove this function entirely
+    // if the replacement function demonstrates a signficant performance increase.
+    // public function bulk_update_identities_old(Request $request){
+    //     $validated = $request->validate([
+    //         'identities' => 'required',
+    //         'id' => 'required',
+    //     ]);
+    // 
+    //     $counts = ["updated"=>0,"not_updated"=>0, "not_found"=>0];
+    //     $api_identities = $request->identities;
+    //    
+    //     foreach($api_identities as $api_identity){
+    //         $res = Identity::query();
+    //         $t_res = $res;
+    //         if (isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
+    //             && !is_null($api_identity['ids'][$request['id']]) && $api_identity['ids'][$request['id']]!==""){
+    //             $t_res->whereHas('identity_unique_ids', function($q) use ($api_identity,$request){
+    //                 $q->where('name',$request['id'])->where('value',$api_identity['ids'][$request['id']]);
+    //             });
+    //             if(is_null($t_res->first())){
+    //                 $counts['not_found']++;
+    //                 continue;
+    //             }
+    //         } else {
+    //             $counts['not_found']++;
+    //             continue;
+    //         }
+    //
+    //         foreach($api_identity as $api_identity_key=>$api_identity_value){
+    //             if ($api_identity_key === 'ids'){
+    //                 foreach($api_identity_value as $key=>$value){
+    //                     if (isset($value) && !is_null($value)){
+    //                         $res->whereHas('identity_unique_ids', function($q) use ($key,$value){
+    //                             $q->where('name',$key)->where('value',$value);
+    //                         });
+    //                     }
+    //                 }
+    //             } else if($api_identity_key ==='additional_attributes'){
+    //                 foreach($api_identity_value as $key=>$value){
+    //                     $res->whereHas('identity_attributes', function($q) use ($key,$value){
+    //                         $q->where('name',$key)->where('value',is_array($value)?implode(',',$value):$value);
+    //                     });
+    //                 }
+    //             } else {
+    //                 $res->where($api_identity_key,$api_identity_value);
+    //             }
+    //         }
+    //         $res = $res->first();
+    //         if (!is_null($res)) {
+    //             $counts['not_updated']++;
+    //         } else {
+    //             UpdateIdentityJob::dispatch([
+    //                 'action' => 'update',
+    //                 'api_identity' => $api_identity,
+    //                 'unique_id' => $request->id
+    //              ]);
+    //              $counts['updated']++;
+    //         }
+    //     }
+    //     return $counts;
+    // }
+
     public function bulk_update_identities(Request $request){
         $validated = $request->validate([
             'identities' => 'required',
             'id' => 'required',
         ]);
-
-        $counts = ["updated"=>0,"not_updated"=>0, "not_found"=>0];
-        $api_identities = $request->identities;
+        $counts = ['updated' => 0,'not_updated' => 0,'not_found' => 0];
         
-        foreach($api_identities as $api_identity){
-            $res = Identity::query();
-            $t_res = $res;
+        foreach($request->identities as $api_identity) {
             if (isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
                 && !is_null($api_identity['ids'][$request['id']]) && $api_identity['ids'][$request['id']]!==""){
-                $t_res->whereHas('identity_unique_ids', function($q) use ($api_identity,$request){
-                    $q->where('name',$request['id'])->where('value',$api_identity['ids'][$request['id']]);
-                });
-                if(is_null($t_res->first())){
+                $identity_unique_id = IdentityUniqueID::where('name',$request['id'])->where('value',$api_identity['ids'][$request['id']])->first();
+                if (!is_null($identity_unique_id)){
+                    // Identity has been found! Get All Identity IDs and Attributes
+                    $identity_unique_id_all = IdentityUniqueID::where('identity_id',$identity_unique_id->identity_id)->get();
+                    $identity_attributes_all = IdentityAttribute::where('identity_id',$identity_unique_id->identity_id)->get();
+                    $identity = Identity::where('id',$identity_unique_id->identity_id)->get();
+                    $identity_needs_update = false;
+
+                    // Check to see if anything needs to be updated
+                    foreach($api_identity as $api_identity_key => $api_identity_value) {
+                        if ($api_identity_key === 'ids') {
+                            // Fetch all unique ids for this identity from the database and compare to what was sent...
+                            foreach($api_identity_value as $key => $value){
+                                if (isset($value) && !is_null($value) && count($identity_unique_id_all->where('name',$key)->where('value',$value)) === 0) {
+                                    $identity_needs_update = true;
+                                    break;
+                                }
+                            }
+                        } else if ($api_identity_key === 'additional_attributes') {
+                            // Fetch all additionl attributes for this identity from the database and compare to what was sent...
+                            foreach($api_identity_value as $key => $value){
+                                if (is_array($value)) {
+                                    sort($value); // Put in alphabetical order to avoid identical lists in different orders
+                                    $value = implode(',',$value);
+                                }
+                                if (isset($value) && !is_null($value) && count($identity_attributes_all->where('name',$key)->where('value',$value)) === 0) {
+                                    $identity_needs_update = true;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // Fetch all primary attributes for this identity from the database and compare to what was sent...
+                            if (count($identity->where($api_identity_key,$api_identity_value)) === 0) {
+                                $identity_needs_update = true;
+                            }
+                        }
+                        if ($identity_needs_update === true) {
+                            break;
+                        }
+                    }
+                    // Update the Identity
+                    if ($identity_needs_update === true) {
+                        UpdateIdentityJob::dispatch([
+                            'action' => 'update',
+                            'api_identity' => $api_identity,
+                            'unique_id' => $request->id
+                        ]);
+                        $counts['updated']++;
+                        break;
+                    } else {
+                        $counts['not_updated']++;
+                    }
+                } else {
                     $counts['not_found']++;
-                    continue;
                 }
             } else {
                 $counts['not_found']++;
-                continue;
-            }
-
-            foreach($api_identity as $api_identity_key=>$api_identity_value){
-                if($api_identity_key === 'ids'){
-                    foreach($api_identity_value as $key=>$value){
-                        if (isset($value) && !is_null($value)){
-                            $res->whereHas('identity_unique_ids', function($q) use ($key,$value){
-                                $q->where('name',$key)->where('value',$value);
-                            });
-                        }
-                    }
-                }
-                elseif($api_identity_key ==='additional_attributes'){
-                    foreach($api_identity_value as $key=>$value){
-                        $res->whereHas('identity_attributes', function($q) use ($key,$value){
-                            $q->where('name',$key)->where('value',is_array($value)?implode(',',$value):$value);
-                        });
-                    }
-                }
-                else{
-                    $res->where($api_identity_key,$api_identity_value);
-                }
-            }
-            $res = $res->first();
-            if (!is_null($res)) {
-                $counts['not_updated']++;
-            } else {
-                UpdateIdentityJob::dispatch([
-                    'action' => 'update',
-                    'api_identity' => $api_identity,
-                    'unique_id' => $request->id
-                 ]);
-                 $counts['updated']++;
             }
         }
         return $counts;
