@@ -146,7 +146,7 @@ class PublicAPIController extends Controller {
                             foreach($api_identity_value as $key => $value){
                                 if (is_array($value)) {
                                     sort($value); // Put in alphabetical order to avoid identical lists in different orders
-                                    $value = implode(',',$value);
+                                    $value = implode('||',$value);
                                 }
                                 if (isset($value) && !is_null($value) && count($identity_attributes_all->where('name',$key)->where('value',$value)) === 0) {
                                     $identity_needs_update = true;

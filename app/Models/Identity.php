@@ -93,7 +93,7 @@ class Identity extends Authenticatable
         $additional_attributes = [];
         foreach($this->identity_attributes as $attribute) {
             if ($attribute['array']===true) {
-                $additional_attributes[$attribute['name']] = explode(',',$attribute['value']);
+                $additional_attributes[$attribute['name']] = explode('||',$attribute['value']);
             } else {
                 $additional_attributes[$attribute['name']] = $attribute['value'];
             }
@@ -210,7 +210,7 @@ class Identity extends Authenticatable
                 if (is_array($value)) {sort($value);}
                 IdentityAttribute::updateOrCreate(
                     ['identity_id'=>$this->id, 'name'=>$name],
-                    ['value' => is_array($value)?implode(',',$value):$value,'array'=>is_array($value)]
+                    ['value' => is_array($value)?implode('||',$value):$value,'array'=>is_array($value)]
                 );
             }
             $this->load('identity_attributes');
