@@ -171,7 +171,6 @@ class PublicAPIController extends Controller {
                             'unique_id' => $request->id
                         ]);
                         $counts['updated']++;
-                        break;
                     } else {
                         $counts['not_updated']++;
                     }
