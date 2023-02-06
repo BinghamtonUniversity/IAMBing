@@ -118,7 +118,7 @@ class PublicAPIController extends Controller {
             'identities' => 'required',
             'id' => 'required',
         ]);
-        $counts = ['updated' => 0,'not_updated' => 0,'not_found' => 0];
+        $counts = ['total_sent' => count($request->identities), 'updated' => 0,'not_updated' => 0,'not_found' => 0];
         
         foreach($request->identities as $api_identity) {
             if (isset($api_identity['ids']) && isset($api_identity['ids'][$request['id']]) 
