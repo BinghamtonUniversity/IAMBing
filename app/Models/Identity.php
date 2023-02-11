@@ -208,6 +208,10 @@ class Identity extends Authenticatable
                     continue;
                 }
                 if (is_array($value)) {sort($value);}
+                // If the attribute is an empty array (blank), set it to null
+                if (is_array($value) && count($value) === 1 && $value[0] == '') {
+                    $value = [];
+                }
                 IdentityAttribute::updateOrCreate(
                     ['identity_id'=>$this->id, 'name'=>$name],
                     ['value' => is_array($value)?implode('||',$value):$value,'array'=>is_array($value)]

@@ -606,7 +606,7 @@ ajax.get('/api/configuration',function(configuration) {
         identity_form_attributes.push(unique_ids_fields);
         var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes",fields:
             _.map(_.find(configuration,{name:'identity_attributes'}).config,function(item) {
-                if (item.array == true) {item.array = {min:0,max:100}};
+                if (item.array == true) {item.array = {min:0,max:100}; item.parse=true;};
                 return item;
             })
         };
