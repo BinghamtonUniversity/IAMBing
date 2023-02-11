@@ -612,12 +612,16 @@ ajax.get('/api/configuration',function(configuration) {
         window.systems = systems;
         var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(configuration,{name:'identity_unique_ids'}).config};
         identity_form_attributes.push(unique_ids_fields);
-        var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes",fields:
-            _.map(_.find(configuration,{name:'identity_attributes'}).config,function(item) {
-                if (item.array == true) {item.array = {min:0,max:100}; item.parse=true;};
-                return item;
-            })
-        };
+        var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes"};
+        var additional_attributes_fields = [];
+        _.each(_.find(configuration,{name:'identity_attributes'}).config,function(item) {
+            if (item.array == true) {
+                additional_attributes_fields.push({type:'output',parse:false,label:item.label+'(s)',value:null,name:item.name+'_label'});
+                item.array = {min:0,max:100}; item.parse=true;
+            };
+            additional_attributes_fields.push(item);
+        })
+        identity_attributes_fields['fields'] = additional_attributes_fields;
         identity_form_attributes.push(identity_attributes_fields);
         search_identities_form = new gform(
             {"fields":[
