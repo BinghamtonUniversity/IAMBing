@@ -145,8 +145,10 @@ class PublicAPIController extends Controller {
                             // Fetch all additionl attributes for this identity from the database and compare to what was sent...
                             foreach($api_identity_value as $key => $value){
                                 if (is_array($value)) {
-                                    sort($value); // Put in alphabetical order to avoid identical lists in different orders
-                                    $value = implode('||',$value);
+                                    // Sort alphabetically, remove empty values, implode to string
+                                    $value = collect($value)->sort()->filter(function($value,$key) {
+                                        return ($value !== '' && !is_null($value));
+                                    })->implode('||');
                                 }
                                 if (isset($value) && !is_null($value) && count($identity_attributes_all->where('name',$key)->where('value',$value)) === 0) {
                                     $identity_needs_update = true;
