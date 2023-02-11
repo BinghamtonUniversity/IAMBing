@@ -390,6 +390,12 @@ var manage_identity = function(identity_id) {
             }).on('save',function(form_event) {
                 if(form_event.form.validate()) {
                     form_data = form_event.form.get();
+                    _.each(_.find(window.configuration,{name:'identity_attributes'}).config,function(item) {
+                        if (!_.has(form_data.additional_attributes,item.name)) {
+                            form_data.additional_attributes[item.name] = null;
+                        }
+                    })
+                    // TJC HERE
                     ajax.put('/api/identities/' + form_data.id, form_data, function (data) {
                         manage_identity(data.id);
                         if (data.sync_errors === true) {
@@ -601,7 +607,9 @@ var manage_identity = function(identity_id) {
 }
 
 ajax.get('/api/configuration',function(configuration) {
+    window.configuration = configuration;
     ajax.get('/api/systems',function(systems) {
+        window.systems = systems;
         var unique_ids_fields = {type: "fieldset",label:'Unique IDs',name: "ids",fields:_.find(configuration,{name:'identity_unique_ids'}).config};
         identity_form_attributes.push(unique_ids_fields);
         var identity_attributes_fields = {type: "fieldset",label:'Additional Attributes',name: "additional_attributes",fields:
