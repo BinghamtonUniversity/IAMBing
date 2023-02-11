@@ -211,17 +211,19 @@ class Identity extends Authenticatable
                 if(!in_array($name,$config['identity_attributes'])){
                     continue;
                 }
+                $type_is_array = false;
                 if (is_array($value)) {
+                    $type_is_array = true;
                     // Sort alphabetically, remove empty values, implode to string
-                    $value = collect($value)->sort()->filter(function($value,$key) {
+                    $value = collect($value)->filter(function($value,$key) {
                         return ($value !== '' && !is_null($value));
-                    })->implode('||');
+                    })->sort()->implode('||');
                 }
                 // TJC -- Future Update: Shouldn't trust array type.
                 // Should verify against config
                 IdentityAttribute::updateOrCreate(
                     ['identity_id'=>$this->id, 'name'=>$name],
-                    ['value' => $value,'array'=>is_array($value)]
+                    ['value' => $value,'array'=>$type_is_array]
                 );
             }
             $this->load('identity_attributes');
