@@ -617,7 +617,7 @@ ajax.get('/api/configuration',function(configuration) {
         _.each(_.find(configuration,{name:'identity_attributes'}).config,function(item) {
             if (item.array == true) {
                 additional_attributes_fields.push({type:'output',parse:false,label:item.label+'(s)',format:{value:'<i></i>'},name:item.name+'_label'});
-                item.array = {min:0,max:100}; item.parse=true;
+                item.array = {min:0,max:100,create:{label:'Add '+item.label}}; item.parse=true;
             };
             additional_attributes_fields.push(item);
         })
