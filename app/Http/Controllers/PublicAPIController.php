@@ -550,7 +550,6 @@ class PublicAPIController extends Controller {
         if (is_null($is_admin)) {
             $group_admin = new GroupAdmin(['group_id'=>$group->id,'identity_id'=>$identity->id]);
             $group_admin->save();
-            $identity->recalculate_entitlements();
         }
         return ['success'=>"Admin has been added!"];
     }
@@ -580,7 +579,6 @@ class PublicAPIController extends Controller {
         }
         if (!is_null($group_admin)) {
             $group_admin->delete();
-            $identity->recalculate_entitlements();
         }
         return ['success'=>"Admin has been removed!"];
     }
