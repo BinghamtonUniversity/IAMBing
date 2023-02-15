@@ -93,8 +93,17 @@ class UpdateIdentityJob implements ShouldQueue
         }        
     }
 
+    public function tags() {
+        $tags = ['update_identity'];
+        if (isset($this->action) && !is_null($this->action)) {
+            $tags[] = 'action:'.$this->action;
+        }
+        if (isset($this->group) && !is_null($this->group)) {
+            $tags[] = 'group:'.$this->group;
+        }
+        return $tags;
+    }
+
     public function failed(Throwable $exception) {
-        // Do nothing?
-        // Log::debug($exception->getMessage());
     }   
 }
