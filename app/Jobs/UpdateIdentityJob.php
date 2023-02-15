@@ -39,11 +39,6 @@ class UpdateIdentityJob implements ShouldQueue
         $this->action = isset($config['action'])?$config['action']:null;
     }
 
-    // public function middleware() {
-    //     $unique_id = $this->identity_id?$this->identity_id:$this->api_identity['ids'][$this->unique_id];
-    //     return [(new WithoutOverlapping($unique_id))->releaseAfter(60)];
-    // }
-
     public function handle() {
         $group_id = $this->group_id;
         $unique_id = $this->unique_id;
@@ -91,6 +86,10 @@ class UpdateIdentityJob implements ShouldQueue
         if ($resp !== true) {
             throw new FailedRecalculateException('Recalculate Entitlements Failed',$resp);
         }        
+    }
+
+    public function tags() {
+        return ['update_identity', 'action:'.$this->action, 'group:'.$this->group];
     }
 
     public function failed(Throwable $exception) {

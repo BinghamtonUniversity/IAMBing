@@ -105,6 +105,10 @@ class SendEmailJob implements ShouldQueue
         return false;
     }
 
+    public function tags() {
+        return ['send_email'];
+    }
+
     public function failed(Throwable $exception) {
     }   
 }
