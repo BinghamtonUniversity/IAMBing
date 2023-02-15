@@ -98,8 +98,8 @@ class UpdateIdentityJob implements ShouldQueue
         if (isset($this->action) && !is_null($this->action)) {
             $tags[] = 'action:'.$this->action;
         }
-        if (isset($this->group) && !is_null($this->group)) {
-            $tags[] = 'group:'.$this->group;
+        if (isset($this->group_id) && !is_null($this->group_id)) {
+            $tags[] = 'group_id:'.$this->group_id;
         }
         return $tags;
     }
