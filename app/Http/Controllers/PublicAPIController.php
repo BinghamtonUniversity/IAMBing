@@ -339,8 +339,25 @@ class PublicAPIController extends Controller {
             );
         }
         elseif($request->entitlement_type =='remove' && !is_null($identity_entitlement)){
-            $identity_entitlement->update(['override'=>0]
-            );
+            if($identity_entitlement->override == 1){
+                $identity_entitlement->update(['override'=>0]);
+            }else{
+                $identity_entitlement->update(
+                    [
+                        'identity_id'=>$identity->id,
+                        'entitlement_id'=>$entitlement->id,
+                        'type'=>$request->entitlement_type,
+                        'override'=>1,
+                        'expire'=>$request->expire,
+                        'expiration_date'=>$request->expire && isset($request->expiration_date)?$request->expiration_date:null,
+                        'description'=>$request->description,
+                        'sponsor_id'=>$sponsor->id,
+                        'sponsor_renew_allow'=>$request->sponsor_renew_allow,
+                        'sponsor_renew_days'=>$request->sponsor_renew_days,
+                        'override_identity_id'=>null
+                    ]
+                );
+            }
         }
 
         $identity->recalculate_entitlements();
