@@ -343,7 +343,7 @@ class PublicAPIController extends Controller {
             );
         }
 
-//        $identity->recalculate_entitlements();
+        $identity->recalculate_entitlements();
         return $identity_entitlement;
     }
 
