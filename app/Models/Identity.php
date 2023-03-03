@@ -584,9 +584,7 @@ class Identity extends Authenticatable
                 ];
             })->values()->toArray(),
             'primary_affiliation' => isset($affiliations[0])?$affiliations[0]:null,
-            'entitlements'=>$this->identity_entitlements->whereIn('system_id',$identity_account_systems->pluck('id'))->map(function($q) {
-                return $q->name;
-            })->values()->toArray(),
+            'entitlements'=>$this->identity_entitlements->whereIn('system_id',$identity_account_systems->pluck('id'))->pluck('name')->sort()->values()->toArray(),
             'accounts'=>$this->accounts->whereIn('system_id',$identity_account_systems->pluck('id'))->map(function($q) use ($identity_account_systems){
                 return [
                     'id'=>$q->id,
@@ -599,6 +597,10 @@ class Identity extends Authenticatable
             'additional_attributes'=>$this->additional_attributes,
             'sponsor'=>$this->sponsored?$sponsor_info:false,
         ];
+        // If a system is specified, include all entitlements which are available for that system
+        if (!is_null($system_id)) {
+            $data['all_entitlements'] = Entitlement::select('name')->where('system_id',$system_id)->get()->pluck('name')->sort()->values()->toArray();
+        }
         return $data;
     }
 
