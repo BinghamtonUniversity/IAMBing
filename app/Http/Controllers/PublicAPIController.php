@@ -247,14 +247,19 @@ class PublicAPIController extends Controller {
             $q->where('name',$unique_id_type)->where('value',$unique_id);
         })->first();
 
-        return DB::table('identity_entitlements as a')->select('b.name as entitlement',
+        $identity_entitlements = DB::table('identity_entitlements as a')->select('b.name as entitlement',
             'c.name as system','b.subsystem','b.system_id','a.entitlement_id','type',
-            DB::raw('case when (override_add = 0) then "false" else "true" end as override_add'),'description',
-            DB::raw('case when (expire = 0) then "false" else "true" end as expire'),'expiration_date','sponsor_id')
+            'override_add','description',
+            'expire','expiration_date','sponsor_id')
             ->leftJoin('entitlements as b',function($query){
                 $query->on('b.id','=','a.entitlement_id');
             })->leftJoin('systems as c','c.id','=','b.system_id')
             ->where('identity_id',$identity->id)->get();
+        foreach ($identity_entitlements as $ent){
+            $ent->override_add = $ent->override_add == 1;
+            $ent->expire = $ent->expire == 1;
+        }
+        return $identity_entitlements;
     }
 
     public function update_identity_entitlement(Request $request, $unique_id_type,$unique_id, $entitlement_name){
