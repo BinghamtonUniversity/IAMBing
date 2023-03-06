@@ -584,7 +584,7 @@ class Identity extends Authenticatable
                 ];
             })->values()->toArray(),
             'primary_affiliation' => isset($affiliations[0])?$affiliations[0]:null,
-            'entitlements'=>$this->identity_entitlements->wherePivot('type','add')->whereIn('system_id',$identity_account_systems->pluck('id'))->pluck('name')->sort()->values()->toArray(),
+            'entitlements'=>$this->identity_entitlements->whereIn('system_id',$identity_account_systems->pluck('id'))->pluck('name')->sort()->values()->toArray(),
             'accounts'=>$this->accounts->whereIn('system_id',$identity_account_systems->pluck('id'))->map(function($q) use ($identity_account_systems){
                 return [
                     'id'=>$q->id,
