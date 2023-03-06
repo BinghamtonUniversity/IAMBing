@@ -52,7 +52,7 @@ class Identity extends Authenticatable
     }
 
     public function systems() {
-        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->whereNull('deleted_at')->withPivot('id','account_id','status');
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('id','account_id','status');
     }
 
     public function systems_with_accounts_history() {
