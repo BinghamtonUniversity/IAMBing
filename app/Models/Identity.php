@@ -52,7 +52,7 @@ class Identity extends Authenticatable
     }
 
     public function systems() {
-        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->whereNull('deleted_at')->withPivot('id','account_id','status');
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('id','account_id','status');
     }
 
     public function systems_with_accounts_history() {
@@ -479,7 +479,7 @@ class Identity extends Authenticatable
         // Create New Accounts for Unmet Entitlements
         $existing_identity_entitlements = IdentityEntitlement::select('entitlement_id')->where('identity_id',$identity->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
         $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_identity_entitlements)->get()->pluck('system_id')->unique();
-        $system_ids_has = Account::select('system_id')->where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->withTrashed()->where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
         $processed_account_ids = [];
         foreach($diff as $system_id) {
@@ -584,7 +584,7 @@ class Identity extends Authenticatable
                 ];
             })->values()->toArray(),
             'primary_affiliation' => isset($affiliations[0])?$affiliations[0]:null,
-            'entitlements'=>$this->identity_entitlements->whereIn('system_id',$identity_account_systems->pluck('id'))->pluck('name')->sort()->values()->toArray(),
+            'entitlements'=>$this->identity_entitlements->where('pivot.type','add')->whereIn('system_id',$identity_account_systems->pluck('id'))->pluck('name')->sort()->values()->toArray(),
             'accounts'=>$this->accounts->whereIn('system_id',$identity_account_systems->pluck('id'))->map(function($q) use ($identity_account_systems){
                 return [
                     'id'=>$q->id,

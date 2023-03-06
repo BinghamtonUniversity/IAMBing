@@ -13,15 +13,14 @@ ajax.get('/api/entitlements/'+id+'/overrides',function(data) {
                 template:"{{#attributes.identity}}{{first_name}} {{last_name}}{{/attributes.identity}}"
             },
             {type:"text", name:"type", label:"Type"},
-            {type:"date", label: "Expiration Date",name: "expiration_date"},
             {type: 'identity',label: "Sponsor",name:"sponsor_id",
                 template:"{{#attributes.sponsor}}{{first_name}} {{last_name}}{{/attributes.sponsor}}"
             },
-            {type: 'switch',label: "Renewable",name:"sponsor_renew_allow",
-                options:[{value:'false',label:"False"},{value:'true',label:"True"}]
-            },
-            {type: 'text',label: "Renew Dates Allowed",name:"sponsor_renew_days"},
+            {type:"text", name:"description", label:"Description"},
+            {type:"date", label: "Expiration Date",name: "expiration_date"}
         ],
         data: data
+    }).on('click',function(event) {
+        window.location = '/identities/'+event.model.attributes.identity_id
     })
 });
