@@ -751,10 +751,6 @@ class PublicAPIController extends Controller {
         return $entitlement;
     }
 
-//    public function get_entitlements_prerequisites(Request $request, Entitlement $entitlement){
-//        return $entitlement->
-//    }
-
     public function add_entitlement(Request $request){
         $entitlement = new Entitlement($request->all());
         if ($entitlement->require_prerequisite != true) {

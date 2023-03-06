@@ -43,7 +43,6 @@ Route::post('/identities/bulk_update',[PublicAPIController::class, 'bulk_update_
 // Entitlements 
 Route::get('/entitlements',[PublicAPIController::class,'get_all_entitlements']);
 Route::get('/entitlements/{entitlement}',[PublicAPIController::class,'get_entitlement']);
-Route::get('/entitlements/{entitlement}/prerequisites',[PublicAPIController::class,'get_entitlement_prerequisites']);
 Route::post('/entitlements',[PublicAPIController::class,'add_entitlement']);
 Route::put('/entitlements/{entitlement}',[PublicAPIController::class,'update_entitlement']);
 Route::delete('/entitlements/{entitlement}',[PublicAPIController::class,'delete_entitlement']);
