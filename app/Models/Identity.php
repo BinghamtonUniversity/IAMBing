@@ -479,7 +479,7 @@ class Identity extends Authenticatable
         // Create New Accounts for Unmet Entitlements
         $existing_identity_entitlements = IdentityEntitlement::select('entitlement_id')->where('identity_id',$identity->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
         $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_identity_entitlements)->get()->pluck('system_id')->unique();
-        $system_ids_has = Account::select('system_id')->where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->withTrashed()->where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
         $processed_account_ids = [];
         foreach($diff as $system_id) {
