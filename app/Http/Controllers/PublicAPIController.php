@@ -247,6 +247,7 @@ class PublicAPIController extends Controller {
             $q->where('name',$unique_id_type)->where('value',$unique_id);
         })->first();
 
+        // Find all of the entitlements of an identity by unique id and type provided
         $identity_entitlements = IdentityEntitlement::select('b.name as entitlement',
             'c.name as system','b.subsystem','b.system_id','entitlement_id','type',
             'override_add','description',
@@ -261,6 +262,8 @@ class PublicAPIController extends Controller {
 
     public function update_identity_entitlement(Request $request, $unique_id_type,$unique_id, $entitlement_name){
         $validated = $request->validate(['override'=>'required']);
+
+        // If override is set to true, then validate the rest of the required parameters
         if($request->override){
             $validated = $request->validate([
                 'entitlement_type'=>'required',
@@ -270,7 +273,7 @@ class PublicAPIController extends Controller {
                 'description' => 'required'
             ]);
         }
-
+        // Find the entitlement provided
         $entitlement = Entitlement::where('name',$entitlement_name)->first();
         if(is_null($entitlement)) {
             return response()->json([
@@ -283,7 +286,7 @@ class PublicAPIController extends Controller {
                 'error' => 'Entitlement is not allowed to be overridden'
             ],400);
         }
-
+        // Find the identity provided by the unique id and type provided
         $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
             $q->where('name',$unique_id_type)->where('value',$unique_id);
         })->first();
@@ -292,6 +295,7 @@ class PublicAPIController extends Controller {
                 'error' => 'Identity not found!'
             ], 400);
         }
+        // Find the sponsor provided by the unique id and type provided
         $sponsor = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$request){
             $q->where('name',$unique_id_type)->where('value',$request->sponsor_unique_id);
         })->first();
@@ -308,11 +312,14 @@ class PublicAPIController extends Controller {
             ],400);
         }
 
+        // Find the identity entitlement
         $identity_entitlement = IdentityEntitlement::where('identity_id',$identity->id)->where('entitlement_id',$entitlement->id)->first();
 
+        // If override is set to 0, then just update the override
         if(!is_null($identity_entitlement) && !$request->override){
             $identity_entitlement->update(['override'=>0]);
         }
+        // If the entitlement exists, then update it
         elseif(is_null($identity_entitlement) && $request->override){
             $identity_entitlement = new IdentityEntitlement(
                 [
@@ -331,7 +338,7 @@ class PublicAPIController extends Controller {
             );
             $identity_entitlement->save();
         }
-
+        // If the entitlement doesn't exist, then create it
         elseif(!is_null($identity_entitlement) && $request->override){
             $identity_entitlement->update(
                 [
@@ -703,8 +710,10 @@ class PublicAPIController extends Controller {
             ->leftJoin('systems as b','b.id','=','a.system_id');
 
 
+        // Get all entitlements
         $entitlements = $query->get();
 
+        // Go through each entitlement, and recast from 1/0 to true/false, and decode the prerequisites
         foreach($entitlements as $entitlement){
             $entitlement->prerequisites = json_decode($entitlement->prerequisites);
 
@@ -718,6 +727,7 @@ class PublicAPIController extends Controller {
             }
         }
 
+        // Filter by the system, if the system is provided in the request parameters
         if($request->has('system') && !is_null($request->system)){
             $entitlements = $entitlements->where('system_name',$request->system);
         }
