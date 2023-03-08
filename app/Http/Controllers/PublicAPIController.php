@@ -247,29 +247,29 @@ class PublicAPIController extends Controller {
             $q->where('name',$unique_id_type)->where('value',$unique_id);
         })->first();
 
-        $identity_entitlements = DB::table('identity_entitlements as a')->select('b.name as entitlement',
-            'c.name as system','b.subsystem','b.system_id','a.entitlement_id','type',
+        $identity_entitlements = IdentityEntitlement::select('b.name as entitlement',
+            'c.name as system','b.subsystem','b.system_id','entitlement_id','type',
             'override_add','description',
             'expire','expiration_date','sponsor_id')
             ->leftJoin('entitlements as b',function($query){
-                $query->on('b.id','=','a.entitlement_id');
+                $query->on('b.id','=','entitlement_id');
             })->leftJoin('systems as c','c.id','=','b.system_id')
             ->where('identity_id',$identity->id)->get();
-        foreach ($identity_entitlements as $ent){
-            $ent->override_add = $ent->override_add == 1;
-            $ent->expire = $ent->expire == 1;
-        }
+
         return $identity_entitlements;
     }
 
     public function update_identity_entitlement(Request $request, $unique_id_type,$unique_id, $entitlement_name){
-        $validated = $request->validate([
-            'entitlement_type'=>'required',
-            'expire' => 'required',
-            'sponsor_unique_id' => 'required',
-            'sponsor_renew_allow' => 'required',
-            'description' => 'required'
-        ]);
+        $validated = $request->validate(['override'=>'required']);
+        if($request->override){
+            $validated = $request->validate([
+                'entitlement_type'=>'required',
+                'expire' => 'required',
+                'sponsor_unique_id' => 'required',
+                'sponsor_renew_allow' => 'required',
+                'description' => 'required'
+            ]);
+        }
 
         $entitlement = Entitlement::where('name',$entitlement_name)->first();
         if(is_null($entitlement)) {
@@ -277,11 +277,13 @@ class PublicAPIController extends Controller {
                 'error' => 'Entitlement not found!'
             ], 400);
         }
-        if (!$entitlement->override_add){
+
+        if ($request->override && !$entitlement->override_add){
             return response()->json([
                 'error' => 'Entitlement is not allowed to be overridden'
             ],400);
         }
+
         $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
             $q->where('name',$unique_id_type)->where('value',$unique_id);
         })->first();
@@ -308,33 +310,31 @@ class PublicAPIController extends Controller {
 
         $identity_entitlement = IdentityEntitlement::where('identity_id',$identity->id)->where('entitlement_id',$entitlement->id)->first();
 
-        if($request->entitlement_type =='add' && is_null($identity_entitlement)){
-            if($identity_entitlement->override == 1 && $identity_entitlement->type =='remove'){
-                $identity_entitlement->update(['override'=>0]);
-            }else{
-                $identity_entitlement = new IdentityEntitlement(
-                    [
-                        'identity_id'=>$identity->id,
-                        'entitlement_id'=>$entitlement->id,
-                        'type'=>$request->entitlement_type,
-                        'override'=>1,
-                        'expire'=>$request->expire,
-                        'expiration_date'=>isset($request->expiration_date)?$request->expiration_date:null,
-                        'description'=>$request->description,
-                        'sponsor_id'=>$sponsor->id,
-                        'sponsor_renew_allow'=>$request->sponsor_renew_allow,
-                        'sponsor_renew_days'=>$request->sponsor_renew_days,
-                        'override_identity_id'=>null
-                    ]
-                );
-            }
-            $identity_entitlement->save();
+        if(!is_null($identity_entitlement) && !$request->override){
+            $identity_entitlement->update(['override'=>0]);
         }
-        elseif($request->entitlement_type =='add' && !is_null($identity_entitlement)){
-            $identity_entitlement->update(
+        elseif(is_null($identity_entitlement) && $request->override){
+            $identity_entitlement = new IdentityEntitlement(
                 [
                     'identity_id'=>$identity->id,
                     'entitlement_id'=>$entitlement->id,
+                    'type'=>$request->entitlement_type,
+                    'override'=>1,
+                    'expire'=>$request->expire,
+                    'expiration_date'=>isset($request->expiration_date)?$request->expiration_date:null,
+                    'description'=>$request->description,
+                    'sponsor_id'=>$sponsor->id,
+                    'sponsor_renew_allow'=>$request->sponsor_renew_allow,
+                    'sponsor_renew_days'=>$request->sponsor_renew_days,
+                    'override_identity_id'=>null
+                ]
+            );
+            $identity_entitlement->save();
+        }
+
+        elseif(!is_null($identity_entitlement) && $request->override){
+            $identity_entitlement->update(
+                [
                     'type'=>$request->entitlement_type,
                     'override'=>1,
                     'expire'=>$request->expire,
@@ -346,27 +346,6 @@ class PublicAPIController extends Controller {
                     'override_identity_id'=>null
                 ]
             );
-        }
-        elseif($request->entitlement_type =='remove' && !is_null($identity_entitlement)){
-            if($identity_entitlement->override == 1 && $identity_entitlement->type =='add'){
-                $identity_entitlement->update(['override'=>0]);
-            }else{
-                $identity_entitlement->update(
-                    [
-                        'identity_id'=>$identity->id,
-                        'entitlement_id'=>$entitlement->id,
-                        'type'=>$request->entitlement_type,
-                        'override'=>1,
-                        'expire'=>$request->expire,
-                        'expiration_date'=>$request->expire && isset($request->expiration_date)?$request->expiration_date:null,
-                        'description'=>$request->description,
-                        'sponsor_id'=>$sponsor->id,
-                        'sponsor_renew_allow'=>$request->sponsor_renew_allow,
-                        'sponsor_renew_days'=>$request->sponsor_renew_days,
-                        'override_identity_id'=>null
-                    ]
-                );
-            }
         }
 
         $identity->recalculate_entitlements();
@@ -744,7 +723,6 @@ class PublicAPIController extends Controller {
         }
 
         return $entitlements->values();
-
     }
 
     public function get_entitlement(Entitlement $entitlement){

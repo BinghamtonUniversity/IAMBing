@@ -9,7 +9,7 @@ class IdentityEntitlement extends Model
 {
     protected $fillable = ['identity_id','entitlement_id','type','override','expire','expiration_date','description','sponsor_id','sponsor_renew_allow','sponsor_renew_days'];
     protected $table = 'identity_entitlements';
-    protected $casts = ['override'=>'boolean','expire'=>'boolean','expiration_date'=>'date:Y-m-d','entitlement_id'=>'string','override'=>'boolean','sponsor_renew_allow'=>'boolean','sponsor_renew_days'=>'integer'];
+    protected $casts = ['override'=>'boolean','expire'=>'boolean','expiration_date'=>'date:Y-m-d','entitlement_id'=>'string','override_add'=>'boolean','sponsor_renew_allow'=>'boolean','sponsor_renew_days'=>'integer'];
 
     public function identity(){
         return $this->belongsTo(SimpleIdentity::class);
