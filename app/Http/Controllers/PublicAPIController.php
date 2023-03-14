@@ -264,7 +264,7 @@ class PublicAPIController extends Controller {
         $validated = $request->validate(['override'=>'required']);
 
         // If override is set to true, then validate the rest of the required parameters
-        if($request->override){
+        if($request->override===true){
             $validated = $request->validate([
                 'entitlement_type'=>'required',
                 'expire' => 'required',
@@ -278,10 +278,10 @@ class PublicAPIController extends Controller {
         if(is_null($entitlement)) {
             return response()->json([
                 'error' => 'Entitlement not found!'
-            ], 400);
+            ], 404);
         }
 
-        if ($request->override && !$entitlement->override_add){
+        if ( $request->override===true && !$entitlement->override_add){
             return response()->json([
                 'error' => 'Entitlement is not allowed to be overridden'
             ],400);
@@ -293,20 +293,25 @@ class PublicAPIController extends Controller {
         if(is_null($identity)) {
             return response()->json([
                 'error' => 'Identity not found!'
-            ], 400);
+            ], 404);
         }
         // Find the sponsor provided by the unique id and type provided
         $sponsor = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$request){
             $q->where('name',$unique_id_type)->where('value',$request->sponsor_unique_id);
         })->first();
+        if(is_null($sponsor)) {
+            return response()->json([
+                'error' => 'Sponsor not found!'
+            ], 404);
+        }
 
-        if($request->sponsor_renew_allow && ($request->missing('sponsor_renew_days') || is_null($request->sponsor_renew_days))){
+        if($request->sponsor_renew_allow===true && ($request->missing('sponsor_renew_days') || is_null($request->sponsor_renew_days))){
             return response()->json([
                 'error' => 'sponsor_renew_days is missing!'
             ],400);
         }
 
-        if($request->expire && ($request->missing('expiration_date') || is_null($request->expiration_date))){
+        if($request->expire===true && ($request->missing('expiration_date') || is_null($request->expiration_date))){
             return response()->json([
                 'error' => 'expiration_date is missing!'
             ],400);
@@ -316,11 +321,11 @@ class PublicAPIController extends Controller {
         $identity_entitlement = IdentityEntitlement::where('identity_id',$identity->id)->where('entitlement_id',$entitlement->id)->first();
 
         // If override is set to 0, then just update the override
-        if(!is_null($identity_entitlement) && !$request->override){
+        if(!is_null($identity_entitlement) && $request->override!==true){
             $identity_entitlement->update(['override'=>0]);
         }
         // If the entitlement exists, then update it
-        elseif(is_null($identity_entitlement) && $request->override){
+        elseif(is_null($identity_entitlement) && $request->override===true){
             $identity_entitlement = new IdentityEntitlement(
                 [
                     'identity_id'=>$identity->id,
@@ -339,7 +344,7 @@ class PublicAPIController extends Controller {
             $identity_entitlement->save();
         }
         // If the entitlement doesn't exist, then create it
-        elseif(!is_null($identity_entitlement) && $request->override){
+        elseif(!is_null($identity_entitlement) && $request->override===true){
             $identity_entitlement->update(
                 [
                     'type'=>$request->entitlement_type,
