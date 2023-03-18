@@ -36,18 +36,18 @@ class EntitlementsRecalculate extends Command
         foreach($target_groups as $target_group) {
             $this->info(" * ".$target_group->name);
         }
-        if (!$this->confirm('Would you like to initiate recacluation of all identities within these groups? This action can not be undone!')) {
-            $this->error("Exiting");
-            return;
-        }
+
+        $answer = $this->choice(
+            'How would you like to run the entitlement recalculations? (Your response will trigger the recalculation and is undoable!)',
+            ['Horizon Jobs','This CLI Session']
+        );
+
+        $this->output->write("Fetching Identities... ", false);
         $target_identities = Identity::whereHas('group_memberships',function ($query) use ($target_group_ids) {
             $query->whereIn('group_id',$target_group_ids);
         })->get();
-
-        $answer = $this->choice(
-            'How would you like to run the entitlement recalculations?',
-            ['Horizon Jobs','This CLI Session']
-        );
+        $this->output->write("Done");
+        $this->info("\n");
 
         $num_members = count($target_identities);
         $bar = $this->output->createProgressBar($num_members);
@@ -61,14 +61,14 @@ class EntitlementsRecalculate extends Command
                 ]);
                 $bar->advance();
             }
-            $this->info("\nAll Jobs Dispatched.  Please consult horizon queue for pending jobs.");
+            $this->info("\n\nAll Jobs Dispatched.  Please consult horizon queue for pending jobs.");
         } else if ($answer == 'This CLI Session') {
             foreach($target_identities as $index => $target_identity) {
                 $percent_complete = floor(($index / $num_members)*100).'%';
                 $target_identity->recalculate_entitlements();
                 $bar->advance();
             }
-            $this->info("\nAll Recalculate Operations Completed.");
+            $this->info("\n\nAll Recalculate Operations Completed.");
         }
     }
 }
