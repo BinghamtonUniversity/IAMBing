@@ -125,7 +125,8 @@ class Identity extends Authenticatable
             'last_name' => str_split(preg_replace("/[^a-z]/",'',strtolower($this->last_name)), 1),
             'iterator' => $iterator,
             'default_username' => $this->default_username,
-            'ids'=>$this->ids,
+            'ids'=> $this->ids,
+            'iamid' => $this->iamid,
             'additional_attributes' => $this->additional_attributes,
         ];
         $empty_obj = [
@@ -134,6 +135,7 @@ class Identity extends Authenticatable
             'iterator' => $iterator,
             'default_username' => '',
             'ids' => [],
+            'iamid' => '',
             'additional_attributes' => [],
         ];
         $m = new \Mustache_Engine;
