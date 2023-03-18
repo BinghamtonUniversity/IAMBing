@@ -44,16 +44,31 @@ class EntitlementsRecalculate extends Command
             $query->whereIn('group_id',$target_group_ids);
         })->get();
 
-        $this->info("Dispatching Jobs ...");
+        $answer = $this->choice(
+            'How would you like to run the entitlement recalculations?',
+            ['Horizon Jobs','This CLI Session']
+        );
+
         $num_members = count($target_identities);
         $bar = $this->output->createProgressBar($num_members);
-        foreach($target_identities as $index => $target_identity) {
-            $percent_complete = floor(($index / $num_members)*100).'%';
-            UpdateIdentityJob::dispatch([
-                'identity_id' => $target_identity->id,
-            ]);
-            $bar->advance();
+
+        if ($answer == 'Horizon Jobs') {
+            $this->info("Dispatching Jobs ...");
+            foreach($target_identities as $index => $target_identity) {
+                $percent_complete = floor(($index / $num_members)*100).'%';
+                UpdateIdentityJob::dispatch([
+                    'identity_id' => $target_identity->id,
+                ]);
+                $bar->advance();
+            }
+            $this->info("\nAll Jobs Dispatched.  Please consult horizon queue for pending jobs.");
+        } else if ($answer == 'This CLI Session') {
+            foreach($target_identities as $index => $target_identity) {
+                $percent_complete = floor(($index / $num_members)*100).'%';
+                $target_identity->recalculate_entitlements();
+                $bar->advance();
+            }
+            $this->info("\nAll Recalculate Operations Completed.");
         }
-        $this->info("\nAll Jobs Dispatched.  Please consult horizon queue for pending jobs.");
     }
 }
