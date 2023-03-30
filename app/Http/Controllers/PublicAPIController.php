@@ -17,6 +17,7 @@ use App\Models\GroupActionQueue;
 use App\Models\System;
 use App\Models\Entitlement;
 use App\Models\GroupEntitlement;
+use App\Models\IdentityEntitlement;
 use App\Models\Log;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -239,6 +240,128 @@ class PublicAPIController extends Controller {
         } else {
             return $matches[0]->get_api_identity();
         }
+    }
+
+    public function get_identity_entitlements(Request $request, $unique_id_type, $unique_id){
+        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
+            $q->where('name',$unique_id_type)->where('value',$unique_id);
+        })->first();
+
+        // Find all of the entitlements of an identity by unique id and type provided
+        $identity_entitlements = IdentityEntitlement::select('b.name as entitlement',
+            'c.name as system','b.subsystem','b.system_id','entitlement_id','type',
+            'override_add','description',
+            'expire','expiration_date','sponsor_id')
+            ->leftJoin('entitlements as b',function($query){
+                $query->on('b.id','=','entitlement_id');
+            })->leftJoin('systems as c','c.id','=','b.system_id')
+            ->where('identity_id',$identity->id)->get();
+
+        return $identity_entitlements;
+    }
+
+    public function update_identity_entitlement(Request $request, $unique_id_type,$unique_id, $entitlement_name){
+        $validated = $request->validate(['override'=>'required']);
+
+        // If override is set to true, then validate the rest of the required parameters
+        if($request->override===true){
+            $validated = $request->validate([
+                'entitlement_type'=>'required',
+                'expire' => 'required',
+                'sponsor_unique_id' => 'required',
+                'sponsor_renew_allow' => 'required',
+                'description' => 'required'
+            ]);
+        }
+        // Find the entitlement provided
+        $entitlement = Entitlement::where('name',$entitlement_name)->first();
+        if(is_null($entitlement)) {
+            return response()->json([
+                'error' => 'Entitlement not found!'
+            ], 404);
+        }
+
+        if ( $request->override===true && !$entitlement->override_add){
+            return response()->json([
+                'error' => 'Entitlement is not allowed to be overridden'
+            ],400);
+        }
+        // Find the identity provided by the unique id and type provided
+        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
+            $q->where('name',$unique_id_type)->where('value',$unique_id);
+        })->first();
+        if(is_null($identity)) {
+            return response()->json([
+                'error' => 'Identity not found!'
+            ], 404);
+        }
+        // Find the sponsor provided by the unique id and type provided
+        $sponsor = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$request){
+            $q->where('name',$unique_id_type)->where('value',$request->sponsor_unique_id);
+        })->first();
+        if(is_null($sponsor)) {
+            return response()->json([
+                'error' => 'Sponsor not found!'
+            ], 404);
+        }
+
+        if($request->sponsor_renew_allow===true && ($request->missing('sponsor_renew_days') || is_null($request->sponsor_renew_days))){
+            return response()->json([
+                'error' => 'sponsor_renew_days is missing!'
+            ],400);
+        }
+
+        if($request->expire===true && ($request->missing('expiration_date') || is_null($request->expiration_date))){
+            return response()->json([
+                'error' => 'expiration_date is missing!'
+            ],400);
+        }
+
+        // Find the identity entitlement
+        $identity_entitlement = IdentityEntitlement::where('identity_id',$identity->id)->where('entitlement_id',$entitlement->id)->first();
+
+        // If override is set to 0, then just update the override
+        if(!is_null($identity_entitlement) && $request->override!==true){
+            $identity_entitlement->update(['override'=>0]);
+        }
+        // If the entitlement exists, then update it
+        elseif(is_null($identity_entitlement) && $request->override===true){
+            $identity_entitlement = new IdentityEntitlement(
+                [
+                    'identity_id'=>$identity->id,
+                    'entitlement_id'=>$entitlement->id,
+                    'type'=>$request->entitlement_type,
+                    'override'=>1,
+                    'expire'=>$request->expire,
+                    'expiration_date'=>isset($request->expiration_date)?$request->expiration_date:null,
+                    'description'=>$request->description,
+                    'sponsor_id'=>$sponsor->id,
+                    'sponsor_renew_allow'=>$request->sponsor_renew_allow,
+                    'sponsor_renew_days'=>$request->sponsor_renew_days,
+                    'override_identity_id'=>null
+                ]
+            );
+            $identity_entitlement->save();
+        }
+        // If the entitlement doesn't exist, then create it
+        elseif(!is_null($identity_entitlement) && $request->override===true){
+            $identity_entitlement->update(
+                [
+                    'type'=>$request->entitlement_type,
+                    'override'=>1,
+                    'expire'=>$request->expire,
+                    'expiration_date'=>$request->expire && isset($request->expiration_date)?$request->expiration_date:null,
+                    'description'=>$request->description,
+                    'sponsor_id'=>$sponsor->id,
+                    'sponsor_renew_allow'=>$request->sponsor_renew_allow,
+                    'sponsor_renew_days'=>$request->sponsor_renew_days,
+                    'override_identity_id'=>null
+                ]
+            );
+        }
+
+        $identity->recalculate_entitlements();
+        return $identity_entitlement;
     }
 
     // GROUP MANAGEMENT
@@ -585,8 +708,36 @@ class PublicAPIController extends Controller {
 
     // Entitlements Management
     public function get_all_entitlements(Request $request){
-        $entitlements = Entitlement::with('system');
-        return $entitlements->orderBy('system_id')->orderBy('name','asc')->get();
+        $query = DB::table('entitlements as a')
+            ->select('a.id','a.system_id','a.name','a.subsystem','override_add','end_user_visible','require_prerequisite',
+                'prerequisites',
+                'b.name as system_name')
+            ->leftJoin('systems as b','b.id','=','a.system_id');
+
+
+        // Get all entitlements
+        $entitlements = $query->get();
+
+        // Go through each entitlement, and recast from 1/0 to true/false, and decode the prerequisites
+        foreach($entitlements as $entitlement){
+            $entitlement->prerequisites = json_decode($entitlement->prerequisites);
+
+            $entitlement->override_add = $entitlement->override_add == 1;
+            $entitlement->end_user_visible = $entitlement->end_user_visible == 1;
+            $entitlement->require_prerequisite = $entitlement->require_prerequisite == 1;
+
+            if(!is_null($entitlement->prerequisites) && count($entitlement->prerequisites)>0){
+                $ids = array_map('intval', $entitlement->prerequisites);
+                $entitlement->prerequisites = array_column($entitlements->whereIn('id',$ids)->toArray(),'name');
+            }
+        }
+
+        // Filter by the system, if the system is provided in the request parameters
+        if($request->has('system') && !is_null($request->system)){
+            $entitlements = $entitlements->where('system_name',$request->system);
+        }
+
+        return $entitlements->values();
     }
 
     public function get_entitlement(Entitlement $entitlement){

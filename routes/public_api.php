@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ConfigurationController;
 use App\Http\Controllers\PublicAPIController;
-use App\Http\Controllers\IdentityController;
 
 // All Public API Routes are prepended by /api/public
 // as per the RouteServiceProvider Controller
@@ -32,10 +31,14 @@ Route::post('/groups/{group_slug}/admin',[PublicAPIController::class,'insert_gro
 Route::delete('/groups/{group_slug}/admin',[PublicAPIController::class,'remove_group_admin']); 
 
 // Identities
+Route::get('/identities/{unique_id_type}/{unique_id}/entitlements',[PublicAPIController::class,'get_identity_entitlements']);
+Route::put('/identities/{unique_id_type}/{unique_id}/entitlements/{entitlement_name}',[PublicAPIController::class,'update_identity_entitlement']);
 Route::get('/identities/search/{search}',[PublicAPIController::class,'identity_search']);
 Route::get('/identities/{unique_id_type}/{unique_id}',[PublicAPIController::class,'get_identity']);
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identity']);
 Route::post('/identities/bulk_update',[PublicAPIController::class, 'bulk_update_identities']);
+
+
 
 // Entitlements 
 Route::get('/entitlements',[PublicAPIController::class,'get_all_entitlements']);
