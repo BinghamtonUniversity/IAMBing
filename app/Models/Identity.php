@@ -125,7 +125,9 @@ class Identity extends Authenticatable
             'last_name' => str_split(preg_replace("/[^a-z]/",'',strtolower($this->last_name)), 1),
             'iterator' => $iterator,
             'default_username' => $this->default_username,
-            'ids'=>$this->ids,
+            'default_email' => $this->default_email,
+            'iamid' => $this->iamid,
+            'ids'=> $this->ids,
             'additional_attributes' => $this->additional_attributes,
         ];
         $empty_obj = [
@@ -133,6 +135,8 @@ class Identity extends Authenticatable
             'last_name' => [],
             'iterator' => $iterator,
             'default_username' => '',
+            'default_email' => '',
+            'iamid' => '',
             'ids' => [],
             'additional_attributes' => [],
         ];
