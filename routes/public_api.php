@@ -37,7 +37,7 @@ Route::get('/identities/search/{search}',[PublicAPIController::class,'identity_s
 Route::get('/identities/{unique_id_type}/{unique_id}',[PublicAPIController::class,'get_identity']);
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identity']);
 Route::post('/identities/bulk_update',[PublicAPIController::class, 'bulk_update_identities']);
-
+Route::post('/identities/update_permissions',[PublicAPIController::class, 'update_identity_permissions']);
 
 
 // Entitlements 
