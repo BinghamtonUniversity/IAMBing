@@ -105,11 +105,8 @@ class AdminController extends Controller
             $user_actions[] = ["|"];
             $user_actions[] = ["name"=>"edit","label"=>"Update Group"];   
         }
-        $user_actions[] = ["label"=>"Manage Members","name"=>"manage_members","min"=>1,"max"=>1,"type"=>"default"];
-        
-        if ($identity->can('manage_groups','App\Group')){
-            $user_actions[] = ["label"=>"Manage Administrators","name"=>"manage_admins","min"=>1,"max"=>1,"type"=>"default"];
-        }
+        $user_actions[] = ["label"=>"Manage Members","name"=>"manage_members","min"=>1,"max"=>1,"type"=>"default"];        
+        $user_actions[] = ["label"=>"Manage Administrators","name"=>"manage_admins","min"=>1,"max"=>1,"type"=>"default"];
         
         if(in_array('manage_groups',$auth_user_perms) && in_array('manage_entitlements',$auth_user_perms)){
             $user_actions[] = ["label"=>"Manage Entitlements","name"=>"manage_entitlements","min"=>1,"max"=>1,"type"=>"warning"];

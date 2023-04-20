@@ -42,7 +42,7 @@ class GroupPolicy
     }
 
     public function manage_group_admins(Identity $identity){
-        return Permission::where('identity_id',$identity->id)->where('permission','manage_groups')->first();
+        return $group->isAdmin($identity) || $this->manage_groups($identity,$group);
     }
 
     public function manage_group_members(Identity $identity, Group $group){
