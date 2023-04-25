@@ -795,6 +795,18 @@ class PublicAPIController extends Controller {
         return ['success' => 'Group Deleted From Entitlement!'];
     }
 
+    public function get_identity_permissions(Request $request,$unique_id_type, $unique_id){
+        // Find the identity
+        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id ){
+            $q->where('name',$unique_id_type)->where('value',$unique_id);
+        })->first();
+        if(is_null($identity)){
+            return response()->json([
+                'error' => 'Identity Not Found',
+            ],404);
+        }
+        return $identity->permissions;
+    }
     // allowed_group: this parameter should be sent to decide the group to be checked
     // allowed_permissions: the API will look for the array of allowed permissions for the allowed_group parameter,
     // and makes sure if the identity has the appropriate permissions for the allowed_group sent. If the identity is in the group,
@@ -802,17 +814,14 @@ class PublicAPIController extends Controller {
     // If the identity is not in the allowed_group but has permissions, then removes all the permissions of the identity
     // ids: unique_ids of the user
     // unique_id_type: To search a user on a unique_id_type provided. e.g. bnumber
-    public function update_identity_permissions(Request $request){
+    public function update_identity_permissions(Request $request,$unique_id_type, $unique_id){
         $request->validate([
-            'unique_id_type' => 'required',
-            'ids' => 'required',
-            'allowed_group'=>'required',
-            'allowed_permissions'=>'required'
+            'permissions' => 'required'
         ]);
 
         // Find the identity
-        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($request){
-            $q->where('name',$request->unique_id_type)->where('value',$request->ids[$request->unique_id_type]);
+        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id ){
+            $q->where('name',$unique_id_type)->where('value',$unique_id);
         })->first();
         if(is_null($identity)){
             return response()->json([
@@ -823,27 +832,22 @@ class PublicAPIController extends Controller {
         // Get the identity permissions
         $identity_permissions = $identity->permissions;
 
-        // Get the API Identity to prevent for its groups
-        $api_identity = $identity->get_api_identity();
-
-        // Check if the identity is in the allowed groups
-        $user_groups = array_filter(array_column($api_identity['group_memberships'], 'slug'),function($slug) use ($request){
-            return $slug == $request->allowed_group;
-        });
-        // If the identity is in the allowed groups, then make sure it has all the required permissions
-        if (count($user_groups)>0){
-            foreach($request->allowed_permissions as $permission){
-                if(!in_array($permission, $identity_permissions)){
-                    $identity_permission = new Permission([
-                        "identity_id"=>$identity->id,
-                        "permission"=>$permission
-                    ]);
-                    $identity_permission->save();
-                }
+        foreach($request->permissions as $permission){
+            if(!in_array($permission, $identity_permissions)){
+                $identity_permission = new Permission([
+                    "identity_id"=>$identity->id,
+                    "permission"=>$permission
+                ]);
+                $identity_permission->save();
             }
-        }else{// If the identity is NOT in the allowed group, then remove all identity permissions
-            Permission::where('identity_id',$identity->id)->delete();
         }
+
+        foreach($identity_permissions as $permission){
+            if(!in_array($permission, $request->permissions)){
+                Permission::where("identity_id",$identity->id)->where("permission",$permission)->delete();
+            }
+        }
+
 
         return ['success' => 'Permission revision has been successful!'];
     }

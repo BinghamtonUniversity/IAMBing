@@ -37,7 +37,6 @@ Route::get('/identities/search/{search}',[PublicAPIController::class,'identity_s
 Route::get('/identities/{unique_id_type}/{unique_id}',[PublicAPIController::class,'get_identity']);
 Route::post('/identities',[PublicAPIController::class, 'insert_update_identity']);
 Route::post('/identities/bulk_update',[PublicAPIController::class, 'bulk_update_identities']);
-Route::post('/identities/update_permissions',[PublicAPIController::class, 'update_identity_permissions']);
 
 
 // Entitlements 
@@ -48,3 +47,7 @@ Route::put('/entitlements/{entitlement}',[PublicAPIController::class,'update_ent
 Route::delete('/entitlements/{entitlement}',[PublicAPIController::class,'delete_entitlement']);
 Route::post('/entitlements/{entitlement}/groups/{group_slug}',[PublicAPIController::class,'add_group_to_entitlement']);
 Route::delete('/entitlements/{entitlement}/groups/{group_slug}',[PublicAPIController::class,'delete_group_from_entitlement']);
+
+// Permissions
+Route::get('/identities/{unique_id_type}/{unique_id}/permissions', [PublicAPIController::class, 'get_identity_permissions']);
+Route::post('/identities/{unique_id_type}/{unique_id}/permissions', [PublicAPIController::class, 'update_identity_permissions']);
