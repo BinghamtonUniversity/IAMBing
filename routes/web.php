@@ -38,7 +38,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/identities/{identity}/entitlements', [AdminController::class, 'identity_entitlements'])->middleware('can:override_identity_entitlements,App\Models\Identity');
     Route::get('/groups', [AdminController::class, 'groups'])->middleware('can:list_search,App\Models\Group');
     Route::get('/groups/{group}/members', [AdminController::class, 'group_members'])->middleware('can:manage_group_members,group');
-    Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins'])->middleware('can:manage_groups,App\Models\Group');
+    Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins'])->middleware('can:manage_group_admins,group');
     Route::get('/groups/{group}/entitlements', [AdminController::class, 'group_entitlements'])->middleware('can:manage_group_entitlements,group');
     Route::get('/systems', [AdminController::class, 'systems'])->middleware('can:list_search,App\Models\System');
     Route::get('/entitlements', [AdminController::class, 'entitlements'])->middleware('can:list_search,App\Models\Entitlement');
