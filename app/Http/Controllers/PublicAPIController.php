@@ -805,7 +805,12 @@ class PublicAPIController extends Controller {
                 'error' => 'Identity Not Found',
             ],404);
         }
-        return $identity->permissions;
+        if(!is_null($identity->permissions)){
+            return $identity->permissions;
+        }else{
+            return [];
+        }
+
     }
     // allowed_group: this parameter should be sent to decide the group to be checked
     // allowed_permissions: the API will look for the array of allowed permissions for the allowed_group parameter,
@@ -815,9 +820,11 @@ class PublicAPIController extends Controller {
     // ids: unique_ids of the user
     // unique_id_type: To search a user on a unique_id_type provided. e.g. bnumber
     public function update_identity_permissions(Request $request,$unique_id_type, $unique_id){
-        $request->validate([
-            'permissions' => 'required'
-        ]);
+        if(!($request->has('permissions'))){
+            return response()->json([
+                'error' => 'permissions is missing',
+            ],400);
+        }
 
         // Find the identity
         $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id ){
