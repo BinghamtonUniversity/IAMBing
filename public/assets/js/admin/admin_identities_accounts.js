@@ -7,8 +7,9 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
         {"name":"add","label":"Create Account"},
         {"name":"edit_attributes","label":"Edit Attributes","min":1,"max":1,"type":"info"},
         '','',
-        {"name":"softdelete","label":"Delete Account","min":1,"max":1,"type":"danger"},
         {"name":"softrestore","label":"Restore Account","min":1,"max":1,"type":"warning"},
+        {"name":"rename_account","label":"Rename Account ID","min":1,"max":1,"type":"warning"},
+        {"name":"softdelete","label":"Delete Account","min":1,"max":1,"type":"danger"},
     ],
     count:20,
     schema:[
@@ -93,7 +94,28 @@ ajax.get('/api/identities/'+id+'/accounts',function(data) {
             } else {
                 toastr.error("There are no account attributes defined for this system.")
             }
-        });        
-    });
+        });
+    }).on("model:rename_account",function(grid_event) {
+        new gform({
+            "legend":"Rename Account ID",
+            "name": "rename_account",
+            "fields": [
+                {type:"hidden", name:"id"},
+                {type:"text", name:"account_id", label:"Account ID",required:true,help:'This is the unique identifier which will be used for this account.  It may be a username or some other unique id.'}   
+            ]
+        }).on('save',function(form_event){
+            toastr.info('Processing... Please Wait')
+            form_event.form.trigger('close');
+            var form_data = form_event.form.get();
+            grid_event.model.attributes.account_id = form_data.account_id;
+            ajax.put('/api/identities/'+id+'/accounts/'+grid_event.model.attributes.id+'/rename',grid_event.model.attributes,function(data) {
+                grid_event.model.update(data)
+            },function(data) {
+                grid_event.model.undo();
+            }); 
+        }).on('cancel',function(form_event){
+            form_event.form.trigger('close');
+        }).modal().set(grid_event.model.attributes);
+    });    
 });
 

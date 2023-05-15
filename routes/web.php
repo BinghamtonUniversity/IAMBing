@@ -77,6 +77,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/identities/{identity}/accounts/{account_id}',[IdentityController::class,'update_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
         Route::delete('/identities/{identity}/accounts/{account}',[IdentityController::class,'delete_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
         Route::put('/identities/{identity}/accounts/{account_id}/restore',[IdentityController::class,'restore_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
+        Route::put('/identities/{identity}/accounts/{account_id}/rename',[IdentityController::class,'rename_account'])->middleware('can:manage_identity_accounts,App\Models\Identity');
 
         // Identity Groups
         Route::get('/identities/{identity}/groups',[IdentityController::class,'get_groups'])->middleware('can:view_identity_info,App\Models\Identity');

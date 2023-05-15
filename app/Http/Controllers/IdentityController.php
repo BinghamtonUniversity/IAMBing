@@ -226,6 +226,14 @@ class IdentityController extends Controller
         return $account;
     }
 
+    public function rename_account(Request $request, Identity $identity, $account_id) {
+        $account = Account::where('id',$account_id)->withTrashed()->first();
+        $account->account_id = $request->account_id;
+        $account->save();
+        $identity->recalculate_entitlements();
+        return $account;
+    }
+
     public function get_groups(Identity $identity) {
         return GroupMember::where('identity_id',$identity->id)->get();
     }
