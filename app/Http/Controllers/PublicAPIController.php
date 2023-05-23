@@ -8,6 +8,7 @@ use App\Models\GroupAdmin;
 use App\Models\Identity;
 use App\Models\IdentityUniqueID;
 use App\Models\IdentityAttribute;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use App\Jobs\UpdateIdentityJob;
@@ -792,6 +793,70 @@ class PublicAPIController extends Controller {
         $group_entitlement = GroupEntitlement::where('entitlement_id','=',$entitlement->id)->where('group_id','=',$group->id)->first();
         $group_entitlement->delete();
         return ['success' => 'Group Deleted From Entitlement!'];
+    }
+
+    public function get_identity_permissions(Request $request,$unique_id_type, $unique_id){
+        // Find the identity
+        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id ){
+            $q->where('name',$unique_id_type)->where('value',$unique_id);
+        })->first();
+        if(is_null($identity)){
+            return response()->json([
+                'error' => 'Identity Not Found',
+            ],404);
+        }
+        if(!is_null($identity->permissions)){
+            return $identity->permissions;
+        }else{
+            return [];
+        }
+
+    }
+    // allowed_group: this parameter should be sent to decide the group to be checked
+    // allowed_permissions: the API will look for the array of allowed permissions for the allowed_group parameter,
+    // and makes sure if the identity has the appropriate permissions for the allowed_group sent. If the identity is in the group,
+    // then adds the missing permissions.
+    // If the identity is not in the allowed_group but has permissions, then removes all the permissions of the identity
+    // ids: unique_ids of the user
+    // unique_id_type: To search a user on a unique_id_type provided. e.g. bnumber
+    public function update_identity_permissions(Request $request,$unique_id_type, $unique_id){
+        if(!($request->has('permissions'))){
+            return response()->json([
+                'error' => 'permissions is missing',
+            ],400);
+        }
+
+        // Find the identity
+        $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id ){
+            $q->where('name',$unique_id_type)->where('value',$unique_id);
+        })->first();
+        if(is_null($identity)){
+            return response()->json([
+                'error' => 'Identity Not Found',
+            ],404);
+        }
+
+        // Get the identity permissions
+        $identity_permissions = $identity->permissions;
+
+        foreach($request->permissions as $permission){
+            if(!in_array($permission, $identity_permissions)){
+                $identity_permission = new Permission([
+                    "identity_id"=>$identity->id,
+                    "permission"=>$permission
+                ]);
+                $identity_permission->save();
+            }
+        }
+
+        foreach($identity_permissions as $permission){
+            if(!in_array($permission, $request->permissions)){
+                Permission::where("identity_id",$identity->id)->where("permission",$permission)->delete();
+            }
+        }
+
+
+        return ['success' => 'Permission revision has been successful!'];
     }
 
 }
