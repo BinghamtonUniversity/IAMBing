@@ -457,9 +457,13 @@ class PublicAPIController extends Controller {
 
     public function bulk_update_group_members(Request $request, $group_slug) {
         $validated = $request->validate([
-            'identities' => 'required',
             'id' => 'required',
         ]);
+        if (!($request->has('identities'))) {
+            return response()->json([
+                'error' => 'must provide "identities" array',
+            ],400);
+        }
 
         $group = Group::where('slug',$group_slug)->first();
         if (is_null($group)) {
