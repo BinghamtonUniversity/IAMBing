@@ -42,6 +42,10 @@ class EntitlementsRecalculate extends Command
             ['Horizon Jobs','This CLI Session']
         );
 
+        if ($answer == 'Horizon Jobs') {
+            $job_queue = $this->choice('Which Job Queue would you like to use?',['high','default','low']);
+        }
+
         $this->output->write("Fetching Identities... ", false);
         $target_identities = Identity::whereHas('group_memberships',function ($query) use ($target_group_ids) {
             $query->whereIn('group_id',$target_group_ids);
@@ -58,7 +62,7 @@ class EntitlementsRecalculate extends Command
                 $percent_complete = floor(($index / $num_members)*100).'%';
                 UpdateIdentityJob::dispatch([
                     'identity_id' => $target_identity->id,
-                ]);
+                ])->onQueue($job_queue);
                 $bar->advance();
             }
             $this->info("\n\nAll Jobs Dispatched.  Please consult horizon queue for pending jobs.");
