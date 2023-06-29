@@ -11,6 +11,10 @@ class EndpointHelper {
         if ($endpoint->config->type == 'http_no_auth') {
             return $httpHelper->http_fetch(['url'=>$endpoint->config->url, 'verb'=>$config->verb]);
         } else if ($endpoint->config->type == 'http_basic_auth') {
+            // Don't try to encode the data object for GET requests
+            if ($config->verb === 'GET') {
+                $data = [];
+            }
             $http_config = [
                 'url'  => $url,
                 'verb' => $config->verb,
