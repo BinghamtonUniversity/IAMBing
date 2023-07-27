@@ -243,6 +243,46 @@ class PublicAPIController extends Controller {
         }
     }
 
+    public function identity_search_all($search_string='') {
+        $search_elements_parsed = preg_split('/[\s,]+/',strtolower($search_string));
+        $search = []; $identities = []; $ids = collect();
+        if (count($search_elements_parsed) === 1 && $search_elements_parsed[0]!='') {
+            $search[0] = $search_elements_parsed[0];
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('id',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('iamid',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('first_name','like',$search[0].'%')
+                ->orWhere('last_name','like',$search[0].'%')->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->orWhere('default_username',$search[0])
+                ->orWhere('default_email',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identity_unique_ids')->select('identity_id as id')->where('value',$search[0])->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('accounts')->select('identity_id as id')->where('account_id',$search[0])->limit(15)->get()->pluck('id'));
+            $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
+                ->whereIn('id',$ids)->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
+                ->limit(15)->get()->toArray();
+        } else if (count($search_elements_parsed) > 1) {
+            $search[0] = $search_elements_parsed[0];
+            $search[1] = $search_elements_parsed[count($search_elements_parsed)-1];
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->where('first_name','like',$search[0].'%')->where('last_name','like',$search[1].'%')
+                ->limit(15)->get()->pluck('id'));
+            $ids = $ids->merge(DB::table('identities')->select('id')
+                ->where('first_name','like',$search[1].'%')->where('last_name','like',$search[0].'%')
+                ->limit(15)->get()->pluck('id'));
+            $identities = Identity::select('id','iamid','first_name','last_name','default_username','default_email')
+                ->whereIn('id',$ids)->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')
+                ->limit(15)->get()->toArray();
+        }
+        foreach($identities as $index => $identity) {
+            $identities[$index] = array_intersect_key($identity, array_flip(['id','iamid','first_name','last_name','default_username','default_email']));
+        }
+
+        return $identities;
+    }
+
     public function get_identity_entitlements(Request $request, $unique_id_type, $unique_id){
         $identity = Identity::whereHas("identity_unique_ids",function($q) use ($unique_id_type,$unique_id){
             $q->where('name',$unique_id_type)->where('value',$unique_id);
