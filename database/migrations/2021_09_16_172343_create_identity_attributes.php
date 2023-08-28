@@ -17,7 +17,7 @@ class CreateIdentityAttributes extends Migration
             $table->id();
             $table->unsignedBigInteger('identity_id')->index();
             $table->string('name')->index();
-            $table->string('value')->nullable()->default(null)->index();
+            $table->string('value',512)->nullable()->default(null)->index();
             $table->boolean('array')->default(false);
             $table->timestamps();
             $table->index(['identity_id', 'name']);
