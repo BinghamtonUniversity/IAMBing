@@ -2,11 +2,7 @@ ajax.get('/api/groups/'+id+'/entitlements',function(data) {
     gdg = new GrapheneDataGrid({el:'#adminDataGrid',
         name: 'groups_entitlements',
         search: false,columns: false,upload:false,download:false,title:'Group Entitlements',
-        actions:[
-            {"name":"create","label":"Add Entitlement to Group"},
-            '','',
-            {"name":"delete","label":"Remove Entitlement from Group"},
-        ],
+        actions:actions,
         count:20,
         schema:[
             {type:"hidden", name:"id"},

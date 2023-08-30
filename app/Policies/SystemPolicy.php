@@ -21,19 +21,21 @@ class SystemPolicy
     }
 
     public function view_in_admin(Identity $identity){
-        return Permission::where('identity_id',$identity->id)->where('permission','manage_systems')->first();
+        return Permission::where('identity_id',$identity->id)
+            ->whereIn('permission',['view_systems','manage_systems'])->first();
     }
     public function list_search(Identity $identity){
-        return Permission::where('identity_id',$identity->id)->where(function ($q){
-            $q->orWhere('permission','view_identities')
-            ->orWhere('permission','manage_identities')
-            ->orWhere('permission','manage_identity_permissions')
-            ->orWhere('permission','manage_identity_accounts')
-            ->orWhere('permission','merge_identities')
-            ->orWhere('permission','impersonate_identities')
-            ->orWhere('permission','manage_systems')
-            ->orWhere('permission','manage_entitlements');
-        })->first();
+        return Permission::where('identity_id',$identity->id)->whereIn('permission',[
+            'view_identities',
+            'manage_identities',
+            'manage_identity_permissions',
+            'manage_identity_accounts',
+            'merge_identities',
+            'impersonate_identities',
+            'view_systems',
+            'manage_systems',
+            'manage_entitlements'
+        ])->first();
     }
 
     public function manage_systems(Identity $identity){

@@ -4,13 +4,7 @@ ajax.get('/api/systems',function(data) {
 	name: 'systems',
     search: false,columns: false,upload:false,download:false,title:'Systems',
     entries:[],
-    actions:[
-        {"name":"create","label":"New System"},
-        '',
-        {"name":"edit","label":"Update System"},
-        '',
-        {"name":"delete","label":"Delete System"}
-    ],
+    actions:actions,
     count:20,
     schema:[
         {type:"hidden", name:"id"},

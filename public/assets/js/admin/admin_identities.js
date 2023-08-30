@@ -534,8 +534,24 @@ var manage_identity = function(identity_id) {
                                 "value": "view_groups"
                             },
                             {
+                                "label": "View Groups",
+                                "value": "view_groups"
+                            },
+                            {
+                                "label": "View Group Admins",
+                                "value": "view_group_admins"
+                            },
+                            {
+                                "label": "View Group Members",
+                                "value": "view_group_members"
+                            },
+                            {
                                 "label": "Manage Groups",
                                 "value": "manage_groups"
+                            },
+                            {
+                                "label": "View Systems",
+                                "value": "view_systems"
                             },
                             {
                                 "label": "Manage Systems",
@@ -544,6 +560,10 @@ var manage_identity = function(identity_id) {
                             {
                                 "label": "Manage Apis",
                                 "value": "manage_apis"
+                            },
+                            {
+                                "label": "View Entitlements",
+                                "value": "view_entitlements"
                             },
                             {
                                 "label": "Manage Entitlements",

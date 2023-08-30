@@ -3,11 +3,7 @@ ajax.get('/api/groups/'+id+'/admins?simple=true',function(data) {
     name: 'groups_admins',
     search: false,columns: false,upload:false,download:false,title:'Group Admins',
     entries:[],
-    actions:[
-        {"name":"create","label":"Add Admin to Group"},
-        '','',
-        {"name":"delete","label":"Remove Admin from Group"},
-    ],
+    actions:actions,
     count:20,
     schema:[
         {type:"hidden", name:"id"},

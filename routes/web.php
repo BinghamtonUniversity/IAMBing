@@ -37,12 +37,12 @@ Route::group(['middleware'=>['custom.auth']], function () {
     Route::get('/identities/{identity}/permissions', [AdminController::class, 'identity_permissions'])->middleware('can:manage_identity_permissions,App\Models\Identity');
     Route::get('/identities/{identity}/entitlements', [AdminController::class, 'identity_entitlements'])->middleware('can:override_identity_entitlements,App\Models\Identity');
     Route::get('/groups', [AdminController::class, 'groups'])->middleware('can:list_search,App\Models\Group');
-    Route::get('/groups/{group}/members', [AdminController::class, 'group_members'])->middleware('can:manage_group_members,group');
-    Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins'])->middleware('can:manage_group_admins,group');
-    Route::get('/groups/{group}/entitlements', [AdminController::class, 'group_entitlements'])->middleware('can:manage_group_entitlements,group');
+    Route::get('/groups/{group}/members', [AdminController::class, 'group_members'])->middleware('can:view_group_members,group');
+    Route::get('/groups/{group}/admins', [AdminController::class, 'group_admins'])->middleware('can:view_group_admins,group');
+    Route::get('/groups/{group}/entitlements', [AdminController::class, 'group_entitlements'])->middleware('can:view_group_entitlements,group');
     Route::get('/systems', [AdminController::class, 'systems'])->middleware('can:list_search,App\Models\System');
     Route::get('/entitlements', [AdminController::class, 'entitlements'])->middleware('can:list_search,App\Models\Entitlement');
-    Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups'])->middleware('can:manage_group_entitlements,App\Models\Group');
+    Route::get('/entitlements/{entitlement}/groups', [AdminController::class, 'entitlement_groups'])->middleware('can:view_group_entitlements,App\Models\Group');
     Route::get('/entitlements/{entitlement}/overrides', [AdminController::class, 'entitlement_overrides'])->middleware('can:list_search,App\Models\Entitlement');
     Route::get('/endpoints', [AdminController::class, 'endpoints'])->middleware('can:list_search,App\Models\Endpoint');
     Route::get('/configuration', [AdminController::class, 'configuration'])->middleware('can:update,App\Models\Configuration');
@@ -105,19 +105,17 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::put('/groups/order',[GroupController::class,'update_groups_order'])->middleware('can:manage_groups,App\Models\Group');
         Route::put('/groups/{group}',[GroupController::class,'update_group'])->middleware('can:manage_groups,App\Models\Group');
         Route::delete('/groups/{group}',[GroupController::class,'delete_group'])->middleware('can:manage_groups,App\Models\Group');
-        Route::get('/groups/{group}/members',[GroupController::class,'get_members'])->middleware('can:manage_group_members,group');
+        Route::get('/groups/{group}/members',[GroupController::class,'get_members'])->middleware('can:view_group_members,group');
         Route::post('/groups/{group}/members/{identity}',[GroupController::class,'add_member'])->middleware('can:manage_group_members,group');
         Route::delete('/groups/{group}/members/{identity}',[GroupController::class,'delete_member'])->middleware('can:manage_group_members,group');
         Route::post('/groups/{group}/members_bulk/{unique_id}',[GroupController::class,'bulk_add_members'])->middleware('can:manage_group_members,group');
         Route::delete('/groups/{group}/members_bulk/{unique_id}',[GroupController::class,'bulk_delete_members'])->middleware('can:manage_group_members,group');
-        Route::get('/groups/{group}/admins',[GroupController::class,'get_admins'])->middleware('can:manage_group_admins,group');
+        Route::get('/groups/{group}/admins',[GroupController::class,'get_admins'])->middleware('can:view_group_admins,group');
         Route::post('/groups/{group}/admins',[GroupController::class,'add_admin'])->middleware('can:manage_group_admins,group');
         Route::delete('/groups/{group}/admins/{identity}',[GroupController::class,'delete_admin'])->middleware('can:manage_group_admins,group');
-        Route::get('/groups/{group}/entitlements',[GroupController::class,'get_entitlements'])->middleware('can:manage_group_entitlements,group');
+        Route::get('/groups/{group}/entitlements',[GroupController::class,'get_entitlements'])->middleware('can:view_group_entitlements,group');
         Route::post('/groups/{group}/entitlements',[GroupController::class,'add_entitlement'])->middleware('can:manage_group_entitlements,group');
         Route::delete('/groups/{group}/entitlements/{entitlement}',[GroupController::class,'delete_entitlement'])->middleware('can:manage_group_entitlements,group');
-        // Route::post('/groups/{group}/identities/{identity}','GroupController@add_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
-        // Route::delete('/groups/{group}/identities/{identity}','GroupController@delete_group_membership')->middleware('can:manage_group_membership,App\Models\Group');
 
         /* Systems Methods */
         Route::get('/systems',[SystemController::class,'get_all_systems'])->middleware('can:list_search,App\Models\System');
@@ -135,7 +133,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::delete('/entitlements/{entitlement}',[EntitlementController::class,'delete_entitlement'])->middleware('can:manage_entitlements,App\Models\Entitlement');
         Route::get('/entitlements/{entitlement}/groups',[EntitlementController::class,'get_groups'])->middleware('can:list_search,App\Models\Entitlement');
         Route::post('/entitlements/{entitlement}/groups',[EntitlementController::class,'add_group'])->middleware('can:manage_group_entitlements,App\Models\Group');
-        Route::delete('/entitlements/{entitlement}/groups/{group}',[EntitlementController::class,'delete_group'])->middleware('can:manage_entitlements,App\Models\Entitlement');
+        Route::delete('/entitlements/{entitlement}/groups/{group}',[EntitlementController::class,'delete_group'])->middleware('can:manage_group_entitlements,App\Models\Group');
         Route::get('/entitlements/{entitlement}/overrides',[EntitlementController::class,'get_entitlement_overrides'])->middleware('can:list_search,App\Models\Entitlement');
 
         /* API Endpoints Methods */

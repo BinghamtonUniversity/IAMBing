@@ -108,7 +108,7 @@ class AdminController extends Controller
         $user_actions[] = ["label"=>"Manage Members","name"=>"manage_members","min"=>1,"max"=>1,"type"=>"default"];        
         $user_actions[] = ["label"=>"Manage Administrators","name"=>"manage_admins","min"=>1,"max"=>1,"type"=>"default"];
         
-        if(in_array('manage_groups',$auth_user_perms) && in_array('manage_entitlements',$auth_user_perms)){
+        if($identity->can('view_group_entitlements','App\Group')) {
             $user_actions[] = ["label"=>"Manage Entitlements","name"=>"manage_entitlements","min"=>1,"max"=>1,"type"=>"warning"];
         }
             
@@ -131,48 +131,81 @@ class AdminController extends Controller
     }
 
     public function group_members(Request $request, Group $group) {
+        $identity = Auth::user();
         return view('default.admin',['page'=>'groups_members','ids'=>[$group->id],'title'=>'Manage "'.$group->name.'" Group Members','help'=>
             'Use this page to add / remove identities from the current group.',
             'actions' => [
-                ($group->type==='manual')?["name"=>"add","label"=>"Add Identity",'type'=>'success']:'',
-                ($group->type==='manual')?["name"=>"bulk_add","label"=>"Bulk Add Identities"]:'','','',
-                ($group->type==='manual')?["name"=>"bulk_remove","label"=>"Bulk Remove Identities","type"=>"danger"]:'',
-                ($group->type==='manual')?["name"=>"delete","label"=>"Remove Identity"]:'',
+                ($group->type==='manual' && $identity->can('manage_group_members',$group))?["name"=>"add","label"=>"Add Identity",'type'=>'success']:'',
+                ($group->type==='manual' && $identity->can('manage_group_members',$group))?["name"=>"bulk_add","label"=>"Bulk Add Identities"]:'','','',
+                ($group->type==='manual' && $identity->can('manage_group_members',$group))?["name"=>"bulk_remove","label"=>"Bulk Remove Identities","type"=>"danger"]:'',
+                ($group->type==='manual' && $identity->can('manage_group_members',$group))?["name"=>"delete","label"=>"Remove Identity"]:'',
             ],
         ]);
     }
 
     public function group_admins(Request $request, Group $group) {
+        $identity = Auth::user();
         return view('default.admin',['page'=>'groups_admins','ids'=>[$group->id],'title'=>'Manage "'.$group->name.'" Group Admins','help'=>
-            'Use this page to manage administrators of the current group.'
+            'Use this page to manage administrators of the current group.',
+            'actions' => [
+                ($group->type==='manual' && $identity->can('manage_group_admins',$group))?["name"=>"create","label"=>"Add Admin to Group",'type'=>'success']:'','','',
+                ($group->type==='manual' && $identity->can('manage_group_admins',$group))?["name"=>"delete","label"=>"Remove Admin from Group"]:''
+            ]
         ]);
     }
 
     public function group_entitlements(Request $request, Group $group) {
+        $identity = Auth::user();
+        $actions = [];
+        if ($identity->can('manage_group_entitlements','App\Group')) {
+            $actions = [
+                ["name"=>"create","label"=>"Add Entitlement to Group"],'','',
+                ["name"=>"delete","label"=>"Remove Entitlement from Group"],
+            ];
+        }
         return view('default.admin',['page'=>'groups_entitlements','ids'=>[$group->id],'title'=>'Manage "'.$group->name.'" Group Entitlements','help'=>
-            'Use this page to manage entitlements for the current group.  (Identities who are members of this group will automatically be granted any entitlements which are listed here)'
+            'Use this page to manage entitlements for the current group.  (Identities who are members of this group will automatically be granted any entitlements which are listed here)',
+            'actions'=>$actions
         ]);
     }
 
     public function systems(Request $request) {
+        $identity = Auth::user();
+        $actions = [];
+        if ($identity->can('manage_systems','App\Group')) {
+            $actions = [
+                ["name"=>"create","label"=>"New System"],'',
+                ["name"=>"edit","label"=>"Update System"],'',
+                ["name"=>"delete","label"=>"Delete System"]
+            ];
+        }
         return view('default.admin',['page'=>'systems','ids'=>[],'title'=>'Manage Systems','help'=>
-            'Use this page to manage systems.  (Systems are external entities in which accounts can be provisioned.  Examples: AD Domains, Google Workspace, etc)'
+            'Use this page to manage systems.  (Systems are external entities in which accounts can be provisioned.  Examples: AD Domains, Google Workspace, etc)',
+            'actions'=>$actions,
         ]);
     }
 
     public function entitlements(Request $request) {
         $identity = Auth::user();
 
-        $user_actions[]= ["name"=>"create","label"=>"New Entitlement"];
+        if ($identity->can('manage_entitlements','App\Entitlement')){
+            $user_actions[]= ["name"=>"create","label"=>"New Entitlement"];
+        }
         $user_actions[]= [''];
-        $user_actions[] = ["name"=>"edit","label"=>"Update Entitlement"];
-        $user_actions[] = ["name"=>"overrides","min"=>1,"max"=>1,"label"=>"Entitlement Overrides"];
-        if ($identity->can('manage_group_entitlements','App\Group')){
-            $user_actions[] = ["label"=>"Manage Groups","name"=>"manage_groups","min"=>1,"max"=>1,"type"=>"default"];
+        if ($identity->can('manage_entitlements','App\Entitlement')){
+            $user_actions[] = ["name"=>"edit","label"=>"Update Entitlement"];
+        }
+        if ($identity->can('view_entitlements','App\Entitlement')){
+            $user_actions[] = ["name"=>"overrides","min"=>1,"max"=>1,"label"=>"Entitlement Overrides"];
+        }
+        if ($identity->can('view_group_entitlements','App\Group')){
+            $user_actions[] = ["label"=>"Manage Groups","name"=>"manage_groups","min"=>1,"max"=>1,"type"=>"warning"];
         }
         
         $user_actions[] = [''];
-        $user_actions[] = ["name"=>"delete","label"=>"Delete Entitlement"];
+        if ($identity->can('manage_entitlements','App\Entitlement')){
+            $user_actions[] = ["name"=>"delete","label"=>"Delete Entitlement"];
+        }
 
         return view('default.admin',[
             'page'=>'entitlements',
@@ -185,8 +218,17 @@ class AdminController extends Controller
     }
 
     public function entitlement_groups(Request $request, Entitlement $entitlement) {
+        $identity = Auth::user();
+        $actions = [];
+        if ($identity->can('manage_group_entitlements','App\Group')) {
+            $actions = [
+                ["name"=>"create","label"=>"Add Group to Entitlement"],'','',
+                ["name"=>"delete","label"=>"Remove Group from Entitlement"],
+            ];
+        }
         return view('default.admin',['page'=>'entitlements_groups','ids'=>[$entitlement->id],'title'=>'Manage "'.$entitlement->name.'" Entitlement Groups','help'=>
-            'Use this page to manage groups for the current entitlement.  (Identities who are members of any groups listed here will automatically be granted this entitlement)'
+            'Use this page to manage groups for the current entitlement.  (Identities who are members of any groups listed here will automatically be granted this entitlement)',
+            'actions'=>$actions
         ]);
     }
     public function entitlement_overrides(Request $request, Entitlement $entitlement){
