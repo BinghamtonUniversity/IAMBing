@@ -172,7 +172,7 @@ class AdminController extends Controller
     public function systems(Request $request) {
         $identity = Auth::user();
         $actions = [];
-        if ($identity->can('manage_systems','App\Group')) {
+        if ($identity->can('manage_systems','App\System')) {
             $actions = [
                 ["name"=>"create","label"=>"New System"],'',
                 ["name"=>"edit","label"=>"Update System"],'',
