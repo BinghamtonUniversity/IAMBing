@@ -530,10 +530,6 @@ var manage_identity = function(identity_id) {
                                 "value": "impersonate_identities"
                             },
                             {
-                                "label": "List and Search All Groups",
-                                "value": "view_groups"
-                            },
-                            {
                                 "label": "View Groups",
                                 "value": "view_groups"
                             },
