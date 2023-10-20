@@ -25,10 +25,10 @@ class Account extends Model
     public function mark_disabled() {
         $log = new Log([
             'action'=>'disable',
-            'identity_id'=>$account->identity_id,
+            'identity_id'=>$this->identity_id,
             'type'=>'account',
-            'type_id'=>$account->system_id,
-            'data'=>$account->account_id,
+            'type_id'=>$this->system_id,
+            'data'=>$this->account_id,
             'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
@@ -40,10 +40,10 @@ class Account extends Model
     public function mark_deleted() {
         $log = new Log([
             'action'=>'delete',
-            'identity_id'=>$account->identity_id,
+            'identity_id'=>$this->identity_id,
             'type'=>'account',
-            'type_id'=>$account->system_id,
-            'data'=>$account->account_id,
+            'type_id'=>$this->system_id,
+            'data'=>$this->account_id,
             'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
@@ -55,10 +55,10 @@ class Account extends Model
     public function mark_restored() {
         $log = new Log([
             'action'=>'restore',
-            'identity_id'=>$account->identity_id,
+            'identity_id'=>$this->identity_id,
             'type'=>'account',
-            'type_id'=>$account->system_id,
-            'data'=>$account->account_id,
+            'type_id'=>$this->system_id,
+            'data'=>$this->account_id,
             'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
         ]);
         $log->save();
