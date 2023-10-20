@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Libraries\EndpointHelper;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +10,6 @@ use DateTimeInterface;
 
 class Account extends Model
 {
-    use SoftDeletes;
     protected $fillable = ['identity_id','system_id','account_id','status','account_attributes'];
     protected $casts = ['system_id'=>'string','account_attributes'=>'array'];
 

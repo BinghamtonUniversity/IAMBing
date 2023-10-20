@@ -97,7 +97,7 @@ class ReportController extends Controller
             $identity_accounts = $identity_accounts->concat(DB::table('accounts')
                 ->select('identity_id','account_id','system_id')
                 ->leftJoin('systems','accounts.system_id','systems.id')
-                ->whereNull('accounts.deleted_at')
+                ->where('accounts.status','!=','deleted')
                 ->where(function($query) use ($identities_chunk) {
                     collect($identities_chunk)->chunk(1000)->each(function($item,$key) use ($query) {
                         $query->orWhereIn('identity_id',$item);

@@ -83,7 +83,7 @@ class IdentityController extends Controller
         GroupMember::where('identity_id',$identity->id)->delete();
         GroupAdmin::where('identity_id',$identity->id)->delete();
         Permission::where('identity_id',$identity->id)->delete();
-        Account::where('identity_id',$identity->id)->withTrashed()->forceDelete();
+        Account::where('identity_id',$identity->id)->delete();
         GroupActionQueue::where('identity_id',$identity->id)->delete();
         $identity->delete();
         return "1";
@@ -178,11 +178,11 @@ class IdentityController extends Controller
     }
 
     public function get_accounts(Identity $identity) {
-        return Account::where('identity_id',$identity->id)->withTrashed()->get();
+        return Account::where('identity_id',$identity->id)->get();
     }
 
     public function get_account(Identity $identity, $account_id) {
-        $account = Account::where('id',$account_id)->withTrashed()->first();
+        $account = Account::where('id',$account_id)->first();
         $account->get_info();
         return $account;
     }
@@ -199,7 +199,7 @@ class IdentityController extends Controller
     }
 
     public function update_account(Request $request, Identity $identity, $account_id) {
-        $account = Account::where('id',$account_id)->withTrashed()->first();
+        $account = Account::where('id',$account_id)->first();
         $account->update($request->all());
         $identity->recalculate_entitlements();
         return $account;
@@ -211,11 +211,11 @@ class IdentityController extends Controller
             $account->delete();
         }
         $identity->recalculate_entitlements();
-        return Account::where('id',$account_id)->withTrashed()->first();
+        return Account::where('id',$account_id)->first();
     }
 
     public function restore_account(Identity $identity, $account_id) {
-        $account = Account::where('id',$account_id)->withTrashed()->first();
+        $account = Account::where('id',$account_id)->first();
         if (!$account->trashed()) {
             abort(405, 'You cannot restore an account which has not been deleted');
         }
@@ -227,7 +227,7 @@ class IdentityController extends Controller
     }
 
     public function rename_account(Request $request, Identity $identity, $account_id) {
-        $account = Account::where('id',$account_id)->withTrashed()->first();
+        $account = Account::where('id',$account_id)->first();
         $account->account_id = $request->account_id;
         $account->save();
         $identity->recalculate_entitlements();
@@ -287,7 +287,7 @@ class IdentityController extends Controller
         $source_entitlements = IdentityEntitlement::where('identity_id',$source_identity->id)->get();
         $source_group_memberships = GroupMember::where('identity_id',$source_identity->id)->get();
         $source_group_admins = GroupAdmin::where('identity_id',$source_identity->id)->get();
-        $source_accounts = Account::where('identity_id',$source_identity->id)->withTrashed()->get();
+        $source_accounts = Account::where('identity_id',$source_identity->id)->get();
         $source_sponsored_identities = Identity::where('sponsor_identity_id',$source_identity->id)->get();
         $source_sponsored_entitlements = IdentityEntitlement::where('sponsor_id',$source_identity->id)->get();
         $source_override_entitlements = IdentityEntitlement::where('override_identity_id',$source_identity->id)->get();

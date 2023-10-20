@@ -29,7 +29,6 @@ class CreateAccountsTable extends Migration
             $table->foreign('system_id')->references('id')->on('systems');
             $table->unique(['identity_id','system_id','account_id']);
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

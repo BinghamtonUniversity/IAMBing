@@ -56,7 +56,7 @@ class Identity extends Authenticatable
     }
 
     public function systems_with_accounts_history() {
-        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('id','account_id','status','deleted_at');
+        return $this->belongsToMany(System::class,'accounts')->orderBy('name')->withPivot('id','account_id','status');
     }
 
     public function identity_unique_ids() {
@@ -150,7 +150,7 @@ class Identity extends Authenticatable
     }
 
     private function username_check_available($username) {
-        $accounts = Account::where('account_id',$username)->withTrashed()->get();
+        $accounts = Account::where('account_id',$username)->get();
         $identities = Identity::where('default_username',$username)->get();
         $history = Log::where('data',$username)->get();
         $reserved_usernames = ReservedUsername::where('username',$username)->get();
@@ -329,7 +329,7 @@ class Identity extends Authenticatable
             $template = $system->default_account_id_template;
             $account->account_id = $this->username_generate($template);
         }
-        $existing_account = Account::where('identity_id',$this->id)->where('system_id',$system->id)->where('account_id',$account->account_id)->withTrashed()->first();
+        $existing_account = Account::where('identity_id',$this->id)->where('system_id',$system->id)->where('account_id',$account->account_id)->first();
         if (is_null($existing_account)) {
             $account->save();
             return $account;
@@ -483,7 +483,7 @@ class Identity extends Authenticatable
         // Create New Accounts for Unmet Entitlements
         $existing_identity_entitlements = IdentityEntitlement::select('entitlement_id')->where('identity_id',$identity->id)->where('type','add')->get()->pluck('entitlement_id')->unique();
         $system_ids_needed = Entitlement::select('system_id')->whereIn('id',$existing_identity_entitlements)->get()->pluck('system_id')->unique();
-        $system_ids_has = Account::select('system_id')->withTrashed()->where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->get()->pluck('system_id')->unique();
+        $system_ids_has = Account::select('system_id')->where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->get()->pluck('system_id')->unique();
         $diff = $system_ids_needed->diff($system_ids_has);
         $processed_account_ids = [];
         foreach($diff as $system_id) {
