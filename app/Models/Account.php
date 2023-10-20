@@ -7,6 +7,7 @@ use App\Libraries\EndpointHelper;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use DateTimeInterface;
+use App\Models\Log;
 
 class Account extends Model
 {
@@ -21,8 +22,48 @@ class Account extends Model
         return $this->belongsTo(Identity::class);
     }
 
-    public function disable() {
+    public function mark_disabled() {
+        $log = new Log([
+            'action'=>'disable',
+            'identity_id'=>$account->identity_id,
+            'type'=>'account',
+            'type_id'=>$account->system_id,
+            'data'=>$account->account_id,
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
+        ]);
+        $log->save();
+
         $this->status = 'disabled';
+        $this->save();
+    }
+
+    public function mark_deleted() {
+        $log = new Log([
+            'action'=>'delete',
+            'identity_id'=>$account->identity_id,
+            'type'=>'account',
+            'type_id'=>$account->system_id,
+            'data'=>$account->account_id,
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
+        ]);
+        $log->save();
+
+        $this->status = 'deleted';
+        $this->save();
+    }
+
+    public function mark_restored() {
+        $log = new Log([
+            'action'=>'restore',
+            'identity_id'=>$account->identity_id,
+            'type'=>'account',
+            'type_id'=>$account->system_id,
+            'data'=>$account->account_id,
+            'actor_identity_id'=>isset(Auth::user()->id)?Auth::user()->id:null
+        ]);
+        $log->save();
+
+        $this->status = 'active';
         $this->save();
     }
 

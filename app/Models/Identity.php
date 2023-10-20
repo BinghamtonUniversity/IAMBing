@@ -334,11 +334,7 @@ class Identity extends Authenticatable
             $account->save();
             return $account;
         } else {
-            $existing_account->status = 'active';
-            if ($existing_account->trashed()) {
-                $existing_account->restore();
-            }
-            $existing_account->save();
+            $existing_account->mark_restored();
             return $existing_account;
         }
     }
@@ -511,14 +507,14 @@ class Identity extends Authenticatable
                 if (array_key_exists('error',$resp)) {
                     $sync_errors[$myaccount->account_id] = $resp['error'];
                 } else {
-                    $myaccount->delete();
+                    $myaccount->mark_deleted();
                 }
             } else if ($myaccount->system->onremove === 'disable') {
                 $resp = $myaccount->sync('disable');
                 if (array_key_exists('error',$resp)) {
                     $sync_errors[$myaccount->account_id] = $resp['error'];
                 } else {
-                    $myaccount->disable();
+                    $myaccount->mark_disabled();
                 }
             }
         }

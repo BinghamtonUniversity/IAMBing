@@ -208,7 +208,7 @@ class IdentityController extends Controller
     public function delete_account(Identity $identity, Account $account) {
         $account_id = $account->id;
         if (!array_key_exists('error',$account->sync('delete'))) {
-            $account->delete();
+            $account->mark_deleted();
         }
         $identity->recalculate_entitlements();
         return Account::where('id',$account_id)->first();
@@ -216,12 +216,10 @@ class IdentityController extends Controller
 
     public function restore_account(Identity $identity, $account_id) {
         $account = Account::where('id',$account_id)->first();
-        if (!$account->trashed()) {
+        if ($account->status != 'deleted' && $account->status != 'disabled') {
             abort(405, 'You cannot restore an account which has not been deleted');
         }
-        $account->restore();
-        $account->status = 'active';
-        $account->save();
+        $account->mark_restored();
         $identity->recalculate_entitlements();
         return $account;
     }
