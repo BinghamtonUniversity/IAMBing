@@ -499,7 +499,7 @@ class Identity extends Authenticatable
 
         // Delete accounts for Former Entitlements
         $diff = $system_ids_has->diff($system_ids_needed);
-        $myaccounts_to_delete = Account::where('identity_id',$identity->id)->with('system')->whereIn('system_id',$diff)->get();
+        $myaccounts_to_delete = Account::where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->with('system')->whereIn('system_id',$diff)->get();
         foreach($myaccounts_to_delete as $myaccount) {
             $processed_account_ids[] = $myaccount->id;
             if ($myaccount->system->onremove === 'delete') {
@@ -520,7 +520,7 @@ class Identity extends Authenticatable
         }
 
         // Sync All Accounts with current attributes and entitlements
-        $myaccounts = Account::where('identity_id',$identity->id)->with('system')->get();
+        $myaccounts = Account::where('identity_id',$identity->id)->whereIn('status',['active','sync_error'])->with('system')->get();
         foreach($myaccounts as $myaccount) {
             if (in_array($myaccount->id,$processed_account_ids)) {
                 continue; // Skip Accounts that we just added or deleted!
