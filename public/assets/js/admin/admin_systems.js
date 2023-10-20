@@ -72,28 +72,8 @@ ajax.get('/api/systems',function(data) {
 						},
 						{
 							"type": "fieldset",
-							"label": "Create Account",
-							"name": "create",
-							"fields": [
-								{type:"checkbox",label:"Status",name:"enabled",value:false,options:[{label:"Enabled",value:false},{label:"Enabled",value:true}],columns:3},
-								{
-									"type": "select","label": "Verb","name": "verb","columns": 3,
-									"options": ["GET","POST","PUT","DELETE"]
-								},{
-									"type": "number","label": "Expected Response Code","name": "response_code",
-									"value": 200,"columns": 6,"required": true,
-								},{
-									"type": "select","label": "Endpoint","name": "endpoint","columns": 6,
-									"options": [{"type": "optgroup","path": "/api/endpoints","format": {"label": "{{name}} - {{config.url}}","value": "{{id}}"}}]
-								},{
-									"type": "text","label": "Path","name": "path","columns": 6,
-								}
-							]
-						},
-						{
-							"type": "fieldset",
-							"label": "Update Account",
-							"name": "update",
+							"label": "Create / Update Account",
+							"name": "create_update",
 							"fields": [
 								{type:"checkbox",label:"Status",name:"enabled",value:false,options:[{label:"Enabled",value:false},{label:"Enabled",value:true}],columns:3},
 								{

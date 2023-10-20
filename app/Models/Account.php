@@ -78,6 +78,7 @@ class Account extends Model
         $m = new \Mustache_Engine;
         $mysystem = System::where('id',$this->system_id)->first();
         $error = 'API Endpoint Misconfiguration Error';
+        if (!is_null($mysystem) && isset($mysystem->config) && isset($mysystem->config->api) && isset($mysystem->config->api->$action)) {
             $action_definition = $mysystem->config->api->$action;
             if ($action_definition->enabled == true) {
                 $endpoint = Endpoint::where('id',$action_definition->endpoint)->first();
@@ -89,7 +90,8 @@ class Account extends Model
                 } else {
                     $error = $response;
                 }
-            }
+            }    
+        }
         if ($action != 'info') {
             $this->status = 'sync_error';
             $this->save();

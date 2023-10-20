@@ -486,7 +486,7 @@ class Identity extends Authenticatable
             $system = System::where('id',$system_id)->first();
             $myaccount = $identity->add_account($system);
             $processed_account_ids[] = $myaccount->id;
-            $resp = $myaccount->sync('create');
+            $resp = $myaccount->sync('create_update');
             if (array_key_exists('error',$resp)) {
                 $sync_errors[$myaccount->account_id] = $resp['error'];
             } else {
@@ -525,7 +525,7 @@ class Identity extends Authenticatable
             if (in_array($myaccount->id,$processed_account_ids)) {
                 continue; // Skip Accounts that we just added or deleted!
             }
-            $resp = $myaccount->sync('update');
+            $resp = $myaccount->sync('create_update');
             if (array_key_exists('error',$resp)) {
                 $sync_errors[$myaccount->account_id] = $resp['error'];
             } else {
