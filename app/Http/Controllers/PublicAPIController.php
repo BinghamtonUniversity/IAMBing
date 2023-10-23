@@ -138,7 +138,7 @@ class PublicAPIController extends Controller {
                         if ($api_identity_key === 'ids') {
                             // Fetch all unique ids for this identity from the database and compare to what was sent...
                             foreach($api_identity_value as $key => $value){
-                                if (isset($value) && !is_null($value) && count($identity_unique_id_all->where('name',$key)->where('value',$value)) === 0) {
+                                if (count($identity_unique_id_all->where('name',$key)->where('value',$value)) === 0) {
                                     $identity_needs_update = true;
                                     break;
                                 }
@@ -152,7 +152,7 @@ class PublicAPIController extends Controller {
                                         return ($value !== '' && !is_null($value));
                                     })->sort()->implode('||');
                                 }
-                                if (isset($value) && !is_null($value) && count($identity_attributes_all->where('name',$key)->where('value',$value)) === 0) {
+                                if (count($identity_attributes_all->where('name',$key)->where('value',$value)) === 0) {
                                     $identity_needs_update = true;
                                     break;
                                 }
