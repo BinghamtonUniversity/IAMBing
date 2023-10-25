@@ -660,6 +660,11 @@ class PublicAPIController extends Controller {
     
     public function remove_group_member(Request $request,$group_slug){
         $group = Group::where('slug',$group_slug)->first();
+        if(is_null($group)){
+            return response()->json([
+                'error' => 'Group does not exist!',
+            ],404);
+        } 
         $identity_id = isset($request->identity_id)?$request->identity_id:null;
         $unique_id_type = isset($request->unique_id_type)?$request->unique_id_type:null;
         $unique_id = isset($request->unique_id)?$request->unique_id:null;
@@ -670,12 +675,7 @@ class PublicAPIController extends Controller {
         } else {
             $identity = Identity::where('id',$identity_id)->first();
         }
-        if(!$group){
-            return response()->json([
-                'error' => 'Group does not exist!',
-            ],404);
-        } 
-        $group_member = GroupMember::where('group_id',$group->id)->where('identity_id',$request->identity_id)->first();
+        $group_member = GroupMember::where('group_id',$group->id)->where('identity_id',$identity->id)->first();
         if(is_null($group_member)){
             return response()->json([
                 'error' => 'User is not a member!',
