@@ -195,7 +195,7 @@ class AdminController extends Controller
         if ($identity->can('manage_entitlements','App\Entitlement')){
             $user_actions[] = ["name"=>"edit","label"=>"Update Entitlement"];
         }
-        if ($identity->can('view_entitlements','App\Entitlement')){
+        if ($identity->can('list_search','App\Entitlement')){
             $user_actions[] = ["name"=>"overrides","min"=>1,"max"=>1,"label"=>"Entitlement Overrides"];
         }
         if ($identity->can('view_group_entitlements','App\Group')){
