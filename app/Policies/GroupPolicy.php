@@ -65,7 +65,7 @@ class GroupPolicy
 
     public function view_group_entitlements(Identity $identity){
         $permission = Permission::where('identity_id',$identity->id)->get()->pluck('permission');
-        return ($permission->contains('manage_groups') || $permission->contains('view_groups')) && ($permission->contains('manage_entitlements') || $permission->contains('view_entitlements'));
+        return ($permission->contains('manage_groups') || $permission->contains('view_groups') || $identity->is_group_admin()) && ($permission->contains('manage_entitlements') || $permission->contains('view_entitlements'));
     }
 
     public function manage_group_entitlements(Identity $identity){
