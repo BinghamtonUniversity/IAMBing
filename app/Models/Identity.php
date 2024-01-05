@@ -592,6 +592,7 @@ class Identity extends Authenticatable
                     'system_id'=>$q->system_id,
                     'system_name'=>$identity_account_systems->where('id',$q->system_id)->first()->name,
                     'account_attributes'=>$q->account_attributes,
+                    'status'=>$q->status 
                 ];
             })->values()->toArray(),
             'additional_attributes'=>$this->additional_attributes,
