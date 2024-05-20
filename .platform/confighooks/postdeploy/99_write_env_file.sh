@@ -23,6 +23,8 @@ done < <(jq -r <<< $ENVIRONMENT_JSON \
          'to_entries|map("\(.key)=\"\(.value)\"\u0000")[]')
 
 # Supervisor Init Functions
-sudo systemctl restart horizon.service
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start horizon
+sudo supervisorctl restart horizon
 sudo -u webapp php /var/app/current/artisan horizon:terminate
-
