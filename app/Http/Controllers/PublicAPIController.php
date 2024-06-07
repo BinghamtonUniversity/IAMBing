@@ -411,12 +411,25 @@ class PublicAPIController extends Controller {
     }
 
     public function get_group(Request $request, $group_slug){
-        $group = Group::where('slug',$group_slug)->first();
+        $group = Group::select('id','name','slug','description','affiliation','type')
+            ->where('slug',$group_slug)->first();
         if (is_null($group)) {
             return response()->json([
                 'error' => 'Group does not exist!',
             ],404);
         }
+        $group->members = DB::table('group_members')->select('members.id','iamid','first_name','last_name','default_username','default_email','type')
+            ->leftJoin('identities as members','group_members.identity_id','=','members.id')
+            ->where('group_members.group_id',$group->id)->get();
+        $group->admins = DB::table('group_admins')->select('admins.id','iamid','first_name','last_name','default_username','default_email','type')
+            ->leftJoin('identities as admins','group_admins.identity_id','=','admins.id')
+            ->where('group_admins.group_id',$group->id)->get();
+        $group->entitlements = DB::table('group_entitlements')->select('entitlements.id','entitlements.name','systems.id as system_id','systems.name as system_name')
+            ->leftJoin('entitlements','group_entitlements.entitlement_id','=','entitlements.id')
+            ->leftJoin('systems','entitlements.system_id','systems.id')
+            ->where('group_entitlements.group_id',$group->id)->get();
+
+        return $group;
     }
 
     public function add_group(Request $request){
