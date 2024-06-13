@@ -35,3 +35,9 @@ IAMBing is open-source software licensed under the [MIT license](http://opensour
 
 ## Group Management Interface (Dark Mode)
 ![Group Management Interface](examples/example_groups.png)
+
+## System Management Interface (Dark Mode)
+![System Management Interface](examples/example_systems.png)
+
+## Entitlements Management Interface (Dark Mode)
+![Entitlement Management Interface](examples/example_entitlements.png)
