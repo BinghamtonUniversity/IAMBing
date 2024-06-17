@@ -90,7 +90,7 @@ class IdentityController extends Controller
     }
 
     public function login_identity(Request $request, Identity $identity) {
-        Auth::login($identity,true);
+        Auth::login($identity);
         return "1";
     }
 

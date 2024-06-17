@@ -28,7 +28,7 @@ class CASController extends Controller {
             ]);
             $identity->save();    
         }
-        Auth::login($identity,true);
+        Auth::login($identity);
         if ($request->has('redirect')) {
             return redirect($request->redirect);
         } else {
