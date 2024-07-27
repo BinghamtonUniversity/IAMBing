@@ -15,7 +15,7 @@ class EntitlementsRecalculate extends Command
     protected $description = 'Recalculate entitlements for specified group(s)';
 
     public function handle() {
-        ini_set('memory_limit','1024M');
+        ini_set('memory_limit','2048M');
         $all_groups = Group::select('id','name','slug')->get();
         if (count($all_groups) == 0) {
             $this->error("No Available Groups... Exiting");
