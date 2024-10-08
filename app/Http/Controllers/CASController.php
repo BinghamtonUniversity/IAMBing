@@ -9,7 +9,7 @@ use App\Models\IdentityUniqueIDs;
 
 class CASController extends Controller {
     public function login(Request $request) {
-        if(!Auth::check() && !cas()->checkAuthentication()) {
+        if(!Auth::check()) {
             if ($request->ajax()) {
                 return response('Unauthorized.', 401);
             }
