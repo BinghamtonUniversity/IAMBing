@@ -9,16 +9,15 @@ use App\Models\IdentityUniqueIDs;
 
 class CASController extends Controller {
     public function login(Request $request) {
-        if(!Auth::check()) {
-            if ($request->ajax()) {
-                return response('Unauthorized.', 401);
-            }
-            cas()->authenticate();
+        if ($request->ajax()) {
+            return response('Unauthorized.', 401);
         }
+        cas()->authenticate();
+
         $identity_attributes = cas()->getAttributes();
         $identity = Identity::whereHas('identity_unique_ids', function($q) use ($identity_attributes){
             $q->where('name','bnumber')->where('value',$identity_attributes['UDC_IDENTIFIER']);
-         })->first();
+        })->first();
         if (is_null($identity)) {
             $identity = new Identity([
                 'first_name'=>$identity_attributes['firstname'],
