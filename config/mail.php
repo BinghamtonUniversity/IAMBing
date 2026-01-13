@@ -107,6 +107,9 @@ return [
 
     'password' => env('MAIL_SMTP_PASSWORD',''),
 
+    // Used to specify AWS SES Tenant
+    'ses_tenant' => env('MAIL_SES_TENANT',null),
+
     /*
     |--------------------------------------------------------------------------
     | Sendmail System Path

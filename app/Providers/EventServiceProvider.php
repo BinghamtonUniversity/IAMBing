@@ -18,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        \Illuminate\Mail\Events\MessageSending::class => [
+            \App\Listeners\AddSesTenantHeader::class,
+        ],
     ];
 
     /**
