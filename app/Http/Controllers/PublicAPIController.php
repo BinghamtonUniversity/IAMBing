@@ -511,7 +511,18 @@ class PublicAPIController extends Controller {
     public function bulk_update_group_members(Request $request, $group_slug) {
         $validated = $request->validate([
             'id' => 'required',
+            'add_only' => 'sometimes|boolean',
+            'remove_only' => 'sometimes|boolean',
         ]);
+        $add_only = $request->boolean('add_only');
+        $remove_only = $request->boolean('remove_only');
+        if ($add_only && $remove_only) {
+            return response()->json([
+                'error' => '"add_only" and "remove_only" cannot both be true',
+            ],400);
+        }
+        $process_add = !$remove_only;
+        $process_remove = !$add_only;
         if (!($request->has('identities'))) {
             return response()->json([
                 'error' => 'must provide "identities" array',
@@ -549,7 +560,6 @@ class PublicAPIController extends Controller {
 
         $counts = ['created'=>0,'added'=>0,'removed'=>0];
 
-        // Identity Doesn't exist.. create them!
         foreach($api_identities as $api_identity) {
             if ($unique_ids_which_dont_exist->contains($api_identity['ids'][$unique_id])) {
                 if ($group->delay_add == true) {
@@ -573,64 +583,76 @@ class PublicAPIController extends Controller {
             }
         }
 
-        // Identity Exists, but isnt a member... add them to the group!
         $group_actions = collect([]);
-        foreach($identity_ids_which_arent_group_members as $identity_id) {
-            if ($group->delay_add == true) {
-                $group_action = GroupActionQueue::where('identity_id',$identity_id)->where('group_id',$group_id)->first();
-                if (is_null($group_action)) {
-                    $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'add','scheduled_date'=>$group_add_scheduled_date]);
-                } else {
-                    if ($group_action->action != 'add') {
-                        $group_action->update(['action'=>'add','scheduled_date'=>$group_add_scheduled_date]);
+        if ($process_add) {
+            // Identity Exists, but isnt a member... add them to the group!
+            foreach($identity_ids_which_arent_group_members as $identity_id) {
+                if ($group->delay_add == true) {
+                    $group_action = GroupActionQueue::where('identity_id',$identity_id)->where('group_id',$group_id)->first();
+                    if (is_null($group_action)) {
+                        $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'add','scheduled_date'=>$group_add_scheduled_date]);
+                    } else {
+                        if ($group_action->action != 'add') {
+                            $group_action->update(['action'=>'add','scheduled_date'=>$group_add_scheduled_date]);
+                        }
                     }
+                    $group_actions[] = $group_action;              
+                } else {
+                    UpdateIdentityJob::dispatch([
+                        'group_id' => $group_id,
+                        'identity_id' => $identity_id,
+                        'action'=> 'add'
+                    ])->onQueue($group->add_priority);
                 }
-                $group_actions[] = $group_action;              
-            } else {
-                UpdateIdentityJob::dispatch([
-                    'group_id' => $group_id,
-                    'identity_id' => $identity_id,
-                    'action'=> 'add'
-                ])->onQueue($group->add_priority);
+                $counts['added']++;
             }
-            $counts['added']++;
         }
 
-        // Identity Exists, but shouldn't be a member... remove them from the group!
-        foreach($should_remove_group_membership as $identity_id) {
-            if ($group->delay_remove == true) {
-                $group_action = GroupActionQueue::where('identity_id',$identity_id)->where('group_id',$group_id)->first();
-                if (is_null($group_action)) {
-                    $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
-                    $identity = Identity::where('id',$identity_id)->first();
-                    if ($group->delay_remove_notify) { 
-                        $email = $identity->future_impact_email();
-                        if ($email !== false) { SendEmailJob::dispatch($email)->onQueue('low'); } 
-                    }
-                } else {
-                    if ($group_action->action != 'remove') {
-                        $group_action->update(['action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
+        if ($process_remove) {
+            // Identity Exists, but shouldn't be a member... remove them from the group!
+            foreach($should_remove_group_membership as $identity_id) {
+                if ($group->delay_remove == true) {
+                    $group_action = GroupActionQueue::where('identity_id',$identity_id)->where('group_id',$group_id)->first();
+                    if (is_null($group_action)) {
+                        $group_action = GroupActionQueue::create(['identity_id'=>$identity_id,'group_id'=>$group_id,'action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
                         $identity = Identity::where('id',$identity_id)->first();
                         if ($group->delay_remove_notify) { 
                             $email = $identity->future_impact_email();
                             if ($email !== false) { SendEmailJob::dispatch($email)->onQueue('low'); } 
                         }
+                    } else {
+                        if ($group_action->action != 'remove') {
+                            $group_action->update(['action'=>'remove','scheduled_date'=>$group_remove_scheduled_date]);
+                            $identity = Identity::where('id',$identity_id)->first();
+                            if ($group->delay_remove_notify) { 
+                                $email = $identity->future_impact_email();
+                                if ($email !== false) { SendEmailJob::dispatch($email)->onQueue('low'); } 
+                            }
+                        }
                     }
+                    $group_actions[] = $group_action;              
+                } else {
+                    UpdateIdentityJob::dispatch([
+                        'group_id' => $group_id,
+                        'identity_id' => $identity_id,
+                        'action' => 'remove'
+                    ])->onQueue($group->remove_priority);
                 }
-                $group_actions[] = $group_action;              
-            } else {
-                UpdateIdentityJob::dispatch([
-                    'group_id' => $group_id,
-                    'identity_id' => $identity_id,
-                    'action' => 'remove'
-                ])->onQueue($group->remove_priority);
+                $counts['removed']++;
             }
-            $counts['removed']++;
         }
 
         // Delete any action queue outliers for this group
         if ($group->delay_add == true || $group->delay_remove == true) {
-            GroupActionQueue::where('group_id',$group_id)->whereNotIn('id',$group_actions->pluck('id'))->delete();
+            $outlier_query = GroupActionQueue::where('group_id',$group_id);
+            if ($process_add && $process_remove) {
+                $outlier_query->whereNotIn('id',$group_actions->pluck('id'));
+            } else if ($process_add) {
+                $outlier_query->where('action','add')->whereNotIn('id',$group_actions->pluck('id'));
+            } else if ($process_remove) {
+                $outlier_query->where('action','remove')->whereNotIn('id',$group_actions->pluck('id'));
+            }
+            $outlier_query->delete();
         }
 
         return ['success'=>'Dispatched All Jobs to Queue','counts'=>$counts];
