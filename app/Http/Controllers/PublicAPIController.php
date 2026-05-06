@@ -22,7 +22,9 @@ use App\Models\IdentityEntitlement;
 use App\Models\Log;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Carbon\Carbon;
 
 class PublicAPIController extends Controller {  
@@ -539,6 +541,12 @@ class PublicAPIController extends Controller {
         $api_identities = $request->identities;
         $unique_id = $request->id;
         $group_id = $group->id;
+        // Skip heavy queries when bulk sync lock is already held by another job.
+        if ($group->has_pending_jobs()) {
+            return response()->json([
+                'error' => 'Group already has pending jobs in the job queue!',
+            ], 409);
+        }
         $group_add_scheduled_date = is_null($group->delay_add_days)?null:Carbon::now()->addDays($group->delay_add_days);
         $group_remove_scheduled_date = is_null($group->delay_remove_days)?null:Carbon::now()->addDays($group->delay_remove_days);
         $unique_ids = collect([]);
@@ -560,24 +568,26 @@ class PublicAPIController extends Controller {
 
         $counts = ['created'=>0,'added'=>0,'removed'=>0];
 
+        $bulk_member_jobs = [];
+
         foreach($api_identities as $api_identity) {
             if ($unique_ids_which_dont_exist->contains($api_identity['ids'][$unique_id])) {
                 if ($group->delay_add == true) {
                     // Create the identity, but don't add to group
                     // This is potentially problematic!  Requires second 
                     // sync to add to group!
-                    UpdateIdentityJob::dispatch([
+                    $bulk_member_jobs[] = (new UpdateIdentityJob([
                         'api_identity' => $api_identity,
                         'unique_id' => $unique_id,
-                    ])->onQueue($group->add_priority);
+                    ]))->onQueue($group->add_priority);
                 } else {
                     // Create identity and add to group
-                    UpdateIdentityJob::dispatch([
+                    $bulk_member_jobs[] = (new UpdateIdentityJob([
                         'group_id' => $group_id,
                         'api_identity' => $api_identity,
                         'unique_id' => $unique_id,
                         'action'=>'add'
-                    ])->onQueue($group->add_priority);
+                    ]))->onQueue($group->add_priority);
                 }
                 $counts['created']++;
             }
@@ -598,11 +608,11 @@ class PublicAPIController extends Controller {
                     }
                     $group_actions[] = $group_action;              
                 } else {
-                    UpdateIdentityJob::dispatch([
+                    $bulk_member_jobs[] = (new UpdateIdentityJob([
                         'group_id' => $group_id,
                         'identity_id' => $identity_id,
                         'action'=> 'add'
-                    ])->onQueue($group->add_priority);
+                    ]))->onQueue($group->add_priority);
                 }
                 $counts['added']++;
             }
@@ -632,13 +642,36 @@ class PublicAPIController extends Controller {
                     }
                     $group_actions[] = $group_action;              
                 } else {
-                    UpdateIdentityJob::dispatch([
+                    $bulk_member_jobs[] = (new UpdateIdentityJob([
                         'group_id' => $group_id,
                         'identity_id' => $identity_id,
                         'action' => 'remove'
-                    ])->onQueue($group->remove_priority);
+                    ]))->onQueue($group->remove_priority);
                 }
                 $counts['removed']++;
+            }
+        }
+
+        if (count($bulk_member_jobs) > 0) {
+            $bulkLockKey = Group::bulkMemberSyncLockRedisKey($group_id);
+            $gotLock = Redis::set($bulkLockKey, '1', 'EX', Group::BULK_MEMBER_SYNC_LOCK_TTL_SECONDS, 'NX');
+            if (! $gotLock) {
+                return response()->json([
+                    'error' => 'Group already has pending jobs in the job queue!',
+                    'counts' => $counts,
+                ], 409);
+            }
+            try {
+                Bus::batch($bulk_member_jobs)
+                    ->name('bulk-group-members:'.$group_slug)
+                    ->allowFailures()
+                    ->finally(function () use ($group_id) {
+                        Redis::del(Group::bulkMemberSyncLockRedisKey($group_id));
+                    })
+                    ->dispatch();
+            } catch (\Throwable $e) {
+                Redis::del(Group::bulkMemberSyncLockRedisKey($group_id));
+                throw $e;
             }
         }
 

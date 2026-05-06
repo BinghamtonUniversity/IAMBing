@@ -64,6 +64,10 @@ class Kernel extends ConsoleKernel
         // })->name('execute_group_action_queue')->dailyAt(config('app.execute_group_action_queue'))->timezone('America/New_York')->onOneServer();
 
         // $schedule->command('horizon:snapshot')->everyFiveMinutes();
+
+        // Bulk member sync uses Bus::batch(); prune old job_batches rows so the table does not grow forever.
+        // Finished batches older than 24h removed; unfinished/stuck older than 48h removed.
+        $schedule->command('queue:prune-batches --hours=24 --unfinished=48')->daily();
     }
 
     /**
