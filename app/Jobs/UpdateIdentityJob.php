@@ -2,15 +2,11 @@
 
 namespace App\Jobs;
 
-use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\Middleware\WithoutOverlapping;
-use Illuminate\Support\Facades\Log;
 
 use App\Models\Identity;
 use App\Models\GroupMember;
@@ -21,7 +17,7 @@ use Throwable;
 
 class UpdateIdentityJob implements ShouldQueue
 {
-    use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 30;
     public $tries = 10;
@@ -46,6 +42,7 @@ class UpdateIdentityJob implements ShouldQueue
     // }
 
     public function handle() {
+        // sleep(120); // TEMP: 120s delay for overlap testing
         $group_id = $this->group_id;
         $unique_id = $this->unique_id;
         $api_identity = $this->api_identity;
