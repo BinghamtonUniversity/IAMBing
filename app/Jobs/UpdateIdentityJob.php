@@ -42,7 +42,6 @@ class UpdateIdentityJob implements ShouldQueue
     // }
 
     public function handle() {
-        // sleep(120); // TEMP: 120s delay for overlap testing
         $group_id = $this->group_id;
         $unique_id = $this->unique_id;
         $api_identity = $this->api_identity;

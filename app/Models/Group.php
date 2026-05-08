@@ -53,6 +53,7 @@ class Group extends Model
         if ($jobIds === []) {
             return false;
         }
+        // Note : Can be more optimized by using priority query instead of getting all jobs and checking the status. -ECT: 05/08/2026
         foreach (array_chunk($jobIds, 50) as $chunk) {
             foreach ($jobs->getJobs($chunk, 0) as $job) {
                 $status = $job->status ?? '';
