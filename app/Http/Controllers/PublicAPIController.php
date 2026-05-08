@@ -513,18 +513,24 @@ class PublicAPIController extends Controller {
     public function bulk_update_group_members(Request $request, $group_slug) {
         $validated = $request->validate([
             'id' => 'required',
-            'add_only' => 'sometimes|boolean',
-            'remove_only' => 'sometimes|boolean',
+            'mode' => 'sometimes|string|in:sync,add_only,remove_only',
         ]);
-        $add_only = $request->boolean('add_only');
-        $remove_only = $request->boolean('remove_only');
-        if ($add_only && $remove_only) {
-            return response()->json([
-                'error' => '"add_only" and "remove_only" cannot both be true',
-            ],400);
+        $mode = $validated['mode'] ?? 'sync';
+        switch ($mode) {
+            case 'add_only':
+                $process_add = true;
+                $process_remove = false;
+                break;
+            case 'remove_only':
+                $process_add = false;
+                $process_remove = true;
+                break;
+            case 'sync':
+            default:
+                $process_add = true;
+                $process_remove = true;
+                break;
         }
-        $process_add = !$remove_only;
-        $process_remove = !$add_only;
         if (!($request->has('identities'))) {
             return response()->json([
                 'error' => 'must provide "identities" array',
@@ -542,6 +548,8 @@ class PublicAPIController extends Controller {
         $unique_id = $request->id;
         $group_id = $group->id;
 
+
+        // Skip heavy queries when bulk sync lock is already held by another job.
         $tags = app(TagRepository::class);
         $jobRepository = app(JobRepository::class);
         $group->ensureHorizonGroupTagMonitored($tags);
