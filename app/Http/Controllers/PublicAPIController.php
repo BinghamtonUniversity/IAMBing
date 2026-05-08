@@ -25,6 +25,7 @@ use Laravel\Horizon\Contracts\JobRepository;
 use Laravel\Horizon\Contracts\TagRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 
 class PublicAPIController extends Controller {  
@@ -511,10 +512,14 @@ class PublicAPIController extends Controller {
     }
 
     public function bulk_update_group_members(Request $request, $group_slug) {
-        $validated = $request->validate([
-            'id' => 'required',
-            'mode' => 'sometimes|string|in:sync,add_only,remove_only',
-        ]);
+        // Allow id / mode from query string (e.g. ?mode=add_only&id=bnumber) or from JSON body.
+        $validated = Validator::validate(
+            array_merge($request->query(), $request->all()),
+            [
+                'id' => 'required',
+                'mode' => 'sometimes|string|in:sync,add_only,remove_only',
+            ]
+        );
         $mode = $validated['mode'] ?? 'sync';
         switch ($mode) {
             case 'add_only':
@@ -545,7 +550,7 @@ class PublicAPIController extends Controller {
         }
 
         $api_identities = $request->identities;
-        $unique_id = $request->id;
+        $unique_id = $validated['id'];
         $group_id = $group->id;
 
 
