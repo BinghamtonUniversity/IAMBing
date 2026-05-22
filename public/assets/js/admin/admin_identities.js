@@ -102,6 +102,11 @@ identityinfo_column_template = `
         Warning: Pending Group Actions
     </div>
 {{/future_impact}}
+{{#sync_required_at}}
+    <div class="btn btn-xl btn-warning sync-required-btn" style="width:100%;margin-bottom:15px;font-weight:bold;" data-toggle="popover" title="Popover title" data-content="And here's some amazing content. It's very engaging. Right?">
+        Warning: Sync Required
+    </div>
+{{/sync_required_at}}
 <!-- Accounts -->
 <div class="panel panel-default">
 <div class="panel-heading"><h3 class="panel-title">
@@ -424,6 +429,15 @@ var manage_identity = function(identity_id) {
                         mymodal.modal().set({output:'<pre>'+JSON.stringify(data.sync_errors,null,2)+'</pre>'});
                     }
                 });
+            }).on('sync_required',function(form_event) {
+                form_data = form_event.form.get();
+                var sync_required_template = `
+                    This identity's accounts are currently out of sync. <br><br>Last sync was {{synced_at}}.
+                    <br><br>
+                    <div class="btn btn-primary sync-accounts-btn">Sync Accounts</div>
+                `;
+                var html = Ractive({template:sync_required_template,data:data}).toHTML();
+                mymodal.modal().set({output:html});
             }).on('future_impact',function(form_event) {
                 form_data = form_event.form.get();
                 ajax.get('/api/identities/'+identity_id+'/future_impact?all=true',function(data) {
@@ -664,6 +678,13 @@ ajax.get('/api/configuration',function(configuration) {
         }) 
         app.click('.future-impact-btn',function(e) {
             identity_form.trigger('future_impact');
+        })
+        app.click('.sync-required-btn',function(e) {
+            identity_form.trigger('sync_required');
+        })
+        app.click('.sync-accounts-btn',function(e) {
+            mymodal.modal().trigger('close');
+            identity_form.trigger('recalculate');
         })
         app.click('.future-impact-msg-btn',function(e) {
             mymodal.modal().trigger('close');

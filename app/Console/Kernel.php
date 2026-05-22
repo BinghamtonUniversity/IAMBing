@@ -3,12 +3,15 @@
 namespace App\Console;
 
 use App\Mail\SponsoredIdentityEntitlementExpirationReminder;
+use App\Models\Identity;
 use App\Models\IdentityEntitlement;
+use App\Jobs\UpdateIdentityJob;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Queue;
 
 class Kernel extends ConsoleKernel
 {
@@ -30,41 +33,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // TJC -- Disabled for Now, may activate later
-        // $schedule->call(function(){
-        //     $identity_sponsors = IdentityEntitlement::where('type','add')
-        //     ->where('expiration_date','<=',date(Carbon::now()->addDays(8)->format('Y-m-d')))
-        //     ->with('identity')
-        //     ->with('sponsor')
-        //     ->with('entitlement')
-        //     ->get()
-        //     ->groupBy('sponsor_id')
-        //     ->all();
-        //     //Checks all of the assignment due dates to send emails to users
-        //     foreach($identity_sponsors as $sponsor){
-        //         try{
-        //             if(!is_null($sponsor->first()->sponsor->default_email) && $sponsor->first()->sponsor->send_email_check()){
-        //                 Mail::to($sponsor->first()->sponsor->default_email)
-        //                 ->send(new SponsoredIdentityEntitlementExpirationReminder($sponsor->toArray()));
-        //             }
-        //         }catch(\Exception $exception){
-        //             //Keep going
-        //         }
-        //     }
-        // })->name('sponsored_identity_expiration_reminder')->dailyAt(config('app.sponsored_identity_ent_exp_reminder'))->timezone('America/New_York')->onOneServer();
-
-        // Remove Expired Entitlements at 2AM
-        // $schedule->call(function(){
-        //     $response = Artisan::call('entitlements:cleanup',['--yes'=>true]);
-        // })->name('delete_expired_identity_entitlements')->dailyAt(config('app.delete_expired_identity_entitlements'))->timezone('America/New_York')->onOneServer();
-
-        // Execute Action Queue at 3AM
-        // $schedule->call(function(){
-        //     $response = Artisan::call('actions:execute',['--yes'=>true]);
-        // })->name('execute_group_action_queue')->dailyAt(config('app.execute_group_action_queue'))->timezone('America/New_York')->onOneServer();
-
-        // $schedule->command('horizon:snapshot')->everyFiveMinutes();
-
+        $schedule->command('identities:syncrequired --sync-mode=horizon --queue=low --limit='.config('horizon.small_queue').' --check-threshold')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**

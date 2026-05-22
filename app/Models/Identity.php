@@ -16,7 +16,7 @@ class Identity extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['active','type','sponsored','default_username', 'default_email', 'ids', 'additional_attributes', 'first_name', 'last_name', 'sponsor_identity_id'];
+    protected $fillable = ['active','type','sponsored','default_username', 'default_email', 'ids', 'additional_attributes', 'first_name', 'last_name', 'sponsor_identity_id','sync_required_at','synced_at'];
     protected $hidden = ['identity_unique_ids','identity_attributes', 'identity_permissions', 'password', 'remember_token','created_at','updated_at'];
     protected $appends = ['ids','permissions','additional_attributes','entitlements'];
     protected $with = ['identity_unique_ids','identity_attributes','identity_permissions'];
@@ -448,7 +448,7 @@ class Identity extends Authenticatable
         ];
     }
 
-    public function recalculate_entitlements() {
+    public function recalculate_entitlements($sync = true) {
         // This code adds new accounts for any new systems
         $identity = $this;
 
@@ -478,7 +478,12 @@ class Identity extends Authenticatable
                 $entitlement->update(['type'=>'add','override'=>false,'expiration_date'=>null,'description'=>null,'override_identity_id'=>null]);
             }
         }
-        return $this->sync_accounts();
+        if ($sync === true) {
+            return $this->sync_accounts();
+        } else {
+            Identity::where('id', $identity->id)->update(['sync_required_at' => now()]);
+            return true;
+        }
     }
 
     public function sync_accounts() {
@@ -543,6 +548,10 @@ class Identity extends Authenticatable
                 }
             }
         }
+
+        // Mark identity as sycned (even if errors to prevent constant resyncing of accounts with issues)
+        Identity::where('id', $identity->id)->update(['sync_required_at' => null, 'synced_at' => now()]);
+
         if (count($sync_errors)>0) {
             return ['errors'=>$sync_errors];
         } else {
