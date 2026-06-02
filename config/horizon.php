@@ -16,6 +16,8 @@ return [
     */
     'small_queue' => env('HORIZON_SMALL_QUEUE', 10),
 
+    
+    'max_processes' => env('HORIZON_MAX_PROCESSES', 100),
     /*
     |--------------------------------------------------------------------------
     | Horizon Domain

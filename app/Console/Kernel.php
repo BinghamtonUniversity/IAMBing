@@ -33,7 +33,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('identities:syncrequired --sync-mode=horizon --queue=low --limit='.config('horizon.small_queue').' --check-threshold')
+        $schedule->command('identities:syncrequired --sync-mode=horizon --queue=low --limit='.config('horizon.max_sync_processes').' --check-threshold')
             ->everyMinute()
             ->withoutOverlapping()
             ->onOneServer();
