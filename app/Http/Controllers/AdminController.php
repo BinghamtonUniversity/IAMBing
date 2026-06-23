@@ -43,9 +43,11 @@ class AdminController extends Controller
 
         // Actions to be used to send to the Manage Identities page
         $user_actions = [];
+        if ($identity->can('view_identity_info','App\Identity')){
+            $user_actions[] = ["type"=>"button","label"=>"Recalculate / Sync","action"=>"recalculate","modifiers"=>"alert-success"];
+        }
         if ($identity->can('update_identities','App\Identity')){
             $user_actions[] = ["type"=>"save","label"=>"Update Identity","action"=>"save","modifiers"=>"alert-success"];
-            $user_actions[] = ["type"=>"button","label"=>"Recalculate / Sync","action"=>"recalculate","modifiers"=>"alert-success"];
         }
         if($identity->can('view','App\Log')){
             $user_actions[] = ["type"=>"button","label"=>"View Logs","action"=>"view_logs","modifiers"=>"alert-info"];

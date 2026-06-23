@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Horizon\Contracts\JobRepository;
+use Laravel\Horizon\Contracts\TagRepository;
 
 class Group extends Model
 {
@@ -23,6 +25,44 @@ class Group extends Model
 
     public function isAdmin(Identity $identity){
         return (bool)$this->admins->where('identity_id',$identity->id)->first();
+    }
+
+    /**
+     * Horizon monitored tag matching UpdateIdentityJob::tags() group_id:<id>.
+     */
+    public static function horizonGroupTag(int $groupId): string
+    {
+        return 'group_id:'.$groupId;
+    }
+
+    /**
+     * Ensure the group tag is monitored by Horizon.
+     */
+    public function ensureHorizonGroupTagMonitored(TagRepository $tags): void
+    {
+        $tags->monitor(static::horizonGroupTag($this->id));
+    }
+
+    /**
+     * True if any monitored job for this tag is still pending or reserved in Horizon.
+     */
+    public function hasPendingMonitoredGroupJobs(TagRepository $tags, JobRepository $jobs): bool
+    {
+        $tag = static::horizonGroupTag($this->id);
+        $jobIds = $tags->jobs($tag);
+        if ($jobIds === []) {
+            return false;
+        }
+        // Note : Can be more optimized by using priority query instead of getting all jobs and checking the status. -ECT: 05/08/2026
+        foreach (array_chunk($jobIds, 50) as $chunk) {
+            foreach ($jobs->getJobs($chunk, 0) as $job) {
+                $status = $job->status ?? '';
+                if ($status === 'pending' || $status === 'reserved') {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

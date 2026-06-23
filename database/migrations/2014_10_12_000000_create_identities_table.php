@@ -23,6 +23,8 @@ class CreateIdentitiesTable extends Migration
             $table->string('default_username')->nullable()->default(null)->unique()->index();
             $table->string('default_email')->nullable()->default(null)->index();
             $table->unsignedBigInteger('sponsor_identity_id')->default(null)->nullable()->index();
+            $table->timestamp('sync_required_at')->nullable()->default(null);
+            $table->timestamp('synced_at')->nullable()->default(null);
             $table->rememberToken();
             $table->timestamps();
         });

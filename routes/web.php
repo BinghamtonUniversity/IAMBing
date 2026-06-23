@@ -89,7 +89,7 @@ Route::group(['middleware'=>['custom.auth']], function () {
         Route::post('/entitlements/renew',[IdentityController::class,'renew_entitlements']);//->middleware('can:renew_identity_entitlements,App\Models\Identity');
 
         // Recalculate
-        Route::get('/identities/{identity}/recalculate',[IdentityController::class,'recalculate'])->middleware('can:update_identities,App\Models\Identity');
+        Route::get('/identities/{identity}/recalculate',[IdentityController::class,'recalculate'])->middleware('can:view_identity_info,App\Models\Identity');
         
         // Calculate Future Impact
         Route::get('/identities/{identity}/future_impact',[IdentityController::class,'future_impact'])->middleware('can:view_identity_info,App\Models\Identity');

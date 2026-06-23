@@ -5,6 +5,20 @@ use Illuminate\Support\Str;
 return [
 
     /*
+    If the number of jobs in the queue exceeds this number, identities will be marked as "sync_required"
+    and will not sync. A cleanup process will need to run to sync them once the queue is clear.
+    */
+    'large_queue' => env('HORIZON_LARGE_QUEUE', 1000),
+
+    /*
+    If the number of jobs in the queue falls below this number, the cleanup process will attempt to 
+    sync any "sync_required" identities. This should be set lower than the large_queue threshold.
+    */
+    'small_queue' => env('HORIZON_SMALL_QUEUE', 10),
+
+    
+    'max_sync_processes' => env('HORIZON_MAX_SYNC_PROCESSES', 100),
+    /*
     |--------------------------------------------------------------------------
     | Horizon Domain
     |--------------------------------------------------------------------------

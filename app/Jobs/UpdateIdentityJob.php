@@ -3,13 +3,11 @@
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\Middleware\WithoutOverlapping;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 
 use App\Models\Identity;
 use App\Models\GroupMember;
@@ -38,11 +36,6 @@ class UpdateIdentityJob implements ShouldQueue
         $this->identity_id = isset($config['identity_id'])?$config['identity_id']:null;
         $this->action = isset($config['action'])?$config['action']:null;
     }
-
-    // public function middleware() {
-    //     $unique_id = $this->identity_id?$this->identity_id:$this->api_identity['ids'][$this->unique_id];
-    //     return [(new WithoutOverlapping($unique_id))->releaseAfter(60)];
-    // }
 
     public function handle() {
         $group_id = $this->group_id;
@@ -86,11 +79,17 @@ class UpdateIdentityJob implements ShouldQueue
             }
             GroupActionQueue::where('group_id',$group_id)->where('identity_id',$identity->id)->delete();
         }
-        
-        $resp = $identity->recalculate_entitlements();
+
+        if ($action === 'sync' || Queue::size($this->queue) < config('horizon.large_queue')) {
+            $sync_accounts = true; // Recalculate & Sync Accounts
+        } else {
+            $sync_accounts = false; // Skip Syncing Accounts
+        }
+
+        $resp = $identity->recalculate_entitlements($sync_accounts);
         if ($resp !== true) {
             throw new FailedRecalculateException('Recalculate Entitlements Failed',$resp);
-        }        
+        }    
     }
 
     public function tags() {
