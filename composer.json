@@ -11,14 +11,14 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "avanza-git/laravel-cas": "^2.0",
         "laravel/framework": "^12.0",
-        "laravel/horizon": "^5.47",
+        "laravel/horizon": "^5.50",
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "mustache/mustache": "^3.2",
-        "predis/predis": "^3.5"
+        "predis/predis": "^3.7"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -65,7 +65,7 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
-        "platform": {"php": "8.2"}
+        "platform": {"php": "8.4"}
     },
     "minimum-stability": "stable",
     "prefer-stable": true
